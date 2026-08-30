@@ -3,23 +3,73 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>سهلتهالك</title>
+    <title>الرئيسية - سهلتها لك</title>
     <style>
-        body { font-family: system-ui, -apple-system, sans-serif; background-color: #0f172a; color: #f8fafc; margin: 0; padding: 20px; text-align: center; }
-        .container { max-width: 600px; margin: 20px auto; background: #1e293b; padding: 30px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.4); }
-        h1 { color: #38bdf8; margin-bottom: 25px; font-size: 26px; }
-        .btn { display: block; width: 100%; box-sizing: border-box; margin: 12px 0; padding: 16px; background-color: #2563eb; color: white; text-decoration: none; border-radius: 10px; font-size: 17px; font-weight: bold; transition: 0.2s; border: none; }
-        .btn:hover { background-color: #1d4ed8; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: Tahoma, sans-serif; }
+        body { background-color: #0f172a; color: #ffffff; padding: 15px; text-align: center; }
+        .container { max-width: 600px; margin: 0 auto; }
+        
+        /* كارت الترحيب */
+        .welcome-card { background: #1e293b; padding: 15px; border-radius: 12px; margin-bottom: 15px; border: 1px solid #334155; }
+        .welcome-card h2 { color: #38bdf8; font-size: 20px; }
+        
+        /* بنر الواتساب في الواجهة فوراً */
+        .banner-wa {
+            background: linear-gradient(135deg, #075e54, #128c7e);
+            border: 2px solid #25d366;
+            border-radius: 14px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(37, 211, 102, 0.3);
+        }
+        .banner-wa h3 { color: #fff; font-size: 20px; margin-bottom: 8px; }
+        .banner-wa p { color: #e0e0e0; font-size: 14px; margin-bottom: 15px; }
+        .btn-wa {
+            display: inline-block;
+            background-color: #25d366;
+            color: #000;
+            font-weight: bold;
+            padding: 12px 25px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
+        
+        /* شبكة أزرار باقي أقسام المنصة */
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 15px; }
+        .nav-card { background: #1e293b; padding: 20px 10px; border-radius: 12px; color: #fff; text-decoration: none; border: 1px solid #334155; font-weight: bold; }
+        .nav-card:hover { border-color: #38bdf8; }
+        .btn-logout { display: inline-block; margin-top: 25px; color: #ef4444; text-decoration: none; font-size: 14px; }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>🎓 سهلتهالك</h1>
-        <p style="color: #94a3b8; margin-bottom: 30px;">اختر القسم المطلوب للوصول للمحتوى التعليمي</p>
-        
-        <a href="/books" class="btn">📚 الكتب والمذكرات</a>
-        <a href="/platforms" class="btn">🌐 المنصات التعليمية</a>
-        <a href="/tracks" class="btn">📺 الشروحات والمراجعات</a>
+        <!-- الترحيب بالمستخدم -->
+        <div class="welcome-card">
+            <h2>أهلاً بك يا {{ user }} 👋</h2>
+        </div>
+
+        <!-- بنر الواتساب الرئيسي في الواجهة -->
+        <div class="banner-wa">
+            <h3>📲 انضم لمجتمعنا على واتساب</h3>
+            <p>تابع المذكرات والتحديثات والشروحات فور نزولها أولاً بأول</p>
+            <a href="https://chat.whatsapp.com/H8xBSSAuTCT7uZANPV3Z4w" target="_blank" class="btn-wa">
+                💬 دخول جروب الواتساب
+            </a>
+        </div>
+
+        <!-- أقسام المنصة الرئيسية -->
+        <div class="grid">
+            <a href="/tracks" class="nav-card">📺 الشروحات والمسارات</a>
+            <a href="/books" class="nav-card">📚 الكتب والمذكرات</a>
+            <a href="/platforms" class="nav-card">🌐 المنصات التعليمية</a>
+            <a href="/admin" class="nav-card" style="border-color: #38bdf8; color: #38bdf8;">⚙️ لوحة التحكم</a>
+        </div>
+
+        <div>
+            <a href="/logout" class="btn-logout">تسجيل الخروج</a>
+        </div>
     </div>
 </body>
 </html>
