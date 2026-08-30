@@ -17,25 +17,28 @@
         
         <form method="POST">
             <label>اختر قسم المحتوى:</label>
-            <select name="category" id="category" onchange="toggleTrackSelect()">
+            <select name="category" id="category" onchange="toggleLessonFields()">
                 <option value="book">📚 كتاب / مذكرة (PDF)</option>
                 <option value="platform">🌐 منصة تعليمية</option>
                 <option value="lesson">📺 شرح / مراجعة (حسب التخصص)</option>
             </select>
 
-            <div id="track-div" style="display: none;">
+            <div id="lesson-fields" style="display: none;">
                 <label>اختر المسار والتخصص:</label>
                 <select name="track">
                     {% for key, name in tracks.items() %}
                         <option value="{{ key }}">{{ name }}</option>
                     {% endfor %}
                 </select>
+
+                <label>اسم القسم / العنوان الرئيسي (مثال: كورس تأسيسي / الدرس الأول / المراجعة النهائية):</label>
+                <input type="text" name="section" placeholder="مثال: الدرس الأول - التأسيس">
             </div>
 
-            <label>العنوان / الاسم:</label>
-            <input type="text" name="title" placeholder="مثال: ملخص الفيزياء الفصل الأول" required>
+            <label>عنوان الشرح / الفيديو:</label>
+            <input type="text" name="title" placeholder="مثال: شرح أجزاء الجملة" required>
 
-            <label>الرابط المباشر (PDF / فيديو / موقع):</label>
+            <label>الرابط المباشر (يوتيوب / PDF / موقع):</label>
             <input type="url" name="link" placeholder="https://..." required>
 
             <button type="submit" class="btn-submit">➕ إضافة المحتوى</button>
@@ -47,9 +50,9 @@
     </div>
 
     <script>
-        function toggleTrackSelect() {
+        function toggleLessonFields() {
             var cat = document.getElementById('category').value;
-            document.getElementById('track-div').style.display = (cat === 'lesson') ? 'block' : 'none';
+            document.getElementById('lesson-fields').style.display = (cat === 'lesson') ? 'block' : 'none';
         }
     </script>
 </body>
