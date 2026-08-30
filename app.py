@@ -48,19 +48,23 @@ def save_data(data):
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
-        identifier = request.form.get('identifier', '').strip() # البريد أو الهاتف
+        name = request.form.get('name', '').strip()
+        identifier = request.form.get('identifier', '').strip()
         password = request.form.get('password', '').strip()
         
         if identifier and password:
             data = load_data()
-            # التأكد من عدم تكرار الحساب
             for u in data.get('users', []):
-                if u['identifier'] == identifier:
+                if u.get('identifier') == identifier:
                     return "الحساب مسجل بالفعل! <a href='/login'>سجل دخولك من هنا</a>"
             
-            data['users'].append({'identifier': identifier, 'password': password})
+            data['users'].append({
+                'name': name or 'مستخدم',
+                'identifier': identifier, 
+                'password': password
+            })
             save_data(data)
-            session['user'] = identifier
+            session['user'] = name or identifier
             return redirect(url_for('index'))
             
     return render_template('register.html')
@@ -73,8 +77,8 @@ def login():
         
         data = load_data()
         for u in data.get('users', []):
-            if u['identifier'] == identifier and u['password'] == password:
-                session['user'] = identifier
+            if u.get('identifier') == identifier and u.get('password') == password:
+                session['user'] = u.get('name', identifier)
                 return redirect(url_for('index'))
         
         return "بيانات الدخول غير صحيحة! <a href='/login'>حاول مرة أخرى</a>"
@@ -133,7 +137,7 @@ def lessons(track_id):
 
     return render_template('lessons.html', title=title, grouped_lessons=grouped_lessons)
 
-# --- لوحة التحكم وإدارة المحتوى والمستخدمين ---
+# --- لوحة التحكم للأدمن ---
 
 @app.route('/admin', methods=['GET', 'POST'])
 def admin():
