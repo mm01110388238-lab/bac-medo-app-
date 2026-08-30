@@ -46,14 +46,12 @@ def index():
 @app.route('/books')
 def books():
     data = load_data()
-    books_list = data.get('books', []) if isinstance(data, dict) else []
-    return render_template('books.html', books=books_list)
+    return render_template('books.html', books=data.get('books', []))
 
 @app.route('/platforms')
 def platforms():
     data = load_data()
-    platforms_list = data.get('platforms', []) if isinstance(data, dict) else []
-    return render_template('platforms.html', platforms=platforms_list)
+    return render_template('platforms.html', platforms=data.get('platforms', []))
 
 @app.route('/tracks')
 def tracks():
@@ -63,14 +61,9 @@ def tracks():
 def lessons(track_id):
     data = load_data()
     title = TRACKS.get(track_id, "الشروحات والمراجعات")
-    
     lessons_dict = data.get("lessons", {}) if isinstance(data, dict) else {}
-    items = []
-    if isinstance(lessons_dict, dict):
-        items = lessons_dict.get(track_id, [])
-        if not isinstance(items, list):
-            items = []
-
+    items = lessons_dict.get(track_id, []) if isinstance(lessons_dict, dict) else []
+    
     grouped_lessons = {}
     for item in items:
         if isinstance(item, dict):
@@ -111,7 +104,22 @@ def admin():
         save_data(data)
         return redirect(url_for('admin'))
 
-    return render_template('admin.html', tracks=TRACKS)
+    return render_template('admin.html', tracks=TRACKS, data=data)
+
+@app.route('/admin/delete/<cat_type>/<int:index>', methods=['POST'])
+def delete_item(cat_type, index):
+    data = load_data()
+    if cat_type in ['book', 'platform']:
+        if cat_type + 's' in data and len(data[cat_type + 's']) > index:
+            data[cat_type + 's'].pop(index)
+            save_data(data)
+    elif cat_type.startswith('lesson_'):
+        track_key = cat_type.replace('lesson_', '')
+        if 'lessons' in data and track_key in data['lessons']:
+            if len(data['lessons'][track_key]) > index:
+                data['lessons'][track_key].pop(index)
+                save_data(data)
+    return redirect(url_for('admin'))
 
 if __name__ == '__main__':
     app.run(debug=True)
