@@ -1,9 +1,11 @@
 import os
 import json
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, session
 
 app = Flask(__name__)
+app.secret_key = 'medo_bac_2026_secret_key'
 
+ADMIN_PASSWORD = "Medo#Secur3_Bac2026"
 DATA_FILE = '/tmp/data.json' if os.path.exists('/tmp') else 'data.json'
 
 TRACKS = {
@@ -76,8 +78,21 @@ def lessons(track_id):
 
 @app.route('/admin', methods=['GET', 'POST'])
 def admin():
+    # التحقق من تسجيل الدخول بواسطة كلمة السر
+    if request.method == 'POST' and 'auth_password' in request.form:
+        if request.form.get('auth_password') == ADMIN_PASSWORD:
+            session['logged_in'] = True
+        else:
+            return render_template('admin_login.html', error="كلمة السر غير صحيحة!")
+
+    # توجيه إلى صفحة تسجيل الدخول إذا لم تكن مسجلاً
+    if not session.get('logged_in'):
+        return render_template('admin_login.html')
+
     data = load_data()
-    if request.method == 'POST':
+    
+    # إضافة عناصر جديدة
+    if request.method == 'POST' and 'category' in request.form:
         category = request.form.get('category')
         title = request.form.get('title')
         link = request.form.get('link')
@@ -108,6 +123,10 @@ def admin():
 
 @app.route('/admin/delete/<cat_type>/<int:index>', methods=['POST'])
 def delete_item(cat_type, index):
+    # حماية عملية الحذف
+    if not session.get('logged_in'):
+        return redirect(url_for('admin'))
+
     data = load_data()
     if cat_type in ['book', 'platform']:
         if cat_type + 's' in data and len(data[cat_type + 's']) > index:
@@ -120,6 +139,8 @@ def delete_item(cat_type, index):
                 data['lessons'][track_key].pop(index)
                 save_data(data)
     return redirect(url_for('admin'))
+
+app = app
 
 if __name__ == '__main__':
     app.run(debug=True)
