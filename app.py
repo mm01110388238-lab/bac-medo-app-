@@ -6,11 +6,16 @@ app = Flask(__name__)
 
 DATA_FILE = '/tmp/data.json' if os.path.exists('/tmp') else 'data.json'
 
+# المسارات الـ 8 الخاصة بالمنصة
 TRACKS = {
-    'sci_exp': 'علمي علوم',
-    'sci_math': 'علمي رياضة',
-    'literary': 'أدبي',
-    'general': 'عام (جميع التخصصات)'
+    'med_math': 'مسار الطب وعلوم الحياة / رياضيات',
+    'med_physics': 'مسار طب وعلوم الحياة / فيزياء',
+    'eng_chem': 'مسار الهندسة وعلوم الحاسب / كيمياء',
+    'eng_prog': 'مسار الهندسة وعلوم الحاسب / برمجة',
+    'biz_acct': 'مسار الأعمال / محاسبة',
+    'biz_mgmt': 'مسار الأعمال / إدارة أعمال',
+    'art_psych': 'مسار الآداب والفنون / علم نفس',
+    'art_lang': 'مسار الآداب والفنون / لغة أجنبية ثانية'
 }
 
 def load_data():
@@ -23,12 +28,7 @@ def load_data():
     return {
         "books": [],
         "platforms": [],
-        "lessons": {
-            "sci_exp": [],
-            "sci_math": [],
-            "literary": [],
-            "general": []
-        }
+        "lessons": {key: [] for key in TRACKS.keys()}
     }
 
 def save_data(data):
@@ -63,7 +63,6 @@ def lessons(track_id):
     lessons_dict = data.get("lessons", {})
     items = lessons_dict.get(track_id, []) if isinstance(lessons_dict, dict) else []
     
-    # تجميع الدروس حسب العنوان/القسم الفرعي
     grouped_lessons = {}
     for item in items:
         section = item.get('section', 'شروحات عامة')
