@@ -1,149 +1,211 @@
-from flask import Flask, render_template_string, request, redirect, url_for, session, flash
+from flask import Flask, render_template_string, request, redirect, url_for, session
 
 app = Flask(__name__)
-app.secret_key = "medo_secret_key_bac"  # مفتاح أمان الجلسة
+app.secret_key = 'bac_medo_secret_key_2026'
 
-# كلمة سر لوحة التحكم
-ADMIN_PASSWORD = "admin"
-
-# قاعدة البيانات المؤقتة
-data_store = {
-    "books": [{"id": 1, "title": "مذكرة الفيزياء - الفصل الأول", "link": "https://example.com/physics.pdf"}],
-    "platforms": [{"id": 1, "name": "منصة مصر التعليمية", "link": "https://moe.gov.eg"}],
-    "videos": [{"id": 1, "title": "مراجعة شاملة للرياضيات", "link": "https://youtube.com"}],
-    "news": [{"id": 1, "text": "مرحباً بكم في منصة البكالوريا مع ميدو الرسمية!"}]
+# قاعدة بيانات مؤقتة للمحتوى
+data = {
+    'books': [],      # الكتب والمذكرات: {'title': '', 'link': ''}
+    'platforms': [],  # المنصات التعليمية: {'title': '', 'link': ''}
+    'lessons': {      # الشروحات والمراجعات مقسمة حسب الـ 8 خيارات
+        'med_math': [],
+        'med_physics': [],
+        'eng_chem': [],
+        'eng_prog': [],
+        'biz_acct': [],
+        'biz_mgmt': [],
+        'art_psych': [],
+        'art_lang': []
+    }
 }
 
-# ----------------- واجهة الطالب -----------------
-STUDENT_HTML = """
+TRACK_NAMES = {
+    'med_math': 'مسار الطب وعلوم الحياة / رياضيات',
+    'med_physics': 'مسار الطب وعلوم الحياة / فيزياء',
+    'eng_chem': 'مسار الهندسة وعلوم الحاسب / كيمياء',
+    'eng_prog': 'مسار الهندسة وعلوم الحاسب / برمجة',
+    'biz_acct': 'مسار الأعمال / محاسبة',
+    'biz_mgmt': 'مسار الأعمال / إدارة أعمال',
+    'art_psych': 'مسار الآداب والفنون / علم نفس',
+    'art_lang': 'مسار الآداب والفنون / لغة أجنبية ثانية'
+}
+
+BASE_HTML = """
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>البكالوريا مع ميدو</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body { background-color: #0f172a; color: #f8fafc; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        .hero { background: linear-gradient(135deg, #1e293b, #0f172a); border-bottom: 2px solid #38bdf8; padding: 40px 20px; text-align: center; }
-        .card-custom { background-color: #1e293b; border: 1px solid #334155; border-radius: 16px; color: #fff; transition: 0.3s; }
-        .card-custom:hover { transform: translateY(-4px); border-color: #38bdf8; }
-        .btn-link-custom { background-color: #38bdf8; color: #0f172a; font-weight: bold; border-radius: 8px; text-decoration: none; display: inline-block; padding: 8px 16px; width: 100%; text-align: center; }
-        .btn-link-custom:hover { background-color: #7dd3fc; color: #0f172a; }
-        .news-ticker { background: #0284c7; color: white; padding: 10px; border-radius: 8px; font-weight: 500; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #0f172a; color: #f8fafc; margin: 0; padding: 20px; text-align: center; }
+        .container { max-width: 800px; margin: 0 auto; background: #1e293b; padding: 25px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
+        h1 { color: #38bdf8; margin-bottom: 25px; font-size: 28px; }
+        .btn { display: block; width: 90%; margin: 15px auto; padding: 16px; background-color: #2563eb; color: white; text-decoration: none; border-radius: 10px; font-size: 18px; font-weight: bold; transition: 0.3s; border: none; cursor: pointer; }
+        .btn:hover { background-color: #1d4ed8; transform: translateY(-2px); }
+        .btn-track { background-color: #0d9488; }
+        .btn-track:hover { background-color: #0f766e; }
+        .btn-item { background-color: #334155; text-align: right; padding: 12px 20px; margin: 10px auto; border-right: 5px solid #38bdf8; }
+        .btn-item:hover { background-color: #475569; }
+        .btn-back { background-color: #64748b; width: auto; display: inline-block; padding: 8px 20px; font-size: 14px; margin-top: 20px; }
+        .admin-form { text-align: right; background: #0f172a; padding: 20px; border-radius: 10px; margin-top: 20px; }
+        input, select { width: 100%; padding: 10px; margin: 8px 0 18px 0; border-radius: 5px; border: 1px solid #475569; background: #1e293b; color: white; box-sizing: border-box; }
     </style>
 </head>
 <body>
-
-<div class="hero">
-    <h1 class="fw-bold text-info"><i class="fa-solid fa-graduation-cap"></i> البكالوريا مع ميدو</h1>
-    <p class="text-light">منصتك التعليمية المتكاملة للكتب والمنصات والشروحات</p>
-</div>
-
-<div class="container my-4">
-    <!-- الشريط الإخباري -->
-    {% if data.news %}
-    <div class="news-ticker mb-4">
-        📢 <strong>آخر الأخبار:</strong> {{ data.news[-1].text }}
+    <div class="container">
+        {% block content %}{% endblock %}
     </div>
-    {% endif %}
-
-    <div class="row g-4">
-        <!-- قسم الكتب والمذكرات -->
-        <div class="col-md-4">
-            <div class="card card-custom p-3 h-100">
-                <h4 class="text-info"><i class="fa-solid fa-book"></i> الكتب والمذكرات</h4>
-                <hr class="border-secondary">
-                {% for item in data.books %}
-                <div class="mb-3 p-2 border border-secondary rounded">
-                    <h6>{{ item.title }}</h6>
-                    <a href="{{ item.link }}" target="_blank" class="btn-link-custom mt-2"><i class="fa-solid fa-download"></i> فتح / تحميل</a>
-                </div>
-                {% endfor %}
-            </div>
-        </div>
-
-        <!-- قسم المنصات التعليمية -->
-        <div class="col-md-4">
-            <div class="card card-custom p-3 h-100">
-                <h4 class="text-warning"><i class="fa-solid fa-globe"></i> المنصات التعليمية</h4>
-                <hr class="border-secondary">
-                {% for item in data.platforms %}
-                <div class="mb-3 p-2 border border-secondary rounded">
-                    <h6>{{ item.name }}</h6>
-                    <a href="{{ item.link }}" target="_blank" class="btn-link-custom mt-2"><i class="fa-solid fa-arrow-up-right-from-square"></i> الانتقال للمنصة</a>
-                </div>
-                {% endfor %}
-            </div>
-        </div>
-
-        <!-- قسم الفيديوهات والشروحات -->
-        <div class="col-md-4">
-            <div class="card card-custom p-3 h-100">
-                <h4 class="text-danger"><i class="fa-solid fa-video"></i> الشروحات والمراجعات</h4>
-                <hr class="border-secondary">
-                {% for item in data.videos %}
-                <div class="mb-3 p-2 border border-secondary rounded">
-                    <h6>{{ item.title }}</h6>
-                    <a href="{{ item.link }}" target="_blank" class="btn-link-custom mt-2"><i class="fa-brands fa-youtube"></i> مشاهدة الشرح</a>
-                </div>
-                {% endfor %}
-            </div>
-        </div>
-    </div>
-</div>
-
 </body>
 </html>
 """
 
-# ----------------- لوحة التحكم للأدمن -----------------
-ADMIN_HTML = """
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-    <meta charset="UTF-8">
-    <title>لوحة تحكم الأدمن - البكالوريا مع ميدو</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
-</head>
-<body class="bg-light p-4">
-<div class="container">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2>⚙️ لوحة تحكم المنصة (الأدمن)</h2>
-        <a href="/" class="btn btn-secondary">العودة للمنصة</a>
-    </div>
+@app.route('/')
+def home():
+    html = BASE_HTML + """
+    {% block content %}
+        <h1>🎓 البكالوريا مع ميدو</h1>
+        <p style="color: #94a3b8; margin-bottom: 30px;">اختر القسم المطلوب للوصول للمحتوى التعليمي</p>
+        
+        <a href="/books" class="btn">📚 الكتب والمذكرات</a>
+        <a href="/platforms" class="btn">🌐 المنصات التعليمية</a>
+        <a href="/tracks" class="btn">📺 الشروحات والمراجعات</a>
+    {% endblock %}
+    """
+    return render_template_string(html)
 
-    <!-- إضافة عنصر جديد -->
-    <div class="card p-4 mb-4 shadow-sm">
-        <h4>إضافة محتوى جديد</h4>
-        <form method="POST" action="/admin/add">
-            <div class="row g-3">
-                <div class="col-md-3">
-                    <label class="form-label">القسم</label>
-                    <select name="category" class="form-select" required>
-                        <option value="books">الكتب والمذكرات</option>
-                        <option value="platforms">المنصات التعليمية</option>
-                        <option value="videos">الفيديوهات</option>
-                        <option value="news">خبر جديد</option>
-                    </select>
-                </div>
-                <div class="col-md-4">
-                    <label class="form-label">العنوان / الاسم</label>
-                    <input type="text" name="title" class="form-control" placeholder="أدخل العنوان" required>
-                </div>
-                <div class="col-md-5">
-                    <label class="form-label">الرابط (ليس مطلوباً للأخبار)</label>
-                    <input type="text" name="link" class="form-control" placeholder="https://...">
-                </div>
+@app.route('/books')
+def books():
+    html = BASE_HTML + """
+    {% block content %}
+        <h1>📚 الكتب والمذكرات</h1>
+        {% if books %}
+            {% for b in books %}
+                <a href="{{ b.link }}" target="_blank" class="btn btn-item">📖 {{ b.title }} (فتح PDF)</a>
+            {% endfor %}
+        {% else %}
+            <p style="color: #94a3b8;">لا توجد كتب مضافة حالياً.</p>
+        {% endif %}
+        <a href="/" class="btn btn-back">⬅ العودة للرئيسية</a>
+    {% endblock %}
+    """
+    return render_template_string(html, books=data['books'])
+
+@app.route('/platforms')
+def platforms():
+    html = BASE_HTML + """
+    {% block content %}
+        <h1>🌐 المنصات التعليمية</h1>
+        {% if platforms %}
+            {% for p in platforms %}
+                <a href="{{ p.link }}" target="_blank" class="btn btn-item">🚀 {{ p.title }}</a>
+            {% endfor %}
+        {% else %}
+            <p style="color: #94a3b8;">لا توجد منصات مضافة حالياً.</p>
+        {% endif %}
+        <a href="/" class="btn btn-back">⬅ العودة للرئيسية</a>
+    {% endblock %}
+    """
+    return render_template_string(html, platforms=data['platforms'])
+
+@app.route('/tracks')
+def tracks():
+    html = BASE_HTML + """
+    {% block content %}
+        <h1>📺 اختر المسار والتخصص</h1>
+        {% for key, name in tracks.items() %}
+            <a href="/lessons/{{ key }}" class="btn btn-track">{{ name }}</a>
+        {% endfor %}
+        <a href="/" class="btn btn-back">⬅ العودة للرئيسية</a>
+    {% endblock %}
+    """
+    return render_template_string(html, tracks=TRACK_NAMES)
+
+@app.route('/lessons/<track_id>')
+def lessons(track_id):
+    track_title = TRACK_NAMES.get(track_id, 'الشروحات')
+    items = data['lessons'].get(track_id, [])
+    html = BASE_HTML + """
+    {% block content %}
+        <h1>{{ title }}</h1>
+        {% if items %}
+            {% for item in items %}
+                <a href="{{ item.link }}" target="_blank" class="btn btn-item">▶ {{ item.title }}</a>
+            {% endfor %}
+        {% else %}
+            <p style="color: #94a3b8;">لا توجد شروحات مضافة لهذا المسار حالياً.</p>
+        {% endif %}
+        <a href="/tracks" class="btn btn-back">⬅ اختيار مسار آخر</a>
+    {% endblock %}
+    """
+    return render_template_string(html, title=track_title, items=items)
+
+# --- لوحة التحكم (الأدمن) ---
+
+@app.route('/admin', methods=['GET', 'POST'])
+def admin():
+    if request.method == 'POST':
+        category = request.form.get('category')
+        title = request.form.get('title')
+        link = request.form.get('link')
+        track = request.form.get('track')
+
+        if category == 'book':
+            data['books'].append({'title': title, 'link': link})
+        elif category == 'platform':
+            data['platforms'].append({'title': title, 'link': link})
+        elif category == 'lesson':
+            if track in data['lessons']:
+                data['lessons'][track].append({'title': title, 'link': link})
+
+        return redirect(url_for('admin'))
+
+    html = BASE_HTML + """
+    {% block content %}
+        <h1>⚙️ لوحة تحكم الأدمن</h1>
+        <p style="color: #4ade80;">أضف محتوى جديد للمنصة بسهولة</p>
+
+        <form method="POST" class="admin-form">
+            <label>اختر قسم المحتوى:</label>
+            <select name="category" id="category" onchange="toggleTrackSelect()">
+                <option value="book">📚 كتاب / مذكرة (PDF)</option>
+                <option value="platform">🌐 منصة تعليمية</option>
+                <option value="lesson">📺 شرح / مراجعة (حسب التخصص)</option>
+            </select>
+
+            <div id="track-div" style="display: none;">
+                <label>اختر المسار والتخصص:</label>
+                <select name="track">
+                    {% for key, name in tracks.items() %}
+                        <option value="{{ key }}">{{ name }}</option>
+                    {% endfor %}
+                </select>
             </div>
-            <button type="submit" class="btn btn-primary mt-3">إضافة للمنصة</button>
-        </form>
-    </div>
 
-    <!-- إدارة الحذف -->
-    <div class="card p-4 shadow-sm">
-        <h4>المحتوى الحالي (إمكانية الحذف)</h4>
+            <label>العنوان / الاسم:</label>
+            <input type="text" name="title" placeholder="مثال: ملخص الفيزياء الفصل الأول" required>
+
+            <label>الرابط المباشر (PDF / فيديو / موقع):</label>
+            <input type="url" name="link" placeholder="https://..." required>
+
+            <button type="submit" class="btn" style="background-color: #16a34a; width: 100%;">➕ إضافة المحتوى</button>
+        </form>
+
+        <a href="/" class="btn btn-back">🏠 العودة للموقع الرئيسي</a>
+
+        <script>
+            function toggleTrackSelect() {
+                var cat = document.getElementById('category').value;
+                var trackDiv = document.getElementById('track-div');
+                trackDiv.style.display = (cat === 'lesson') ? 'block' : 'none';
+            }
+        </script>
+    {% endblock %}
+    """
+    return render_template_string(html, tracks=TRACK_NAMES)
+
+if __name__ == '__main__':
+    app.run(debug=True)
         
         <h5 class="mt-3 text-primary">الكتب:</h5>
         <ul class="list-group mb-3">
