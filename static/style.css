@@ -1,28 +1,45 @@
-/* تأثير الكروت عند تمرير الماوس */
-.subject-card {
+/* تنسيقات عامة للمنصة وتدرج الألوان */
+body {
+    font-family: 'Cairo', system-ui, -apple-system, sans-serif;
+    background-color: #f8fafc;
+    color: #1e293b;
+    margin: 0;
+    padding: 0;
+}
+
+/* تنسيق الكروت والمحتوى */
+.subject-card, .book-card, .platform-card {
+    background: #ffffff;
+    border-radius: 14px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
     transition: transform 0.3s ease, box-shadow 0.3s ease;
-    border-radius: 10px;
-    background-color: #ffffff;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    border: 1px solid #e2e8f0;
 }
 
-.subject-card:hover {
-    transform: translateY(-5px); /* رفع الكارت لفوق قليلاً */
-    box-shadow: 0 10px 20px rgba(0,0,0,0.2); /* زيادة الظل */
+/* تأثير تفاعلي راقي عند مرور الماوس على الكروت */
+.subject-card:hover, .book-card:hover, .platform-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 20px -3px rgba(0, 0, 0, 0.1);
+    border-color: #cbd5e1;
 }
 
-/* زرار تفاعلي لتحميل الملازم */
-.btn-primary {
-    background: linear-gradient(45deg, #007bff, #00c6ff);
+/* الأزرار العصرية */
+.btn-custom {
+    background: linear-gradient(135deg, #2563eb, #1d4ed8);
     color: white;
     border: none;
     padding: 10px 20px;
-    border-radius: 25px;
-    transition: 0.3s;
+    border-radius: 8px;
+    font-weight: bold;
     cursor: pointer;
+    transition: 0.3s;
+    text-decoration: none;
+    display: inline-block;
 }
 
-.btn-primary:hover {
-    background: linear-gradient(45deg, #00c6ff, #007bff);
-    transform: scale(1.05); /* تكبير الزرار بنسبة بسيطة */
+.btn-custom:hover {
+    background: linear-gradient(135deg, #1d4ed8, #1e40af);
+    transform: scale(1.02);
 }
