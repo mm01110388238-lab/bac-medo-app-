@@ -1,119 +1,207 @@
-import sqlite3
+import os
+import json
 from flask import Flask, render_template, request, redirect, url_for, session
 
 app = Flask(__name__)
-app.secret_key = "Medo#Secur3_Bac2026"
+app.secret_key = 'medo_bac_2026_secret_key'
 
-ADMIN_PASSWORD = "Medo#Secur3_Bac2026"
+DATA_FILE = '/tmp/data.json' if os.path.exists('/tmp') else 'data.json'
 
-# إعداد قاعدة البيانات لحفظ الحسابات
-def init_db():
-    conn = sqlite3.connect('users.db')
-    cursor = conn.cursor()
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS users (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            identifier TEXT UNIQUE NOT NULL,
-            password TEXT NOT NULL
-        )
-    ''')
-    conn.commit()
-    conn.close()
+TRACKS = {
+    'med_math': 'مسار الطب وعلوم الحياة / رياضيات',
+    'med_physics': 'مسار طب وعلوم الحياة / فيزياء',
+    'eng_chem': 'مسار الهندسة وعلوم الحاسب / كيمياء',
+    'eng_prog': 'مسار الهندسة وعلوم الحاسب / برمجة',
+    'biz_acct': 'مسار الأعمال / محاسبة',
+    'biz_mgmt': 'مسار الأعمال / إدارة أعمال',
+    'art_psych': 'مسار الآداب والفنون / علم نفس',
+    'art_lang': 'مسار الآداب والفنون / لغة أجنبية ثانية'
+}
 
-init_db()
+def load_data():
+    if os.path.exists(DATA_FILE):
+        try:
+            with open(DATA_FILE, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+                if isinstance(data, dict):
+                    if 'users' not in data:
+                        data['users'] = []
+                    return data
+        except Exception:
+            pass
+    return {
+        "users": [],
+        "books": [],
+        "platforms": [],
+        "lessons": {key: [] for key in TRACKS.keys()}
+    }
 
-# الصفحة الرئيسية للمنصة
-@app.route('/')
-def home():
-    # التحقق مما إذا كان المستخدم مسجلاً للدخول أم لا
-    if 'user' not in session:
-        return redirect(url_for('login'))
-    return render_template('index.html', user=session['user'])
+def save_data(data):
+    try:
+        with open(DATA_FILE, 'w', encoding='utf-8') as f:
+            json.dump(data, f, ensure_ascii=False, indent=2)
+    except Exception as e:
+        print("Save error:", e)
 
-# صفحة التسجيل وإنشاء حساب جديد
+# --- مسارات الحسابات والتسجيل ---
+
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
-        identifier = request.form.get('identifier') # جيميل أو رقم الهاتف
-        password = request.form.get('password')
+        identifier = request.form.get('identifier', '').strip() # البريد أو الهاتف
+        password = request.form.get('password', '').strip()
         
-        conn = sqlite3.connect('users.db')
-        cursor = conn.cursor()
-        try:
-            cursor.execute('INSERT INTO users (identifier, password) VALUES (?, ?)', (identifier, password))
-            conn.commit()
-            return redirect(url_for('login'))
-        except sqlite3.IntegrityError:
-            return "الحساب مسجل من قبل بالفعل! <a href='/login'>سجل دخولك</a>"
-        finally:
-            conn.close()
+        if identifier and password:
+            data = load_data()
+            # التأكد من عدم تكرار الحساب
+            for u in data.get('users', []):
+                if u['identifier'] == identifier:
+                    return "الحساب مسجل بالفعل! <a href='/login'>سجل دخولك من هنا</a>"
+            
+            data['users'].append({'identifier': identifier, 'password': password})
+            save_data(data)
+            session['user'] = identifier
+            return redirect(url_for('index'))
             
     return render_template('register.html')
 
-# صفحة تسجيل الدخول
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        identifier = request.form.get('identifier')
-        password = request.form.get('password')
+        identifier = request.form.get('identifier', '').strip()
+        password = request.form.get('password', '').strip()
         
-        conn = sqlite3.connect('users.db')
-        cursor = conn.cursor()
-        cursor.execute('SELECT * FROM users WHERE identifier = ? AND password = ?', (identifier, password))
-        user = cursor.fetchone()
-        conn.close()
+        data = load_data()
+        for u in data.get('users', []):
+            if u['identifier'] == identifier and u['password'] == password:
+                session['user'] = identifier
+                return redirect(url_for('index'))
         
-        if user:
-            session['user'] = identifier
-            return redirect(url_for('home'))
-        else:
-            return "بيانات الدخول غير صحيحة! <a href='/login'>حاول مرة أخرى</a>"
-            
+        return "بيانات الدخول غير صحيحة! <a href='/login'>حاول مرة أخرى</a>"
+        
     return render_template('login.html')
 
-# لوحة التحكم الخاصة بالأدمن (تعرض عدد المستخدمين وبياناتهم)
-@app.route('/admin', methods=['GET', 'POST'])
-def admin():
-    if request.method == 'POST':
-        if request.form.get('password') == ADMIN_PASSWORD:
-            session['is_admin'] = True
-        else:
-            return "كلمة سر الأدمن خاطئة!"
-            
-    if not session.get('is_admin'):
-        return '''
-            <div style="font-family: Tahoma; direction: rtl; padding: 20px; background: #121212; color: #fff; text-align: center;">
-                <h2>تسجيل دخول الأدمن</h2>
-                <form method="POST">
-                    <input type="password" name="password" placeholder="أدخل كلمة سر الأدمن" style="padding: 10px; margin: 10px;">
-                    <button type="submit" style="padding: 10px 20px; background: #00ffcc; border: none; cursor: pointer;">دخول</button>
-                </form>
-            </div>
-        '''
-    
-    conn = sqlite3.connect('users.db')
-    cursor = conn.cursor()
-    cursor.execute('SELECT identifier, password FROM users')
-    users = cursor.fetchall()
-    total_users = len(users)
-    conn.close()
-    
-    users_html = "".join([f"<li><strong>{u[0]}</strong> - كلمة السر: <code>{u[1]}</code></li>" for u in users])
-    return f'''
-        <div style="font-family: Tahoma; direction: rtl; padding: 20px; background: #121212; color: #fff;">
-            <h1>لوحة تحكم المنصة - سهلتها لك</h1>
-            <p style="font-size: 20px; color: #00ffcc;">إجمالي عدد المستخدمين المسجلين: <strong>{total_users}</strong></p>
-            <h3>قائمة الحسابات وكلمات السر:</h3>
-            <ul>{users_html}</ul>
-            <br><a href="/logout" style="color: #ff4d4d; text-decoration: none;">تسجيل خروج الأدمن</a>
-        </div>
-    '''
-
-# تسجيل الخروج
 @app.route('/logout')
 def logout():
-    session.clear()
+    session.pop('user', None)
     return redirect(url_for('login'))
+
+# --- مسارات المنصة الرئيسية ---
+
+@app.route('/')
+def index():
+    if 'user' not in session:
+        return redirect(url_for('login'))
+    return render_template('index.html', user=session.get('user'))
+
+@app.route('/books')
+def books():
+    if 'user' not in session:
+        return redirect(url_for('login'))
+    data = load_data()
+    return render_template('books.html', books=data.get('books', []))
+
+@app.route('/platforms')
+def platforms():
+    if 'user' not in session:
+        return redirect(url_for('login'))
+    data = load_data()
+    return render_template('platforms.html', platforms=data.get('platforms', []))
+
+@app.route('/tracks')
+def tracks():
+    if 'user' not in session:
+        return redirect(url_for('login'))
+    return render_template('tracks.html', tracks=TRACKS)
+
+@app.route('/lessons/<track_id>')
+def lessons(track_id):
+    if 'user' not in session:
+        return redirect(url_for('login'))
+    data = load_data()
+    title = TRACKS.get(track_id, "الشروحات والمراجعات")
+    lessons_dict = data.get("lessons", {}) if isinstance(data, dict) else {}
+    items = lessons_dict.get(track_id, []) if isinstance(lessons_dict, dict) else []
+    
+    grouped_lessons = {}
+    for item in items:
+        if isinstance(item, dict):
+            sec = item.get('section', 'شروحات عامة') or 'شروحات عامة'
+            if sec not in grouped_lessons:
+                grouped_lessons[sec] = []
+            grouped_lessons[sec].append(item)
+
+    return render_template('lessons.html', title=title, grouped_lessons=grouped_lessons)
+
+# --- لوحة التحكم وإدارة المحتوى والمستخدمين ---
+
+@app.route('/admin', methods=['GET', 'POST'])
+def admin():
+    if request.method == 'POST' and 'auth_password' in request.form:
+        raw_pass = request.form.get('auth_password', '')
+        cleaned_pass = "".join(c for c in raw_pass if c.isalnum()).lower()
+        
+        if cleaned_pass == "medo2026":
+            session['logged_in'] = True
+        else:
+            return render_template('admin_login.html', error="كلمة السر غير صحيحة!")
+
+    if not session.get('logged_in'):
+        return render_template('admin_login.html')
+
+    data = load_data()
+    
+    if request.method == 'POST' and 'category' in request.form:
+        category = request.form.get('category')
+        title = request.form.get('title')
+        link = request.form.get('link')
+        track = request.form.get('track')
+        section = request.form.get('section', '').strip() or 'شروحات عامة'
+
+        if category == 'book':
+            if 'books' not in data or not isinstance(data['books'], list): 
+                data['books'] = []
+            data['books'].append({'title': title, 'link': link})
+
+        elif category == 'platform':
+            if 'platforms' not in data or not isinstance(data['platforms'], list): 
+                data['platforms'] = []
+            data['platforms'].append({'title': title, 'link': link})
+
+        elif category == 'lesson' and track:
+            if 'lessons' not in data or not isinstance(data['lessons'], dict): 
+                data['lessons'] = {}
+            if track not in data['lessons'] or not isinstance(data['lessons'][track], list): 
+                data['lessons'][track] = []
+            data['lessons'][track].append({'title': title, 'link': link, 'section': section})
+
+        save_data(data)
+        return redirect(url_for('admin'))
+
+    users = data.get('users', [])
+    total_users = len(users)
+
+    return render_template('admin.html', tracks=TRACKS, data=data, users=users, total_users=total_users)
+
+@app.route('/admin/delete/<cat_type>/<int:index>', methods=['POST'])
+def delete_item(cat_type, index):
+    if not session.get('logged_in'):
+        return redirect(url_for('admin'))
+
+    data = load_data()
+    if cat_type in ['book', 'platform']:
+        if cat_type + 's' in data and len(data[cat_type + 's']) > index:
+            data[cat_type + 's'].pop(index)
+            save_data(data)
+    elif cat_type.startswith('lesson_'):
+        track_key = cat_type.replace('lesson_', '')
+        if 'lessons' in data and track_key in data['lessons']:
+            if len(data['lessons'][track_key]) > index:
+                data['lessons'][track_key].pop(index)
+                save_data(data)
+    return redirect(url_for('admin'))
+
+app = app
 
 if __name__ == '__main__':
     app.run(debug=True)
