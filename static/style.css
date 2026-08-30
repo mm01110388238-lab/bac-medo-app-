@@ -1,0 +1,28 @@
+/* تأثير الكروت عند تمرير الماوس */
+.subject-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border-radius: 10px;
+    background-color: #ffffff;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.subject-card:hover {
+    transform: translateY(-5px); /* رفع الكارت لفوق قليلاً */
+    box-shadow: 0 10px 20px rgba(0,0,0,0.2); /* زيادة الظل */
+}
+
+/* زرار تفاعلي لتحميل الملازم */
+.btn-primary {
+    background: linear-gradient(45deg, #007bff, #00c6ff);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 25px;
+    transition: 0.3s;
+    cursor: pointer;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(45deg, #00c6ff, #007bff);
+    transform: scale(1.05); /* تكبير الزرار بنسبة بسيطة */
+}
