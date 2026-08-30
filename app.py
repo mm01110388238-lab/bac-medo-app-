@@ -6,7 +6,6 @@ app = Flask(__name__)
 
 DATA_FILE = '/tmp/data.json' if os.path.exists('/tmp') else 'data.json'
 
-# المسارات الـ 8 الخاصة بالمنصة
 TRACKS = {
     'med_math': 'مسار الطب وعلوم الحياة / رياضيات',
     'med_physics': 'مسار طب وعلوم الحياة / فيزياء',
@@ -22,7 +21,9 @@ def load_data():
     if os.path.exists(DATA_FILE):
         try:
             with open(DATA_FILE, 'r', encoding='utf-8') as f:
-                return json.load(f)
+                data = json.load(f)
+                if isinstance(data, dict):
+                    return data
         except Exception:
             pass
     return {
@@ -45,12 +46,14 @@ def index():
 @app.route('/books')
 def books():
     data = load_data()
-    return render_template('books.html', books=data.get('books', []))
+    books_list = data.get('books', []) if isinstance(data, dict) else []
+    return render_template('books.html', books=books_list)
 
 @app.route('/platforms')
 def platforms():
     data = load_data()
-    return render_template('platforms.html', platforms=data.get('platforms', []))
+    platforms_list = data.get('platforms', []) if isinstance(data, dict) else []
+    return render_template('platforms.html', platforms=platforms_list)
 
 @app.route('/tracks')
 def tracks():
@@ -60,15 +63,21 @@ def tracks():
 def lessons(track_id):
     data = load_data()
     title = TRACKS.get(track_id, "الشروحات والمراجعات")
-    lessons_dict = data.get("lessons", {})
-    items = lessons_dict.get(track_id, []) if isinstance(lessons_dict, dict) else []
     
+    lessons_dict = data.get("lessons", {}) if isinstance(data, dict) else {}
+    items = []
+    if isinstance(lessons_dict, dict):
+        items = lessons_dict.get(track_id, [])
+        if not isinstance(items, list):
+            items = []
+
     grouped_lessons = {}
     for item in items:
-        section = item.get('section', 'شروحات عامة')
-        if section not in grouped_lessons:
-            grouped_lessons[section] = []
-        grouped_lessons[section].append(item)
+        if isinstance(item, dict):
+            sec = item.get('section', 'شروحات عامة') or 'شروحات عامة'
+            if sec not in grouped_lessons:
+                grouped_lessons[sec] = []
+            grouped_lessons[sec].append(item)
 
     return render_template('lessons.html', title=title, grouped_lessons=grouped_lessons)
 
