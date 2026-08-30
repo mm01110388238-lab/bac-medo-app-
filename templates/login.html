@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>تسجيل الدخول - سهلتها لك</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body style="background: #121212; color: #fff; font-family: Tahoma; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0;">
+    <div style="background: #1e1e1e; padding: 30px; border-radius: 12px; width: 320px; box-shadow: 0 4px 15px rgba(0,0,0,0.5);">
+        <h2 style="text-align: center; color: #00ffcc; margin-bottom: 20px;">تسجيل الدخول</h2>
+        <form method="POST">
+            <input type="text" name="identifier" placeholder="البريد الإلكتروني أو رقم الهاتف" required style="width: 100%; padding: 10px; margin-bottom: 15px; background: #2a2a2a; border: 1px solid #444; color: #fff; border-radius: 6px; box-sizing: border-box;">
+            <input type="password" name="password" placeholder="كلمة المرور" required style="width: 100%; padding: 10px; margin-bottom: 20px; background: #2a2a2a; border: 1px solid #444; color: #fff; border-radius: 6px; box-sizing: border-box;">
+            <button type="submit" style="width: 100%; padding: 10px; background: #00ffcc; border: none; color: #000; font-weight: bold; border-radius: 6px; cursor: pointer;">دخول</button>
+        </form>
+        <p style="text-align: center; margin-top: 15px; font-size: 14px;">ليس لديك حساب؟ <a href="/register" style="color: #00ffcc; text-decoration: none;">أنشئ حساب جديد</a></p>
+    </div>
+</body>
+</html>
