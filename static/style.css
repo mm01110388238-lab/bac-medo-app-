@@ -1,28 +1,32 @@
-/* تنسيقات عامة للمنصة وتدرج الألوان */
+/* خلفية الصفحة الغامقة المتناسقة مع المنصة */
 body {
     font-family: 'Cairo', system-ui, -apple-system, sans-serif;
-    background-color: #f8fafc;
-    color: #1e293b;
+    background-color: #0f172a; /* لون خلفية غامق ومريح للعين */
+    color: #f8fafc;
     margin: 0;
     padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
 }
 
 /* تنسيق الكروت والمحتوى */
-.subject-card, .book-card, .platform-card {
-    background: #ffffff;
-    border-radius: 14px;
-    padding: 20px;
+.subject-card, .book-card, .platform-card, .card-container {
+    background: #1e293b;
+    border-radius: 16px;
+    padding: 25px;
     margin-bottom: 20px;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
     transition: transform 0.3s ease, box-shadow 0.3s ease;
-    border: 1px solid #e2e8f0;
+    border: 1px solid #334155;
 }
 
-/* تأثير تفاعلي راقي عند مرور الماوس على الكروت */
+/* تأثير تفاعلي عند تمرير الماوس */
 .subject-card:hover, .book-card:hover, .platform-card:hover {
     transform: translateY(-5px);
-    box-shadow: 0 12px 20px -3px rgba(0, 0, 0, 0.1);
-    border-color: #cbd5e1;
+    box-shadow: 0 15px 30px -5px rgba(0, 0, 0, 0.4);
+    border-color: #475569;
 }
 
 /* الأزرار العصرية */
@@ -30,13 +34,14 @@ body {
     background: linear-gradient(135deg, #2563eb, #1d4ed8);
     color: white;
     border: none;
-    padding: 10px 20px;
-    border-radius: 8px;
+    padding: 12px 20px;
+    border-radius: 10px;
     font-weight: bold;
     cursor: pointer;
     transition: 0.3s;
     text-decoration: none;
     display: inline-block;
+    text-align: center;
 }
 
 .btn-custom:hover {
