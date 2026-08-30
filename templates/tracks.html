@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>المسارات والتخصصات</title>
+    <style>
+        body { font-family: system-ui, sans-serif; background-color: #0f172a; color: #f8fafc; padding: 20px; text-align: center; }
+        .container { max-width: 600px; margin: 0 auto; background: #1e293b; padding: 25px; border-radius: 16px; }
+        .btn-track { display: block; background: #0d9488; color: white; padding: 14px; margin: 10px 0; border-radius: 8px; text-decoration: none; font-weight: bold; }
+        .btn-back { display: inline-block; background: #64748b; color: white; padding: 8px 20px; border-radius: 8px; text-decoration: none; margin-top: 15px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 style="color: #38bdf8;">📺 اختر المسار والتخصص</h1>
+        {% for key, name in tracks.items() %}
+            <a href="/lessons/{{ key }}" class="btn-track">{{ name }}</a>
+        {% endfor %}
+        <a href="/" class="btn-back">⬅ العودة للرئيسية</a>
+    </div>
+</body>
+</html>
