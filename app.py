@@ -5,7 +5,9 @@ from flask import Flask, render_template, request, redirect, url_for, session
 app = Flask(__name__)
 app.secret_key = 'medo_bac_2026_secret_key'
 
-ADMIN_PASSWORD = "MedoPass2026#"
+# كلمة السر
+ADMIN_PASSWORD = "Medo2026"
+
 DATA_FILE = '/tmp/data.json' if os.path.exists('/tmp') else 'data.json'
 
 TRACKS = {
@@ -79,7 +81,9 @@ def lessons(track_id):
 @app.route('/admin', methods=['GET', 'POST'])
 def admin():
     if request.method == 'POST' and 'auth_password' in request.form:
-        if request.form.get('auth_password') == ADMIN_PASSWORD:
+        # استخدام strip لتنظيف المسافات الزائدة من الإدخال
+        entered_pass = request.form.get('auth_password', '').strip()
+        if entered_pass == ADMIN_PASSWORD:
             session['logged_in'] = True
         else:
             return render_template('admin_login.html', error="كلمة السر غير صحيحة!")
