@@ -26,6 +26,15 @@ TRACKS = {
 }
 
 def load_data():
+    default_data = {
+        "users": [],
+        "books": [],
+        "platforms": [],
+        "lessons": {key: [] for key in TRACKS.keys()},
+        "forum": [],
+        "notes": {}
+    }
+    
     if redis:
         try:
             raw = redis.get('site_data')
@@ -42,14 +51,7 @@ def load_data():
         except Exception as e:
             print("Redis load error:", e)
 
-    return {
-        "users": [],
-        "books": [],
-        "platforms": [],
-        "lessons": {key: [] for key in TRACKS.keys()},
-        "forum": [],
-        "notes": {}
-    }
+    return default_data
 
 def save_data(data):
     if redis:
@@ -63,7 +65,7 @@ def inject_globals():
     data = load_data()
     user_note = ""
     if 'user' in session:
-        user_note = data.get('notes', {}).get(session['user'], "")
+        user_note = data.get('notes', {}).get(str(session['user']), "")
     return {
         'whatsapp_number': WHATSAPP_NUMBER,
         'whatsapp_link': f"https://wa.me/{WHATSAPP_NUMBER}",
@@ -149,6 +151,7 @@ def tracks():
 def lessons(track_id):
     if 'user' not in session:
         return redirect(url_for('login'))
+    
     data = load_data()
     title = TRACKS.get(track_id, "الشروحات والمراجعات")
     lessons_dict = data.get("lessons", {}) if isinstance(data, dict) else {}
@@ -162,7 +165,7 @@ def lessons(track_id):
                 grouped_lessons[sec] = []
             grouped_lessons[sec].append(item)
 
-    return render_template('lessons.html', title=title, grouped_lessons=grouped_lessons)
+    return render_template('lessons.html', title=title, items=items, grouped_lessons=grouped_lessons)
 
 # --- مسار المنتدى والملاحظات ---
 
@@ -172,12 +175,14 @@ def forum():
         return redirect(url_for('login'))
     
     data = load_data()
+    if 'forum' not in data or not isinstance(data['forum'], list):
+        data['forum'] = []
+
     if request.method == 'POST':
         question = request.form.get('question', '').strip()
         if question:
-            data.setdefault('forum', [])
             data['forum'].append({
-                'user': session.get('user'),
+                'user': session.get('user', 'طالب'),
                 'question': question,
                 'reply': None
             })
@@ -192,7 +197,7 @@ def save_note():
         return redirect(url_for('login'))
     
     note_text = request.form.get('note', '').strip()
-    user_key = session.get('user')
+    user_key = str(session.get('user'))
     
     data = load_data()
     data.setdefault('notes', {})
@@ -248,7 +253,7 @@ def reply_forum(index):
 
     reply_text = request.form.get('reply', '').strip()
     data = load_data()
-    if 'forum' in data and len(data['forum']) > index:
+    if 'forum' in data and isinstance(data['forum'], list) and len(data['forum']) > index:
         data['forum'][index]['reply'] = reply_text
         save_data(data)
     return redirect(url_for('admin'))
@@ -260,8 +265,9 @@ def delete_item(cat_type, index):
 
     data = load_data()
     if cat_type in ['book', 'platform']:
-        if cat_type + 's' in data and len(data[cat_type + 's']) > index:
-            data[cat_type + 's'].pop(index)
+        key = cat_type + 's'
+        if key in data and isinstance(data[key], list) and len(data[key]) > index:
+            data[key].pop(index)
             save_data(data)
     elif cat_type.startswith('lesson_'):
         track_key = cat_type.replace('lesson_', '')
@@ -270,7 +276,7 @@ def delete_item(cat_type, index):
                 data['lessons'][track_key].pop(index)
                 save_data(data)
     elif cat_type == 'forum':
-        if 'forum' in data and len(data['forum']) > index:
+        if 'forum' in data and isinstance(data['forum'], list) and len(data['forum']) > index:
             data['forum'].pop(index)
             save_data(data)
 
