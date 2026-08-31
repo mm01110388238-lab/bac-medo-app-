@@ -6,6 +6,8 @@ from upstash_redis import Redis
 app = Flask(__name__)
 app.secret_key = 'medo_bac_2026_secret_key'
 
+WHATSAPP_NUMBER = "201110388238"
+
 # الاتصال بقاعدة بيانات Upstash / Vercel KV تلقائياً
 url = os.getenv("UPSTASH_REDIS_REST_URL") or os.getenv("KV_REST_API_URL")
 token = os.getenv("UPSTASH_REDIS_REST_TOKEN") or os.getenv("KV_REST_API_TOKEN")
@@ -30,8 +32,12 @@ def load_data():
             if raw:
                 data = json.loads(raw) if isinstance(raw, str) else raw
                 if isinstance(data, dict):
-                    if 'users' not in data:
-                        data['users'] = []
+                    data.setdefault('users', [])
+                    data.setdefault('books', [])
+                    data.setdefault('platforms', [])
+                    data.setdefault('lessons', {key: [] for key in TRACKS.keys()})
+                    data.setdefault('forum', [])
+                    data.setdefault('notes', {})
                     return data
         except Exception as e:
             print("Redis load error:", e)
@@ -40,7 +46,9 @@ def load_data():
         "users": [],
         "books": [],
         "platforms": [],
-        "lessons": {key: [] for key in TRACKS.keys()}
+        "lessons": {key: [] for key in TRACKS.keys()},
+        "forum": [],
+        "notes": {}
     }
 
 def save_data(data):
@@ -49,6 +57,18 @@ def save_data(data):
             redis.set('site_data', json.dumps(data, ensure_ascii=False))
         except Exception as e:
             print("Redis save error:", e)
+
+@app.context_processor
+def inject_globals():
+    data = load_data()
+    user_note = ""
+    if 'user' in session:
+        user_note = data.get('notes', {}).get(session['user'], "")
+    return {
+        'whatsapp_number': WHATSAPP_NUMBER,
+        'whatsapp_link': f"https://wa.me/{WHATSAPP_NUMBER}",
+        'user_note': user_note
+    }
 
 # --- مسارات الحسابات والتسجيل ---
 
@@ -144,6 +164,43 @@ def lessons(track_id):
 
     return render_template('lessons.html', title=title, grouped_lessons=grouped_lessons)
 
+# --- مسار المنتدى والملاحظات ---
+
+@app.route('/forum', methods=['GET', 'POST'])
+def forum():
+    if 'user' not in session:
+        return redirect(url_for('login'))
+    
+    data = load_data()
+    if request.method == 'POST':
+        question = request.form.get('question', '').strip()
+        if question:
+            data.setdefault('forum', [])
+            data['forum'].append({
+                'user': session.get('user'),
+                'question': question,
+                'reply': None
+            })
+            save_data(data)
+            return redirect(url_for('forum'))
+
+    return render_template('forum.html', forum=data.get('forum', []))
+
+@app.route('/save_note', methods=['POST'])
+def save_note():
+    if 'user' not in session:
+        return redirect(url_for('login'))
+    
+    note_text = request.form.get('note', '').strip()
+    user_key = session.get('user')
+    
+    data = load_data()
+    data.setdefault('notes', {})
+    data['notes'][user_key] = note_text
+    save_data(data)
+    
+    return redirect(request.referrer or url_for('index'))
+
 # --- لوحة التحكم للأدمن ---
 
 @app.route('/admin', methods=['GET', 'POST'])
@@ -170,21 +227,11 @@ def admin():
         section = request.form.get('section', '').strip() or 'شروحات عامة'
 
         if category == 'book':
-            if 'books' not in data or not isinstance(data['books'], list): 
-                data['books'] = []
-            data['books'].append({'title': title, 'link': link})
-
+            data.setdefault('books', []).append({'title': title, 'link': link})
         elif category == 'platform':
-            if 'platforms' not in data or not isinstance(data['platforms'], list): 
-                data['platforms'] = []
-            data['platforms'].append({'title': title, 'link': link})
-
+            data.setdefault('platforms', []).append({'title': title, 'link': link})
         elif category == 'lesson' and track:
-            if 'lessons' not in data or not isinstance(data['lessons'], dict): 
-                data['lessons'] = {}
-            if track not in data['lessons'] or not isinstance(data['lessons'][track], list): 
-                data['lessons'][track] = []
-            data['lessons'][track].append({'title': title, 'link': link, 'section': section})
+            data.setdefault('lessons', {}).setdefault(track, []).append({'title': title, 'link': link, 'section': section})
 
         save_data(data)
         return redirect(url_for('admin'))
@@ -192,7 +239,19 @@ def admin():
     users = data.get('users', [])
     total_users = len(users)
 
-    return render_template('admin.html', tracks=TRACKS, data=data, users=users, total_users=total_users)
+    return render_template('admin.html', tracks=TRACKS, data=data, users=users, total_users=total_users, forum=data.get('forum', []))
+
+@app.route('/admin/reply_forum/<int:index>', methods=['POST'])
+def reply_forum(index):
+    if not session.get('logged_in'):
+        return redirect(url_for('admin'))
+
+    reply_text = request.form.get('reply', '').strip()
+    data = load_data()
+    if 'forum' in data and len(data['forum']) > index:
+        data['forum'][index]['reply'] = reply_text
+        save_data(data)
+    return redirect(url_for('admin'))
 
 @app.route('/admin/delete/<cat_type>/<int:index>', methods=['POST'])
 def delete_item(cat_type, index):
@@ -210,9 +269,12 @@ def delete_item(cat_type, index):
             if len(data['lessons'][track_key]) > index:
                 data['lessons'][track_key].pop(index)
                 save_data(data)
-    return redirect(url_for('admin'))
+    elif cat_type == 'forum':
+        if 'forum' in data and len(data['forum']) > index:
+            data['forum'].pop(index)
+            save_data(data)
 
-app = app
+    return redirect(url_for('admin'))
 
 if __name__ == '__main__':
     app.run(debug=True)
