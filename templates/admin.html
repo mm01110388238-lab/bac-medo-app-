@@ -31,7 +31,8 @@
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: Tahoma, 'Segoe UI', sans-serif; transition: background-color 0.3s, color 0.3s; }
         body { background-color: var(--bg-color); color: var(--text-color); padding: 15px; text-align: center; min-height: 100vh; }
-        .container { max-width: 650px; margin: 0 auto 20px auto; background: var(--card-bg); padding: 25px; border-radius: 16px; text-align: right; border: 1px solid var(--border-color); box-shadow: 0 4px 12px var(--shadow); }
+        
+        .container { max-width: 650px; margin: 0 auto 20px auto; background: var(--card-bg); padding: 20px; border-radius: 16px; text-align: right; border: 1px solid var(--border-color); box-shadow: 0 4px 12px var(--shadow); }
         
         .top-navbar {
             display: flex;
@@ -57,6 +58,31 @@
         .forum-card { background: var(--input-bg); padding: 15px; margin: 10px 0; border-radius: 10px; border: 1px solid var(--border-color); }
         .reply-box { background: rgba(56, 189, 248, 0.1); border-right: 3px solid var(--accent-color); padding: 8px 12px; margin: 8px 0; border-radius: 4px; font-size: 13px; }
 
+        .toggle-btn {
+            width: 100%;
+            background: var(--input-bg);
+            color: var(--accent-color);
+            border: 1px solid var(--accent-color);
+            padding: 14px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .collapsible-content {
+            display: none;
+            margin-top: 15px;
+        }
+
+        .search-input {
+            margin-bottom: 12px;
+            border-color: var(--accent-color);
+        }
+
         h2, h3 { color: var(--accent-color); border-bottom: 1px solid var(--border-color); padding-bottom: 8px; margin-bottom: 15px; font-size: 18px; }
     </style>
 </head>
@@ -67,48 +93,66 @@
         <button class="theme-toggle-btn" onclick="toggleTheme()"><i class="fa-solid fa-moon" id="theme-icon"></i></button>
     </div>
 
-    <!-- قسم إحصائيات وقائمة المستخدمين -->
-    <div class="container" style="border-color: var(--accent-color);">
-        <h2 style="text-align: center;"><i class="fa-solid fa-users"></i> الأعضاء المسجلين (العدد: {{ total_users }})</h2>
-        {% if users %}
-            {% for u in users %}
-                <div class="user-card">
-                    <div>👤 <strong>الاسم:</strong> {{ u.name }}</div>
-                    <div style="margin-top: 4px;">📱 <strong>الحساب:</strong> {{ u.identifier }}</div>
-                    <div style="margin-top: 4px;">🔑 <strong>كلمة السر:</strong> <code style="color: var(--accent-color); background: var(--card-bg); padding: 2px 6px; border-radius: 4px;">{{ u.password }}</code></div>
-                </div>
-            {% endfor %}
-        {% else %}
-            <p style="color: var(--text-muted); font-size: 14px; text-align: center;">لا يوجد مستخدمون مسجلون بعد.</p>
-        {% endif %}
+    <!-- قسم إحصائيات وقائمة المستخدمين (قابل للطي) -->
+    <div class="container">
+        <button class="toggle-btn" onclick="toggleSection('users-section', 'users-icon')">
+            <span><i class="fa-solid fa-users"></i> الأعضاء المسجلين (العدد: {{ total_users }})</span>
+            <i class="fa-solid fa-chevron-down" id="users-icon"></i>
+        </button>
+        
+        <div id="users-section" class="collapsible-content">
+            <input type="text" id="search-users" class="search-input" placeholder="🔍 ابحث عن اسم طالب أو رقم حساب..." onkeyup="filterUsers()">
+            <div id="users-list">
+                {% if users %}
+                    {% for u in users %}
+                        <div class="user-card searchable-user">
+                            <div>👤 <strong>الاسم:</strong> <span class="u-name">{{ u.name }}</span></div>
+                            <div style="margin-top: 4px;">📱 <strong>الحساب:</strong> <span class="u-id">{{ u.identifier }}</span></div>
+                            <div style="margin-top: 4px;">🔑 <strong>كلمة السر:</strong> <code style="color: var(--accent-color); background: var(--card-bg); padding: 2px 6px; border-radius: 4px;">{{ u.password }}</code></div>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <p style="color: var(--text-muted); font-size: 14px; text-align: center;">لا يوجد مستخدمون مسجلون بعد.</p>
+                {% endif %}
+            </div>
+        </div>
     </div>
 
-    <!-- قسم المنتدى والرد على أسئلة الطلاب -->
+    <!-- قسم المنتدى والرد على أسئلة الطلاب (قابل للطي) -->
     <div class="container">
-        <h2 style="text-align: center;"><i class="fa-solid fa-comments"></i> إدارة المنتدى والأسئلة</h2>
-        {% if forum %}
-            {% for item in forum %}
-                <div class="forum-card">
-                    <div><strong>👤 الطالب:</strong> {{ item.user }}</div>
-                    <div style="margin: 8px 0;"><strong>❓ السؤال:</strong> {{ item.question }}</div>
-                    
-                    {% if item.reply %}
-                        <div class="reply-box"><strong>💡 الرد الحالي:</strong> {{ item.reply }}</div>
-                    {% endif %}
+        <button class="toggle-btn" onclick="toggleSection('forum-section', 'forum-icon')">
+            <span><i class="fa-solid fa-comments"></i> إدارة المنتدى والأسئلة (العدد: {{ forum|length }})</span>
+            <i class="fa-solid fa-chevron-down" id="forum-icon"></i>
+        </button>
+        
+        <div id="forum-section" class="collapsible-content">
+            <input type="text" id="search-forum" class="search-input" placeholder="🔍 ابحث في الأسئلة أو باسم الطالب..." onkeyup="filterForum()">
+            <div id="forum-list">
+                {% if forum %}
+                    {% for item in forum %}
+                        <div class="forum-card searchable-forum">
+                            <div><strong>👤 الطالب:</strong> <span class="f-user">{{ item.user }}</span></div>
+                            <div style="margin: 8px 0;"><strong>❓ السؤال:</strong> <span class="f-q">{{ item.question }}</span></div>
+                            
+                            {% if item.reply %}
+                                <div class="reply-box"><strong>💡 الرد الحالي:</strong> {{ item.reply }}</div>
+                            {% endif %}
 
-                    <form action="/admin/reply_forum/{{ loop.index0 }}" method="POST" style="margin-top: 10px;">
-                        <input type="text" name="reply" placeholder="اكتب ردك هنا..." value="{{ item.reply or '' }}" required style="margin-bottom: 8px;">
-                        <button type="submit" class="btn-submit" style="background-color: var(--accent-color); padding: 8px; font-size: 13px;">💬 حفظ / تعديل الرد</button>
-                    </form>
+                            <form action="/admin/reply_forum/{{ loop.index0 }}" method="POST" style="margin-top: 10px;">
+                                <input type="text" name="reply" placeholder="اكتب ردك هنا..." value="{{ item.reply or '' }}" required style="margin-bottom: 8px;">
+                                <button type="submit" class="btn-submit" style="background-color: var(--accent-color); padding: 8px; font-size: 13px;">💬 حفظ / تعديل الرد</button>
+                            </form>
 
-                    <form action="/admin/delete/forum/{{ loop.index0 }}" method="POST" style="margin-top: 8px;">
-                        <button type="submit" class="btn-delete" style="float: none; width: 100%; text-align: center;">🗑️ حذف السؤال</button>
-                    </form>
-                </div>
-            {% endfor %}
-        {% else %}
-            <p style="color: var(--text-muted); font-size: 14px; text-align: center;">لا توجد أسئلة مضافة في المنتدى حالياً.</p>
-        {% endif %}
+                            <form action="/admin/delete/forum/{{ loop.index0 }}" method="POST" style="margin-top: 8px;">
+                                <button type="submit" class="btn-delete" style="float: none; width: 100%; text-align: center;">🗑️ حذف السؤال</button>
+                            </form>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <p style="color: var(--text-muted); font-size: 14px; text-align: center;">لا توجد أسئلة مضافة في المنتدى حالياً.</p>
+                {% endif %}
+            </div>
+        </div>
     </div>
 
     <!-- قسم إضافة المحتوى -->
@@ -196,6 +240,46 @@
     </div>
 
     <script>
+        function toggleSection(sectionId, iconId) {
+            const sec = document.getElementById(sectionId);
+            const icon = document.getElementById(iconId);
+            if (sec.style.display === "block") {
+                sec.style.display = "none";
+                icon.className = "fa-solid fa-chevron-down";
+            } else {
+                sec.style.display = "block";
+                icon.className = "fa-solid fa-chevron-up";
+            }
+        }
+
+        function filterUsers() {
+            const val = document.getElementById('search-users').value.toLowerCase();
+            const cards = document.querySelectorAll('.searchable-user');
+            cards.forEach(card => {
+                const name = card.querySelector('.u-name').innerText.toLowerCase();
+                const id = card.querySelector('.u-id').innerText.toLowerCase();
+                if (name.includes(val) || id.includes(val)) {
+                    card.style.display = "block";
+                } else {
+                    card.style.display = "none";
+                }
+            });
+        }
+
+        function filterForum() {
+            const val = document.getElementById('search-forum').value.toLowerCase();
+            const cards = document.querySelectorAll('.searchable-forum');
+            cards.forEach(card => {
+                const user = card.querySelector('.f-user').innerText.toLowerCase();
+                const q = card.querySelector('.f-q').innerText.toLowerCase();
+                if (user.includes(val) || q.includes(val)) {
+                    card.style.display = "block";
+                } else {
+                    card.style.display = "none";
+                }
+            });
+        }
+
         function toggleLessonFields() {
             var cat = document.getElementById('category').value;
             document.getElementById('lesson-fields').style.display = (cat === 'lesson') ? 'block' : 'none';
