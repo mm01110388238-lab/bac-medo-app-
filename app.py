@@ -1,11 +1,16 @@
 import os
 import json
 from flask import Flask, render_template, request, redirect, url_for, session
+from upstash_redis import Redis
 
 app = Flask(__name__)
 app.secret_key = 'medo_bac_2026_secret_key'
 
-DATA_FILE = '/tmp/data.json' if os.path.exists('/tmp') else 'data.json'
+# الاتصال بقاعدة بيانات Upstash / Vercel KV تلقائياً
+url = os.getenv("UPSTASH_REDIS_REST_URL") or os.getenv("KV_REST_API_URL")
+token = os.getenv("UPSTASH_REDIS_REST_TOKEN") or os.getenv("KV_REST_API_TOKEN")
+
+redis = Redis(url=url, token=token) if url and token else None
 
 TRACKS = {
     'med_math': 'مسار الطب وعلوم الحياة / رياضيات',
@@ -19,16 +24,18 @@ TRACKS = {
 }
 
 def load_data():
-    if os.path.exists(DATA_FILE):
+    if redis:
         try:
-            with open(DATA_FILE, 'r', encoding='utf-8') as f:
-                data = json.load(f)
+            raw = redis.get('site_data')
+            if raw:
+                data = json.loads(raw) if isinstance(raw, str) else raw
                 if isinstance(data, dict):
                     if 'users' not in data:
                         data['users'] = []
                     return data
-        except Exception:
-            pass
+        except Exception as e:
+            print("Redis load error:", e)
+
     return {
         "users": [],
         "books": [],
@@ -37,11 +44,11 @@ def load_data():
     }
 
 def save_data(data):
-    try:
-        with open(DATA_FILE, 'w', encoding='utf-8') as f:
-            json.dump(data, f, ensure_ascii=False, indent=2)
-    except Exception as e:
-        print("Save error:", e)
+    if redis:
+        try:
+            redis.set('site_data', json.dumps(data, ensure_ascii=False))
+        except Exception as e:
+            print("Redis save error:", e)
 
 # --- مسارات الحسابات والتسجيل ---
 
