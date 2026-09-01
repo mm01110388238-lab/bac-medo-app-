@@ -29,6 +29,8 @@ def load_data():
     default_data = {
         "users": [],
         "books": [],
+        "summaries": [],
+        "evaluations": [],
         "platforms": [],
         "lessons": {key: [] for key in TRACKS.keys()},
         "forum": [],
@@ -43,6 +45,8 @@ def load_data():
                 if isinstance(data, dict):
                     data.setdefault('users', [])
                     data.setdefault('books', [])
+                    data.setdefault('summaries', [])
+                    data.setdefault('evaluations', [])
                     data.setdefault('platforms', [])
                     data.setdefault('lessons', {key: [] for key in TRACKS.keys()})
                     data.setdefault('forum', [])
@@ -133,6 +137,20 @@ def books():
         return redirect(url_for('login'))
     data = load_data()
     return render_template('books.html', books=data.get('books', []))
+
+@app.route('/summaries')
+def summaries():
+    if 'user' not in session:
+        return redirect(url_for('login'))
+    data = load_data()
+    return render_template('summaries.html', summaries=data.get('summaries', []))
+
+@app.route('/evaluations')
+def evaluations():
+    if 'user' not in session:
+        return redirect(url_for('login'))
+    data = load_data()
+    return render_template('evaluations.html', evaluations=data.get('evaluations', []))
 
 @app.route('/platforms')
 def platforms():
@@ -233,6 +251,10 @@ def admin():
 
         if category == 'book':
             data.setdefault('books', []).append({'title': title, 'link': link})
+        elif category == 'summary':
+            data.setdefault('summaries', []).append({'title': title, 'link': link})
+        elif category == 'evaluation':
+            data.setdefault('evaluations', []).append({'title': title, 'link': link})
         elif category == 'platform':
             data.setdefault('platforms', []).append({'title': title, 'link': link})
         elif category == 'lesson' and track:
@@ -264,8 +286,15 @@ def delete_item(cat_type, index):
         return redirect(url_for('admin'))
 
     data = load_data()
-    if cat_type in ['book', 'platform']:
-        key = cat_type + 's'
+    mapping = {
+        'book': 'books',
+        'summary': 'summaries',
+        'evaluation': 'evaluations',
+        'platform': 'platforms'
+    }
+    
+    if cat_type in mapping:
+        key = mapping[cat_type]
         if key in data and isinstance(data[key], list) and len(data[key]) > index:
             data[key].pop(index)
             save_data(data)
