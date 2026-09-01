@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>سهلتها لك - اختر القسم</title>
+    <title>سهلتهالك - اختر القسم</title>
     <!-- أيقونات FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -178,7 +178,7 @@
 
         <div class="sections-grid">
             <!-- المواد الأساسية -->
-            <a href="{{ url_for('subjects', cat_type=cat_type, sub_type='general') }}" class="main-card">
+            <a href="{{ url_for('subjects', cat_type=cat_type if cat_type is defined else request.view_args.get('cat_type'), sub_type='general') }}" class="main-card">
                 <div class="card-icon"><i class="fa-solid fa-book-open"></i></div>
                 <div class="card-content">
                     <div class="card-title">المواد الأساسية لجميع المسارات 🎓</div>
@@ -187,7 +187,7 @@
             </a>
 
             <!-- المواد التخصصية -->
-            <a href="{{ url_for('subjects', cat_type=cat_type, sub_type='specialized') }}" class="main-card">
+            <a href="{{ url_for('subjects', cat_type=cat_type if cat_type is defined else request.view_args.get('cat_type'), sub_type='specialized') }}" class="main-card">
                 <div class="card-icon special-icon"><i class="fa-solid fa-graduation-cap"></i></div>
                 <div class="card-content">
                     <div class="card-title" style="color: #22c55e;">المواد التخصصية لكل مسار 🎓</div>
