@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>البكالوريا مع ميدو - الرئيسية</title>
+    <title>سهلتها لك - الرئيسية</title>
     <!-- أيقونات FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -56,6 +56,19 @@
             font-size: 15px;
         }
 
+        .btn-header {
+            background: var(--border-color);
+            color: var(--text-color);
+            padding: 6px 12px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: bold;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
         .btn-logout {
             background: #ef4444;
             color: #fff;
@@ -64,6 +77,19 @@
             text-decoration: none;
             font-size: 13px;
             font-weight: bold;
+        }
+
+        .btn-whatsapp {
+            background: #25d366;
+            color: #fff;
+            padding: 6px 12px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: bold;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
         }
 
         .theme-toggle-btn {
@@ -81,7 +107,7 @@
             margin-bottom: 30px;
         }
         .hero-title {
-            font-size: 24px;
+            font-size: 26px;
             font-weight: bold;
             margin-bottom: 8px;
             color: var(--accent-color);
@@ -143,7 +169,7 @@
             color: var(--text-muted);
         }
 
-        /* صندوق الملاحظات والمنتدى */
+        /* صندوق الملاحظات */
         .extra-box {
             background: var(--card-bg);
             border: 1px solid var(--border-color);
@@ -191,10 +217,16 @@
     <!-- الهيدر العلوي -->
     <header class="top-navbar">
         <div class="user-welcome">
-            <i class="fa-solid fa-circle-user text-accent"></i>
+            <i class="fa-solid fa-circle-user" style="color: var(--accent-color);"></i>
             <span>أهلاً بك، {{ user }}</span>
         </div>
-        <div style="display: flex; gap: 10px; align-items: center;">
+        <div style="display: flex; gap: 8px; align-items: center;">
+            <a href="{{ whatsapp_link }}" target="_blank" class="btn-whatsapp" title="تواصل واتساب">
+                <i class="fa-brands fa-whatsapp"></i> واتساب
+            </a>
+            <a href="{{ url_for('admin') }}" class="btn-header" title="لوحة التحكم">
+                <i class="fa-solid fa-user-shield"></i> الأدمن
+            </a>
             <button class="theme-toggle-btn" onclick="toggleTheme()">
                 <i class="fa-solid fa-moon" id="theme-icon"></i>
             </button>
@@ -206,7 +238,7 @@
     <div class="container">
         
         <div class="hero-section">
-            <h1 class="hero-title">منصة البكالوريا مع ميدو 🎓</h1>
+            <h1 class="hero-title">منصة سهلتها لك 🎓</h1>
             <p class="hero-subtitle">مكانك الأول للوصول لجميع الكتب والتلاخيص والشروحات</p>
         </div>
 
@@ -241,19 +273,19 @@
         <div class="extra-box">
             <div class="extra-title"><i class="fa-solid fa-note-sticky"></i> ملاحظاتك الشخصية</div>
             <form action="{{ url_for('save_note') }}" method="POST" class="note-form">
-                <textarea name="note" placeholder="دون ملاحظاتك أو جدولك الدراس هنا...">{{ user_note }}</textarea>
+                <textarea name="note" placeholder="دون ملاحظاتك أو جدولك الدراسي هنا...">{{ user_note }}</textarea>
                 <button type="submit" class="btn-submit">حفظ الملاحظة</button>
             </form>
         </div>
 
         <!-- رابط المنتدى والمنصات -->
         <div class="sections-grid">
-            <a href="{{ url_for('forum') }}" class="main-card" style="grid-column: span 1;">
+            <a href="{{ url_for('forum') }}" class="main-card">
                 <div class="card-icon"><i class="fa-solid fa-comments"></i></div>
                 <div class="card-title">منتدى الأسئلة</div>
                 <div class="card-desc">اطرح استفسارك وناقش الزملاء</div>
             </a>
-            <a href="{{ url_for('platforms') }}" class="main-card" style="grid-column: span 1;">
+            <a href="{{ url_for('platforms') }}" class="main-card">
                 <div class="card-icon"><i class="fa-solid fa-globe"></i></div>
                 <div class="card-title">المنصات التعليمية</div>
                 <div class="card-desc">روابط المنصات الخارجية</div>
