@@ -163,7 +163,8 @@
             <!-- 1. اختيار قسم المحتوى -->
             <label>اختر قسم المحتوى:</label>
             <select name="category" id="category" onchange="toggleFormFields()">
-                <option value="book">📚 الكتب الدراسية (PDF)</option>
+                <option value="school_books">📖 الكتب المدرسية الرسمية</option>
+                <option value="external_books">📘 الكتب الخارجية والملخصات</option>
                 <option value="summary">📝 المذكرات والتلخيصات</option>
                 <option value="evaluation">📊 التقييمات المدرسية</option>
                 <option value="platform">🌐 منصة تعليمية</option>
@@ -219,18 +220,32 @@
     <div class="container">
         <h2 style="text-align: center;"><i class="fa-solid fa-trash-can"></i> إدارة وحذف المحتويات</h2>
 
-        <h3>📚 الكتب الدراسية</h3>
-        {% if data.books %}
-            {% for book in data.books %}
+        <h3>📖 الكتب المدرسية الرسمية</h3>
+        {% if data.school_books %}
+            {% for book in data.school_books %}
                 <div class="item-row">
                     <span>{{ book.title }}</span>
-                    <form action="/admin/delete/book/{{ loop.index0 }}" method="POST" style="margin:0;">
+                    <form action="/admin/delete/school_book/{{ loop.index0 }}" method="POST" style="margin:0;">
                         <button type="submit" class="btn-delete">حذف</button>
                     </form>
                 </div>
             {% endfor %}
         {% else %}
-            <p style="color: var(--text-muted); font-size: 14px;">لا توجد كتب مضافة.</p>
+            <p style="color: var(--text-muted); font-size: 14px;">لا توجد كتب مدرسية مضافة.</p>
+        {% endif %}
+
+        <h3 style="margin-top: 15px;">📘 الكتب الخارجية والملخصات</h3>
+        {% if data.external_books %}
+            {% for book in data.external_books %}
+                <div class="item-row">
+                    <span>{{ book.title }}</span>
+                    <form action="/admin/delete/external_book/{{ loop.index0 }}" method="POST" style="margin:0;">
+                        <button type="submit" class="btn-delete">حذف</button>
+                    </form>
+                </div>
+            {% endfor %}
+        {% else %}
+            <p style="color: var(--text-muted); font-size: 14px;">لا توجد كتب خارجية مضافة.</p>
         {% endif %}
 
         <h3 style="margin-top: 15px;">📝 المذكرات والتلخيصات</h3>
