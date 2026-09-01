@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>المواد الأساسية - {{ cat_title }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.net/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f4f6f9;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .main-container {
+            max-width: 950px;
+            margin: 40px auto;
+            padding: 20px;
+        }
+        .subject-card {
+            background: #fff;
+            border-radius: 14px;
+            padding: 25px;
+            text-decoration: none;
+            color: #333;
+            display: flex;
+            align-items: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            transition: all 0.25s ease;
+            border-right: 5px solid #0d6efd;
+        }
+        .subject-card:hover {
+            transform: translateX(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            color: #0d6efd;
+        }
+        .icon-circle {
+            width: 55px;
+            height: 55px;
+            border-radius: 12px;
+            background: rgba(13, 110, 253, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: #0d6efd;
+            margin-left: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container main-container">
+        <div class="d-flex align-items-center justify-content-between mb-4">
+            <div>
+                <h3 class="fw-bold mb-1">المواد الأساسية لجميع المسارات</h3>
+                <span class="badge bg-primary fs-6">{{ cat_title }}</span>
+            </div>
+            <a href="{{ url_for('select_type', cat_type=cat_type) }}" class="btn btn-outline-secondary btn-sm"><i class="fa-solid fa-arrow-right me-1"></i> رجوع</a>
+        </div>
+
+        <div class="row g-3 mt-3">
+            {% for sub_id, sub_name in subjects.items() %}
+            <div class="col-md-6 col-lg-4">
+                <a href="{{ url_for('general_items', cat_type=cat_type, subject_id=sub_id) }}" class="subject-card">
+                    <div class="icon-circle">
+                        <i class="fa-solid fa-book-bookmark"></i>
+                    </div>
+                    <div>
+                        <h5 class="fw-bold mb-1">{{ sub_name }}</h5>
+                        <small class="text-muted">عرض محتوى {{ cat_title }}</small>
+                    </div>
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+</body>
+</html>
