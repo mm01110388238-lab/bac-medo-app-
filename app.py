@@ -32,7 +32,8 @@ GENERAL_SUBJECTS = {
 }
 
 SECTION_NAMES = {
-    'books': 'الكتب الدراسية',
+    'school_books': 'الكتب المدرسية',
+    'external_books': 'الكتب الخارجية',
     'summaries': 'المذكرات والتلخيصات',
     'evaluations': 'التقييمات المدرسية',
     'lessons': 'الشروحات والمسارات'
@@ -41,18 +42,24 @@ SECTION_NAMES = {
 def load_data():
     default_data = {
         "users": [],
+        "school_books": [],
+        "external_books": [],
         "books": [],
         "summaries": [],
         "evaluations": [],
         "platforms": [],
         "lessons": {key: [] for key in TRACKS.keys()},
         "general_items": {
+            "school_books": {key: [] for key in GENERAL_SUBJECTS.keys()},
+            "external_books": {key: [] for key in GENERAL_SUBJECTS.keys()},
             "books": {key: [] for key in GENERAL_SUBJECTS.keys()},
             "summaries": {key: [] for key in GENERAL_SUBJECTS.keys()},
             "evaluations": {key: [] for key in GENERAL_SUBJECTS.keys()},
             "lessons": {key: [] for key in GENERAL_SUBJECTS.keys()}
         },
         "specialized_items": {
+            "school_books": {key: [] for key in TRACKS.keys()},
+            "external_books": {key: [] for key in TRACKS.keys()},
             "books": {key: [] for key in TRACKS.keys()},
             "summaries": {key: [] for key in TRACKS.keys()},
             "evaluations": {key: [] for key in TRACKS.keys()},
@@ -69,6 +76,8 @@ def load_data():
                 data = json.loads(raw) if isinstance(raw, str) else raw
                 if isinstance(data, dict):
                     data.setdefault('users', [])
+                    data.setdefault('school_books', [])
+                    data.setdefault('external_books', [])
                     data.setdefault('books', [])
                     data.setdefault('summaries', [])
                     data.setdefault('evaluations', [])
@@ -76,13 +85,13 @@ def load_data():
                     data.setdefault('lessons', {key: [] for key in TRACKS.keys()})
                     
                     gen = data.setdefault('general_items', {})
-                    for cat in ['books', 'summaries', 'evaluations', 'lessons']:
+                    for cat in ['school_books', 'external_books', 'books', 'summaries', 'evaluations', 'lessons']:
                         gen.setdefault(cat, {})
                         for sub in GENERAL_SUBJECTS.keys():
                             gen[cat].setdefault(sub, [])
 
                     spec = data.setdefault('specialized_items', {})
-                    for cat in ['books', 'summaries', 'evaluations', 'lessons']:
+                    for cat in ['school_books', 'external_books', 'books', 'summaries', 'evaluations', 'lessons']:
                         spec.setdefault(cat, {})
                         for trk in TRACKS.keys():
                             spec[cat].setdefault(trk, [])
@@ -178,11 +187,15 @@ def index():
         return redirect(url_for('login'))
     return render_template('index.html', user=session.get('user'))
 
-# 1. صفحة اختيار نوع المواد (أساسية أم تخصصية)
+# 1. صفحة اختيار نوع المواد (أساسية أم تخصصية) أو تفريع الكتب
 @app.route('/select_type/<cat_type>')
 def select_type(cat_type):
     if 'user' not in session:
         return redirect(url_for('login'))
+        
+    if cat_type == 'books':
+        return render_template('select_book_type.html')
+        
     if cat_type not in SECTION_NAMES:
         return redirect(url_for('index'))
     
@@ -211,8 +224,12 @@ def general_items(cat_type, subject_id):
     cat_title = SECTION_NAMES.get(cat_type, "")
     
     items = data.get('general_items', {}).get(cat_type, {}).get(subject_id, [])
+    if not items and cat_type in ['school_books', 'external_books']:
+        items = data.get('general_items', {}).get('books', {}).get(subject_id, [])
     
     template_map = {
+        'school_books': 'books.html',
+        'external_books': 'books.html',
         'books': 'books.html',
         'summaries': 'summaries.html',
         'evaluations': 'evaluations.html',
@@ -223,7 +240,7 @@ def general_items(cat_type, subject_id):
     context = {
         'title': f"{cat_title} - {subject_title}",
         'items': items,
-        'books': items if cat_type == 'books' else [],
+        'books': items if cat_type in ['school_books', 'external_books', 'books'] else [],
         'summaries': items if cat_type == 'summaries' else [],
         'evaluations': items if cat_type == 'evaluations' else [],
         'back_url': url_for('general_subjects', cat_type=cat_type)
@@ -257,8 +274,12 @@ def specialized_items(cat_type, track_id):
             items = data.get('lessons', {}).get(track_id, [])
     else:
         items = data.get('specialized_items', {}).get(cat_type, {}).get(track_id, [])
+        if not items and cat_type in ['school_books', 'external_books']:
+            items = data.get('specialized_items', {}).get('books', {}).get(track_id, [])
         
     template_map = {
+        'school_books': 'books.html',
+        'external_books': 'books.html',
         'books': 'books.html',
         'summaries': 'summaries.html',
         'evaluations': 'evaluations.html',
@@ -278,7 +299,7 @@ def specialized_items(cat_type, track_id):
     context = {
         'title': f"{cat_title} - {track_title}",
         'items': items,
-        'books': items if cat_type == 'books' else [],
+        'books': items if cat_type in ['school_books', 'external_books', 'books'] else [],
         'summaries': items if cat_type == 'summaries' else [],
         'evaluations': items if cat_type == 'evaluations' else [],
         'grouped_lessons': grouped_lessons,
@@ -387,7 +408,7 @@ def admin():
             if category == 'lesson':
                 item_data['section'] = section
                 
-            cat_key = 'summaries' if category == 'summary' else category + 's'
+            cat_key = 'summaries' if category == 'summary' else category
             if sub_type == 'general' and gen_sub:
                 data.setdefault('general_items', {}).setdefault(cat_key, {}).setdefault(gen_sub, []).append(item_data)
             elif sub_type == 'specialized' and track:
@@ -401,7 +422,7 @@ def admin():
     users = data.get('users', [])
     total_users = len(users)
 
-    return render_template('admin.html', tracks=TRACKS, general_subjects=GENERAL_SUBJECTS, data=data, users=users, total_users=total_users, forum=data.get('forum', []))
+    return render_template('admin.html', tracks=TRACKS, general_subjects=GENERAL_SECTION_SUBJECTS if 'GENERAL_SECTION_SUBJECTS' in globals() else GENERAL_SUBJECTS, data=data, users=users, total_users=total_users, forum=data.get('forum', []))
 
 @app.route('/admin/reply_forum/<int:index>', methods=['POST'])
 def reply_forum(index):
@@ -422,6 +443,8 @@ def delete_item(cat_type, index):
 
     data = load_data()
     mapping = {
+        'school_book': 'school_books',
+        'external_book': 'external_books',
         'book': 'books',
         'summary': 'summaries',
         'evaluation': 'evaluations',
