@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ cat_title }} - البكالوريا مع ميدو</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.net/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f4f6f9;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .main-container {
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 20px;
+            flex: 1;
+        }
+        .selection-card {
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 35px 25px;
+            text-align: center;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            transition: all 0.3s ease;
+            text-decoration: none;
+            color: #333;
+            display: block;
+            border: 2px solid transparent;
+            height: 100%;
+        }
+        .selection-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            border-color: #0d6efd;
+            color: #0d6efd;
+        }
+        .icon-box {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: rgba(13, 110, 253, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            font-size: 32px;
+            color: #0d6efd;
+        }
+        .card-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+        .card-desc {
+            color: #6c757d;
+            font-size: 0.95rem;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container main-container">
+        <div class="d-flex align-items-center justify-content-between mb-4">
+            <h3 class="fw-bold mb-0"><i class="fa-solid fa-layer-group text-primary me-2"></i> {{ cat_title }}</h3>
+            <a href="{{ url_for('index') }}" class="btn btn-outline-secondary btn-sm"><i class="fa-solid fa-arrow-right me-1"></i> الرئيسية</a>
+        </div>
+
+        <p class="text-muted text-center mb-5">اختر قسم المواد الذي تريد تصفحه:</p>
+
+        <div class="row g-4 justify-content-center">
+            <!-- كارت المواد الأساسية -->
+            <div class="col-md-6">
+                <a href="{{ url_for('general_subjects', cat_type=cat_type) }}" class="selection-card">
+                    <div class="icon-box">
+                        <i class="fa-solid fa-book-open-reader"></i>
+                    </div>
+                    <div class="card-title">🎓 المواد الأساسية لجميع المسارات</div>
+                    <div class="card-desc">تشمل المواد العامة المشتركة لكل الطلاب (اللغة العربية، التاريخ، اللغة الأجنبية...).</div>
+                </a>
+            </div>
+
+            <!-- كارت المواد التخصصية -->
+            <div class="col-md-6">
+                <a href="{{ url_for('specialized_tracks', cat_type=cat_type) }}" class="selection-card">
+                    <div class="icon-box" style="background: rgba(25, 135, 84, 0.1); color: #198754;">
+                        <i class="fa-solid fa-microscope"></i>
+                    </div>
+                    <div class="card-title" style="color: #198754;">🎓 المواد التخصصية لكل مسار</div>
+                    <div class="card-desc">المواد الخاصة بكل مسار دراسي (الطب، الهندسة وعلوم الحاسب، الأعمال، الآداب...).</div>
+                </a>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>
