@@ -422,7 +422,7 @@ def admin():
     users = data.get('users', [])
     total_users = len(users)
 
-    return render_template('admin.html', tracks=TRACKS, general_subjects=GENERAL_SECTION_SUBJECTS if 'GENERAL_SECTION_SUBJECTS' in globals() else GENERAL_SUBJECTS, data=data, users=users, total_users=total_users, forum=data.get('forum', []))
+    return render_template('admin.html', tracks=TRACKS, general_subjects=GENERAL_SUBJECTS, data=data, users=users, total_users=total_users, forum=data.get('forum', []))
 
 @app.route('/admin/reply_forum/<int:index>', methods=['POST'])
 def reply_forum(index):
@@ -436,6 +436,7 @@ def reply_forum(index):
         save_data(data)
     return redirect(url_for('admin'))
 
+# حذف المحتويات العامة (المنصات والمنتدى والقوائم القديمة)
 @app.route('/admin/delete/<cat_type>/<int:index>', methods=['POST'])
 def delete_item(cat_type, index):
     if not session.get('logged_in'):
@@ -467,6 +468,36 @@ def delete_item(cat_type, index):
             data['forum'].pop(index)
             save_data(data)
 
+    return redirect(url_for('admin'))
+
+# مسار جديد لحذف المحتويات الخاصة بالمواد الأساسية (عربي، تاريخ، إنجليزي)
+@app.route('/admin/delete_general/<cat_type>/<subject_id>/<int:index>', methods=['POST'])
+def delete_general_item(cat_type, subject_id, index):
+    if not session.get('logged_in'):
+        return redirect(url_for('admin'))
+    
+    data = load_data()
+    items = data.get('general_items', {}).get(cat_type, {}).get(subject_id, [])
+    if 0 <= index < len(items):
+        items.pop(index)
+        save_data(data)
+    return redirect(url_for('admin'))
+
+# مسار جديد لحذف المحتويات الخاصة بالمسارات التخصصية
+@app.route('/admin/delete_specialized/<cat_type>/<track_id>/<int:index>', methods=['POST'])
+def delete_specialized_item(cat_type, track_id, index):
+    if not session.get('logged_in'):
+        return redirect(url_for('admin'))
+    
+    data = load_data()
+    items = data.get('specialized_items', {}).get(cat_type, {}).get(track_id, [])
+    if 0 <= index < len(items):
+        items.pop(index)
+        # إذا كانت شروحات، نضمن الحذف أيضاً من المفتاح القديم إذا وُجد
+        if cat_type == 'lessons' and track_id in data.get('lessons', {}):
+            if 0 <= index < len(data['lessons'][track_id]):
+                data['lessons'][track_id].pop(index)
+        save_data(data)
     return redirect(url_for('admin'))
 
 if __name__ == '__main__':
