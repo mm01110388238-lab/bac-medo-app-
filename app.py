@@ -25,6 +25,19 @@ TRACKS = {
     'art_lang': 'مسار الآداب والفنون / لغة أجنبية ثانية'
 }
 
+GENERAL_SUBJECTS = {
+    'arabic': 'اللغة العربية',
+    'history': 'التاريخ المصري',
+    'english': 'اللغة الأجنبية الأولى'
+}
+
+SECTION_NAMES = {
+    'books': 'الكتب الدراسية',
+    'summaries': 'المذكرات والتلخيصات',
+    'evaluations': 'التقييمات المدرسية',
+    'lessons': 'الشروحات والمسارات'
+}
+
 def load_data():
     default_data = {
         "users": [],
@@ -33,6 +46,18 @@ def load_data():
         "evaluations": [],
         "platforms": [],
         "lessons": {key: [] for key in TRACKS.keys()},
+        "general_items": {
+            "books": {key: [] for key in GENERAL_SUBJECTS.keys()},
+            "summaries": {key: [] for key in GENERAL_SUBJECTS.keys()},
+            "evaluations": {key: [] for key in GENERAL_SUBJECTS.keys()},
+            "lessons": {key: [] for key in GENERAL_SUBJECTS.keys()}
+        },
+        "specialized_items": {
+            "books": {key: [] for key in TRACKS.keys()},
+            "summaries": {key: [] for key in TRACKS.keys()},
+            "evaluations": {key: [] for key in TRACKS.keys()},
+            "lessons": {key: [] for key in TRACKS.keys()}
+        },
         "forum": [],
         "notes": {}
     }
@@ -49,6 +74,20 @@ def load_data():
                     data.setdefault('evaluations', [])
                     data.setdefault('platforms', [])
                     data.setdefault('lessons', {key: [] for key in TRACKS.keys()})
+                    
+                    # تهيئة أقسام المواد الأساسية والتخصصية
+                    gen = data.setdefault('general_items', {})
+                    for cat in ['books', 'summaries', 'evaluations', 'lessons']:
+                        gen.setdefault(cat, {})
+                        for sub in GENERAL_SUBJECTS.keys():
+                            gen[cat].setdefault(sub, [])
+
+                    spec = data.setdefault('specialized_items', {})
+                    for cat in ['books', 'summaries', 'evaluations', 'lessons']:
+                        spec.setdefault(cat, {})
+                        for trk in TRACKS.keys():
+                            spec[cat].setdefault(trk, [])
+                            
                     data.setdefault('forum', [])
                     data.setdefault('notes', {})
                     return data
@@ -73,7 +112,10 @@ def inject_globals():
     return {
         'whatsapp_number': WHATSAPP_NUMBER,
         'whatsapp_link': f"https://wa.me/{WHATSAPP_NUMBER}",
-        'user_note': user_note
+        'user_note': user_note,
+        'SECTION_NAMES': SECTION_NAMES,
+        'GENERAL_SUBJECTS': GENERAL_SUBJECTS,
+        'TRACKS': TRACKS
     }
 
 # --- مسارات الحسابات والتسجيل ---
@@ -131,26 +173,126 @@ def index():
         return redirect(url_for('login'))
     return render_template('index.html', user=session.get('user'))
 
-@app.route('/books')
-def books():
+# 1. صفحة اختيار نوع المواد (أساسية أم تخصصية)
+@app.route('/select_type/<cat_type>')
+def select_type(cat_type):
     if 'user' not in session:
         return redirect(url_for('login'))
+    if cat_type not in SECTION_NAMES:
+        return redirect(url_for('index'))
+    
+    cat_title = SECTION_NAMES[cat_type]
+    return render_template('select_type.html', cat_type=cat_type, cat_title=cat_title)
+
+# 2. صفحة المواد الأساسية لجميع المسارات
+@app.route('/general/<cat_type>')
+def general_subjects(cat_type):
+    if 'user' not in session:
+        return redirect(url_for('login'))
+    if cat_type not in SECTION_NAMES:
+        return redirect(url_for('index'))
+        
+    cat_title = SECTION_NAMES[cat_type]
+    return render_template('general_subjects.html', cat_type=cat_type, cat_title=cat_title, subjects=GENERAL_SUBJECTS)
+
+# 3. عرض المحتوى لمادة أساسية محددة
+@app.route('/general/<cat_type>/<subject_id>')
+def general_items(cat_type, subject_id):
+    if 'user' not in session:
+        return redirect(url_for('login'))
+        
     data = load_data()
-    return render_template('books.html', books=data.get('books', []))
+    subject_title = GENERAL_SUBJECTS.get(subject_id, "المادة الأساسية")
+    cat_title = SECTION_NAMES.get(cat_type, "")
+    
+    items = data.get('general_items', {}).get(cat_type, {}).get(subject_id, [])
+    
+    template_map = {
+        'books': 'books.html',
+        'summaries': 'summaries.html',
+        'evaluations': 'evaluations.html',
+        'lessons': 'lessons.html'
+    }
+    template_name = template_map.get(cat_type, 'books.html')
+    
+    context = {
+        'title': f"{cat_title} - {subject_title}",
+        'items': items,
+        'books': items if cat_type == 'books' else [],
+        'summaries': items if cat_type == 'summaries' else [],
+        'evaluations': items if cat_type == 'evaluations' else [],
+        'back_url': url_for('general_subjects', cat_type=cat_type)
+    }
+    return render_template(template_name, **context)
+
+# 4. صفحة اختيار المسار التخصصي
+@app.route('/specialized/<cat_type>')
+def specialized_tracks(cat_type):
+    if 'user' not in session:
+        return redirect(url_for('login'))
+    if cat_type not in SECTION_NAMES:
+        return redirect(url_for('index'))
+        
+    cat_title = SECTION_NAMES[cat_type]
+    return render_template('tracks.html', tracks=TRACKS, cat_type=cat_type, cat_title=cat_title)
+
+# 5. عرض المحتوى لمسار تخصصي محدد
+@app.route('/specialized/<cat_type>/<track_id>')
+def specialized_items(cat_type, track_id):
+    if 'user' not in session:
+        return redirect(url_for('login'))
+        
+    data = load_data()
+    track_title = TRACKS.get(track_id, "المسار التخصصي")
+    cat_title = SECTION_NAMES.get(cat_type, "")
+    
+    if cat_type == 'lessons':
+        items = data.get('specialized_items', {}).get('lessons', {}).get(track_id, [])
+        if not items:
+            items = data.get('lessons', {}).get(track_id, [])
+    else:
+        items = data.get('specialized_items', {}).get(cat_type, {}).get(track_id, [])
+        
+    template_map = {
+        'books': 'books.html',
+        'summaries': 'summaries.html',
+        'evaluations': 'evaluations.html',
+        'lessons': 'lessons.html'
+    }
+    template_name = template_map.get(cat_type, 'books.html')
+    
+    grouped_lessons = {}
+    if cat_type == 'lessons':
+        for item in items:
+            if isinstance(item, dict):
+                sec = item.get('section', 'شروحات عامة') or 'شروحات عامة'
+                if sec not in grouped_lessons:
+                    grouped_lessons[sec] = []
+                grouped_lessons[sec].append(item)
+
+    context = {
+        'title': f"{cat_title} - {track_title}",
+        'items': items,
+        'books': items if cat_type == 'books' else [],
+        'summaries': items if cat_type == 'summaries' else [],
+        'evaluations': items if cat_type == 'evaluations' else [],
+        'grouped_lessons': grouped_lessons,
+        'back_url': url_for('specialized_tracks', cat_type=cat_type)
+    }
+    return render_template(template_name, **context)
+
+# مسارات متوافقة تلقائياً
+@app.route('/books')
+def books():
+    return redirect(url_for('select_type', cat_type='books'))
 
 @app.route('/summaries')
 def summaries():
-    if 'user' not in session:
-        return redirect(url_for('login'))
-    data = load_data()
-    return render_template('summaries.html', summaries=data.get('summaries', []))
+    return redirect(url_for('select_type', cat_type='summaries'))
 
 @app.route('/evaluations')
 def evaluations():
-    if 'user' not in session:
-        return redirect(url_for('login'))
-    data = load_data()
-    return render_template('evaluations.html', evaluations=data.get('evaluations', []))
+    return redirect(url_for('select_type', cat_type='evaluations'))
 
 @app.route('/platforms')
 def platforms():
@@ -161,29 +303,11 @@ def platforms():
 
 @app.route('/tracks')
 def tracks():
-    if 'user' not in session:
-        return redirect(url_for('login'))
-    return render_template('tracks.html', tracks=TRACKS)
+    return redirect(url_for('select_type', cat_type='lessons'))
 
 @app.route('/lessons/<track_id>')
 def lessons(track_id):
-    if 'user' not in session:
-        return redirect(url_for('login'))
-    
-    data = load_data()
-    title = TRACKS.get(track_id, "الشروحات والمراجعات")
-    lessons_dict = data.get("lessons", {}) if isinstance(data, dict) else {}
-    items = lessons_dict.get(track_id, []) if isinstance(lessons_dict, dict) else []
-    
-    grouped_lessons = {}
-    for item in items:
-        if isinstance(item, dict):
-            sec = item.get('section', 'شروحات عامة') or 'شروحات عامة'
-            if sec not in grouped_lessons:
-                grouped_lessons[sec] = []
-            grouped_lessons[sec].append(item)
-
-    return render_template('lessons.html', title=title, items=items, grouped_lessons=grouped_lessons)
+    return redirect(url_for('specialized_items', cat_type='lessons', track_id=track_id))
 
 # --- مسار المنتدى والملاحظات ---
 
@@ -246,19 +370,25 @@ def admin():
         category = request.form.get('category')
         title = request.form.get('title')
         link = request.form.get('link')
+        sub_type = request.form.get('subject_type', 'general')
+        gen_sub = request.form.get('general_subject')
         track = request.form.get('track')
         section = request.form.get('section', '').strip() or 'شروحات عامة'
 
-        if category == 'book':
-            data.setdefault('books', []).append({'title': title, 'link': link})
-        elif category == 'summary':
-            data.setdefault('summaries', []).append({'title': title, 'link': link})
-        elif category == 'evaluation':
-            data.setdefault('evaluations', []).append({'title': title, 'link': link})
-        elif category == 'platform':
+        if category == 'platform':
             data.setdefault('platforms', []).append({'title': title, 'link': link})
-        elif category == 'lesson' and track:
-            data.setdefault('lessons', {}).setdefault(track, []).append({'title': title, 'link': link, 'section': section})
+        else:
+            item_data = {'title': title, 'link': link}
+            if category == 'lesson':
+                item_data['section'] = section
+                
+            cat_key = 'summaries' if category == 'summary' else category + 's'
+            if sub_type == 'general' and gen_sub:
+                data.setdefault('general_items', {}).setdefault(cat_key, {}).setdefault(gen_sub, []).append(item_data)
+            elif sub_type == 'specialized' and track:
+                data.setdefault('specialized_items', {}).setdefault(cat_key, {}).setdefault(track, []).append(item_data)
+                if category == 'lesson':
+                    data.setdefault('lessons', {}).setdefault(track, []).append(item_data)
 
         save_data(data)
         return redirect(url_for('admin'))
@@ -266,7 +396,7 @@ def admin():
     users = data.get('users', [])
     total_users = len(users)
 
-    return render_template('admin.html', tracks=TRACKS, data=data, users=users, total_users=total_users, forum=data.get('forum', []))
+    return render_template('admin.html', tracks=TRACKS, general_subjects=GENERAL_SUBJECTS, data=data, users=users, total_users=total_users, forum=data.get('forum', []))
 
 @app.route('/admin/reply_forum/<int:index>', methods=['POST'])
 def reply_forum(index):
