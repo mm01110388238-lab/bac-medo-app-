@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>سهلتهالك - اختر القسم</title>
-    <!-- أيقونات FontAwesome -->
+    <title>سهلتها لك - اختر القسم</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
@@ -31,7 +30,6 @@
         body { background-color: var(--bg-color); color: var(--text-color); padding: 15px; min-height: 100vh; position: relative; }
         .container { max-width: 800px; margin: 0 auto; padding-top: 75px; padding-bottom: 40px; }
 
-        /* الهيدر العلوي */
         .top-navbar {
             position: fixed;
             top: 0;
@@ -70,7 +68,6 @@
             cursor: pointer;
         }
 
-        /* العنوان الرئيسي */
         .hero-section {
             text-align: center;
             margin-bottom: 30px;
@@ -81,7 +78,6 @@
             color: var(--accent-color);
         }
 
-        /* شبكة الاختيارات */
         .sections-grid {
             display: grid;
             grid-template-columns: 1fr;
@@ -159,7 +155,6 @@
 </head>
 <body>
 
-    <!-- الهيدر العلوي -->
     <header class="top-navbar">
         <a href="{{ url_for('index') }}" class="btn-home">
             <i class="fa-solid fa-house"></i> الرئيسية
@@ -169,7 +164,6 @@
         </button>
     </header>
 
-    <!-- المحتوى الرئيسي -->
     <div class="container">
         
         <div class="hero-section">
@@ -178,7 +172,7 @@
 
         <div class="sections-grid">
             <!-- المواد الأساسية -->
-            <a href="{{ url_for('subjects', cat_type=cat_type if cat_type is defined else request.view_args.get('cat_type'), sub_type='general') }}" class="main-card">
+            <a href="{{ url_for('general_subjects', cat_type=cat_type) }}" class="main-card">
                 <div class="card-icon"><i class="fa-solid fa-book-open"></i></div>
                 <div class="card-content">
                     <div class="card-title">المواد الأساسية لجميع المسارات 🎓</div>
@@ -187,7 +181,7 @@
             </a>
 
             <!-- المواد التخصصية -->
-            <a href="{{ url_for('subjects', cat_type=cat_type if cat_type is defined else request.view_args.get('cat_type'), sub_type='specialized') }}" class="main-card">
+            <a href="{{ url_for('specialized_tracks', cat_type=cat_type) }}" class="main-card">
                 <div class="card-icon special-icon"><i class="fa-solid fa-graduation-cap"></i></div>
                 <div class="card-content">
                     <div class="card-title" style="color: #22c55e;">المواد التخصصية لكل مسار 🎓</div>
