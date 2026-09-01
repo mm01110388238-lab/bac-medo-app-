@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>الكتب والمذكرات - سهلتها لك</title>
+    <title>الكتب الدراسية - سهلتها لك</title>
     <!-- أيقونات FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -95,7 +95,7 @@
     </div>
 
     <div class="container">
-        <h1>📚 الكتب والمذكرات</h1>
+        <h1>📚 الكتب الدراسية</h1>
         {% if books %}
             {% for b in books %}
                 <a href="{{ b.link }}" target="_blank" class="btn-item">
@@ -104,7 +104,7 @@
                 </a>
             {% endfor %}
         {% else %}
-            <p class="empty-msg">لا توجد كتب مضافة حالياً.</p>
+            <p class="empty-msg">لا توجد كتب دراسية مضافة حالياً.</p>
         {% endif %}
     </div>
 
