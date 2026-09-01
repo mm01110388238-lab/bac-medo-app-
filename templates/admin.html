@@ -160,8 +160,9 @@
         <h2 style="text-align: center;"><i class="fa-solid fa-plus-circle"></i> إضافة محتوى جديد</h2>
         
         <form method="POST">
+            <!-- 1. اختيار قسم المحتوى -->
             <label>اختر قسم المحتوى:</label>
-            <select name="category" id="category" onchange="toggleLessonFields()">
+            <select name="category" id="category" onchange="toggleFormFields()">
                 <option value="book">📚 الكتب الدراسية (PDF)</option>
                 <option value="summary">📝 المذكرات والتلخيصات</option>
                 <option value="evaluation">📊 التقييمات المدرسية</option>
@@ -169,14 +170,37 @@
                 <option value="lesson">📺 شرح / مراجعة (حسب التخصص)</option>
             </select>
 
-            <div id="lesson-fields" style="display: none;">
+            <!-- 2. نوع المواد (أساسية أم تخصصية) - يظهر لجميع الأقسام ما عدا المنصات -->
+            <div id="subject-type-container">
+                <label>نوع المواد:</label>
+                <select name="subject_type" id="subject_type" onchange="toggleSubjectTypeFields()">
+                    <option value="general">📖 المواد الأساسية لجميع المسارات</option>
+                    <option value="specialized">🎓 المواد التخصصية لكل مسار</option>
+                </select>
+            </div>
+
+            <!-- 3. قائمة المواد الأساسية -->
+            <div id="general-subject-container">
+                <label>اختر المادة الأساسية:</label>
+                <select name="general_subject">
+                    {% for sub_id, sub_name in general_subjects.items() %}
+                        <option value="{{ sub_id }}">{{ sub_name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- 4. قائمة المسارات التخصصية -->
+            <div id="track-container" style="display: none;">
                 <label>اختر المسار والتخصص:</label>
                 <select name="track">
                     {% for key, name in tracks.items() %}
                         <option value="{{ key }}">{{ name }}</option>
                     {% endfor %}
                 </select>
+            </div>
 
+            <!-- 5. اسم القسم / العنوان الرئيسي (للشروحات فقط) -->
+            <div id="lesson-fields" style="display: none;">
                 <label>اسم القسم / العنوان الرئيسي:</label>
                 <input type="text" name="section" placeholder="مثال: الدرس الأول - التأسيس">
             </div>
@@ -310,10 +334,42 @@
             });
         }
 
-        function toggleLessonFields() {
+        function toggleFormFields() {
             var cat = document.getElementById('category').value;
-            document.getElementById('lesson-fields').style.display = (cat === 'lesson') ? 'block' : 'none';
+            var subjectTypeContainer = document.getElementById('subject-type-container');
+            var lessonFields = document.getElementById('lesson-fields');
+
+            // إخفاء نوع المواد وخانات الشروحات إذا كانت المنصة الخارجية هي المختارة
+            if (cat === 'platform') {
+                subjectTypeContainer.style.display = 'none';
+                lessonFields.style.display = 'none';
+            } else {
+                subjectTypeContainer.style.display = 'block';
+                // إظهار حقل القسم الرئيسي فقط في قسم الشروحات
+                lessonFields.style.display = (cat === 'lesson') ? 'block' : 'none';
+            }
+            toggleSubjectTypeFields();
         }
+
+        function toggleSubjectTypeFields() {
+            var cat = document.getElementById('category').value;
+            if (cat === 'platform') return;
+
+            var subjectType = document.getElementById('subject_type').value;
+            var generalContainer = document.getElementById('general-subject-container');
+            var trackContainer = document.getElementById('track-container');
+
+            if (subjectType === 'general') {
+                generalContainer.style.display = 'block';
+                trackContainer.style.display = 'none';
+            } else {
+                generalContainer.style.display = 'none';
+                trackContainer.style.display = 'block';
+            }
+        }
+
+        // تشغيل الدوال عند تحميل الصفحة لضبط الحالة الافتراضية
+        toggleFormFields();
 
         function toggleTheme() {
             const currentTheme = document.body.getAttribute('data-theme');
