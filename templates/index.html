@@ -267,10 +267,12 @@
         </div>
         <ul class="sidebar-menu">
             <li><a href="/"><i class="fa-solid fa-house"></i> الرئيسية</a></li>
-            <li><a href="/forum"><i class="fa-solid fa-comments"></i> المنتدى والأسئلة</a></li>
             <li><a href="/tracks"><i class="fa-solid fa-tv"></i> الشروحات والمسارات</a></li>
-            <li><a href="/books"><i class="fa-solid fa-book"></i> الكتب والمذكرات</a></li>
+            <li><a href="/books"><i class="fa-solid fa-book-open"></i> الكتب الدراسية</a></li>
+            <li><a href="/summaries"><i class="fa-solid fa-file-lines"></i> المذكرات والتلخيصات</a></li>
+            <li><a href="/evaluations"><i class="fa-solid fa-chart-simple"></i> التقييمات المدرسية</a></li>
             <li><a href="/platforms"><i class="fa-solid fa-globe"></i> المنصات التعليمية</a></li>
+            <li><a href="/forum"><i class="fa-solid fa-comments"></i> المنتدى والأسئلة</a></li>
             <li>
                 <button class="theme-toggle-btn" onclick="toggleTheme()">
                     <i class="fa-solid fa-moon" id="theme-icon"></i> <span id="theme-text">الوضع الليلي</span>
@@ -296,7 +298,9 @@
 
         <div class="grid">
             <a href="/tracks" class="nav-card"><i class="fa-solid fa-tv"></i> الشروحات والمسارات</a>
-            <a href="/books" class="nav-card"><i class="fa-solid fa-book"></i> الكتب والمذكرات</a>
+            <a href="/books" class="nav-card"><i class="fa-solid fa-book-open"></i> الكتب الدراسية</a>
+            <a href="/summaries" class="nav-card"><i class="fa-solid fa-file-lines"></i> المذكرات والتلخيصات</a>
+            <a href="/evaluations" class="nav-card"><i class="fa-solid fa-chart-simple"></i> التقييمات المدرسية</a>
             <a href="/platforms" class="nav-card"><i class="fa-solid fa-globe"></i> المنصات التعليمية</a>
             <a href="/forum" class="nav-card"><i class="fa-solid fa-comments"></i> منتدى الأسئلة</a>
             <a href="/admin" class="nav-card" style="border-color: var(--accent-color); grid-column: span 2;">
@@ -316,7 +320,7 @@
         <div class="modal-content">
             <h3>📝 ملاحظاتك الشخصية</h3>
             <form action="/save_note" method="POST">
-                <textarea name="note" placeholder="اكتب ملاحظاتك هنا وتذكر حفظها..."></textarea>
+                <textarea name="note" placeholder="اكتب ملاحظاتك هنا وتذكر حفظها...">{{ user_note }}</textarea>
                 <div class="modal-actions">
                     <button type="button" class="btn-close" onclick="toggleNoteModal()">إلغاء</button>
                     <button type="submit" class="btn-submit">حفظ الملاحظة</button>
