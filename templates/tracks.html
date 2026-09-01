@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>اختر المسار والتخصص - سهلتها لك</title>
+    <title>{% if cat_title %}{{ cat_title }} - {% endif %}اختر المسار والتخصص - البكالوريا مع ميدو</title>
     <!-- أيقونات FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -77,15 +77,23 @@
 <body>
 
     <div class="top-navbar">
-        <a href="/" class="btn-back"><i class="fa-solid fa-house"></i> الرئيسية</a>
+        {% if cat_type %}
+            <a href="{{ url_for('select_type', cat_type=cat_type) }}" class="btn-back"><i class="fa-solid fa-arrow-right"></i> رجوع</a>
+        {% else %}
+            <a href="/" class="btn-back"><i class="fa-solid fa-house"></i> الرئيسية</a>
+        {% endif %}
         <button class="theme-toggle-btn" onclick="toggleTheme()"><i class="fa-solid fa-moon" id="theme-icon"></i></button>
     </div>
 
     <div class="container">
-        <h1>📺 اختر المسار والتخصص</h1>
+        <h1>📺 {% if cat_title %}{{ cat_title }} - {% endif %}اختر المسار والتخصص</h1>
         
         {% for key, name in tracks.items() %}
-            <a href="/lessons/{{ key }}" class="btn-track">
+            {% if cat_type %}
+                <a href="{{ url_for('specialized_items', cat_type=cat_type, track_id=key) }}" class="btn-track">
+            {% else %}
+                <a href="{{ url_for('lessons', track_id=key) }}" class="btn-track">
+            {% endif %}
                 <span>📌 {{ name }}</span>
                 <i class="fa-solid fa-chevron-left arrow-icon"></i>
             </a>
