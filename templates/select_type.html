@@ -3,99 +3,222 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ cat_title }} - البكالوريا مع ميدو</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.net/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <title>سهلتها لك - اختر القسم</title>
+    <!-- أيقونات FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body {
-            background-color: #f4f6f9;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            min-height: 100vh;
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-color: #ffffff;
+            --text-muted: #94a3b8;
+            --border-color: #334155;
+            --accent-color: #38bdf8;
+            --shadow: rgba(0, 0, 0, 0.4);
+        }
+
+        [data-theme="light"] {
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-color: #0f172a;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+            --accent-color: #0284c7;
+            --shadow: rgba(0, 0, 0, 0.08);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: Tahoma, 'Segoe UI', sans-serif; transition: background-color 0.3s, color 0.3s; }
+        body { background-color: var(--bg-color); color: var(--text-color); padding: 15px; min-height: 100vh; position: relative; }
+        .container { max-width: 800px; margin: 0 auto; padding-top: 75px; padding-bottom: 40px; }
+
+        /* الهيدر العلوي */
+        .top-navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background-color: var(--card-bg);
+            border-bottom: 1px solid var(--border-color);
             display: flex;
-            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            z-index: 1000;
+            box-shadow: 0 2px 10px var(--shadow);
         }
-        .main-container {
-            max-width: 900px;
-            margin: 40px auto;
-            padding: 20px;
-            flex: 1;
-        }
-        .selection-card {
-            background: #ffffff;
-            border-radius: 16px;
-            padding: 35px 25px;
-            text-align: center;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
-            transition: all 0.3s ease;
+
+        .btn-home {
+            background: var(--border-color);
+            color: var(--text-color);
+            padding: 6px 14px;
+            border-radius: 8px;
             text-decoration: none;
-            color: #333;
-            display: block;
-            border: 2px solid transparent;
-            height: 100%;
+            font-size: 13px;
+            font-weight: bold;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
         }
-        .selection-card:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
-            border-color: #0d6efd;
-            color: #0d6efd;
+
+        .theme-toggle-btn {
+            background: none;
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            padding: 8px 12px;
+            border-radius: 8px;
+            cursor: pointer;
         }
-        .icon-box {
-            width: 80px;
-            height: 80px;
+
+        /* العنوان الرئيسي */
+        .hero-section {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .hero-title {
+            font-size: 22px;
+            font-weight: bold;
+            color: var(--accent-color);
+        }
+
+        /* شبكة الاختيارات */
+        .sections-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .main-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 25px;
+            text-decoration: none;
+            color: var(--text-color);
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            box-shadow: 0 4px 12px var(--shadow);
+            transition: transform 0.2s ease, border-color 0.2s ease;
+        }
+
+        .main-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--accent-color);
+        }
+
+        .card-icon {
+            width: 70px;
+            height: 70px;
             border-radius: 50%;
-            background: rgba(13, 110, 253, 0.1);
+            background: rgba(56, 189, 248, 0.12);
+            color: var(--accent-color);
             display: flex;
             align-items: center;
             justify-content: center;
-            margin: 0 auto 20px;
-            font-size: 32px;
-            color: #0d6efd;
+            font-size: 30px;
+            flex-shrink: 0;
         }
+
+        .special-icon {
+            background: rgba(34, 197, 94, 0.12);
+            color: #22c55e;
+        }
+
+        .card-content {
+            flex-grow: 1;
+        }
+
         .card-title {
-            font-size: 1.4rem;
-            font-weight: 700;
-            margin-bottom: 10px;
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
+
         .card-desc {
-            color: #6c757d;
-            font-size: 0.95rem;
+            font-size: 13px;
+            color: var(--text-muted);
+            line-height: 1.5;
+        }
+
+        @media (max-width: 600px) {
+            .main-card {
+                flex-direction: column;
+                text-align: center;
+            }
+            .card-title {
+                justify-content: center;
+            }
         }
     </style>
 </head>
 <body>
 
-    <div class="container main-container">
-        <div class="d-flex align-items-center justify-content-between mb-4">
-            <h3 class="fw-bold mb-0"><i class="fa-solid fa-layer-group text-primary me-2"></i> {{ cat_title }}</h3>
-            <a href="{{ url_for('index') }}" class="btn btn-outline-secondary btn-sm"><i class="fa-solid fa-arrow-right me-1"></i> الرئيسية</a>
+    <!-- الهيدر العلوي -->
+    <header class="top-navbar">
+        <a href="{{ url_for('index') }}" class="btn-home">
+            <i class="fa-solid fa-house"></i> الرئيسية
+        </a>
+        <button class="theme-toggle-btn" onclick="toggleTheme()" title="تغيير المظهر">
+            <i class="fa-solid fa-moon" id="theme-icon"></i>
+        </button>
+    </header>
+
+    <!-- المحتوى الرئيسي -->
+    <div class="container">
+        
+        <div class="hero-section">
+            <h1 class="hero-title">اختر قسم المواد الذي تريد تصفحه:</h1>
         </div>
 
-        <p class="text-muted text-center mb-5">اختر قسم المواد الذي تريد تصفحه:</p>
-
-        <div class="row g-4 justify-content-center">
-            <!-- كارت المواد الأساسية -->
-            <div class="col-md-6">
-                <a href="{{ url_for('general_subjects', cat_type=cat_type) }}" class="selection-card">
-                    <div class="icon-box">
-                        <i class="fa-solid fa-book-open-reader"></i>
-                    </div>
-                    <div class="card-title">🎓 المواد الأساسية لجميع المسارات</div>
+        <div class="sections-grid">
+            <!-- المواد الأساسية -->
+            <a href="{{ url_for('subjects', cat_type=cat_type, sub_type='general') }}" class="main-card">
+                <div class="card-icon"><i class="fa-solid fa-book-open"></i></div>
+                <div class="card-content">
+                    <div class="card-title">المواد الأساسية لجميع المسارات 🎓</div>
                     <div class="card-desc">تشمل المواد العامة المشتركة لكل الطلاب (اللغة العربية، التاريخ، اللغة الأجنبية...).</div>
-                </a>
-            </div>
+                </div>
+            </a>
 
-            <!-- كارت المواد التخصصية -->
-            <div class="col-md-6">
-                <a href="{{ url_for('specialized_tracks', cat_type=cat_type) }}" class="selection-card">
-                    <div class="icon-box" style="background: rgba(25, 135, 84, 0.1); color: #198754;">
-                        <i class="fa-solid fa-microscope"></i>
-                    </div>
-                    <div class="card-title" style="color: #198754;">🎓 المواد التخصصية لكل مسار</div>
+            <!-- المواد التخصصية -->
+            <a href="{{ url_for('subjects', cat_type=cat_type, sub_type='specialized') }}" class="main-card">
+                <div class="card-icon special-icon"><i class="fa-solid fa-graduation-cap"></i></div>
+                <div class="card-content">
+                    <div class="card-title" style="color: #22c55e;">المواد التخصصية لكل مسار 🎓</div>
                     <div class="card-desc">المواد الخاصة بكل مسار دراسي (الطب، الهندسة وعلوم الحاسب، الأعمال، الآداب...).</div>
-                </a>
-            </div>
+                </div>
+            </a>
         </div>
+
     </div>
 
+    <script>
+        function toggleTheme() {
+            const currentTheme = document.body.getAttribute('data-theme');
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            document.body.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            updateThemeUI(newTheme);
+        }
+
+        function updateThemeUI(theme) {
+            const icon = document.getElementById('theme-icon');
+            if (theme === 'light') {
+                icon.className = 'fa-solid fa-sun';
+            } else {
+                icon.className = 'fa-solid fa-moon';
+            }
+        }
+
+        const savedTheme = localStorage.getItem('theme') || 'dark';
+        document.body.setAttribute('data-theme', savedTheme);
+        updateThemeUI(savedTheme);
+    </script>
 </body>
 </html>
