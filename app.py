@@ -75,7 +75,6 @@ def load_data():
                     data.setdefault('platforms', [])
                     data.setdefault('lessons', {key: [] for key in TRACKS.keys()})
                     
-                    # تهيئة أقسام المواد الأساسية والتخصصية
                     gen = data.setdefault('general_items', {})
                     for cat in ['books', 'summaries', 'evaluations', 'lessons']:
                         gen.setdefault(cat, {})
@@ -122,6 +121,9 @@ def inject_globals():
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
+    if 'user' in session:
+        return redirect(url_for('index'))
+        
     if request.method == 'POST':
         name = request.form.get('name', '').strip()
         identifier = request.form.get('identifier', '').strip()
@@ -146,6 +148,9 @@ def register():
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    if 'user' in session:
+        return redirect(url_for('index'))
+        
     if request.method == 'POST':
         identifier = request.form.get('identifier', '').strip()
         password = request.form.get('password', '').strip()
