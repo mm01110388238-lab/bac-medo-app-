@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>اختر نوع الكتب الدراسية</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-color: #ffffff;
+            --text-muted: #94a3b8;
+            --border-color: #334155;
+            --accent-color: #38bdf8;
+            --shadow: rgba(0, 0, 0, 0.4);
+        }
+
+        [data-theme="light"] {
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-color: #0f172a;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+            --accent-color: #0284c7;
+            --shadow: rgba(0, 0, 0, 0.08);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: Tahoma, 'Segoe UI', sans-serif; transition: background-color 0.3s, color 0.3s; }
+        body { background-color: var(--bg-color); color: var(--text-color); padding: 15px; min-height: 100vh; position: relative; }
+        .container { max-width: 800px; margin: 0 auto; padding-top: 75px; padding-bottom: 40px; }
+
+        .top-navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background-color: var(--card-bg);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            z-index: 1000;
+            box-shadow: 0 2px 10px var(--shadow);
+        }
+
+        .btn-home {
+            background: var(--border-color);
+            color: var(--text-color);
+            padding: 6px 14px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: bold;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .theme-toggle-btn {
+            background: none;
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            padding: 8px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .hero-section {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .hero-title {
+            font-size: 22px;
+            font-weight: bold;
+            color: var(--accent-color);
+        }
+
+        .sections-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .main-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 25px;
+            text-decoration: none;
+            color: var(--text-color);
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            box-shadow: 0 4px 12px var(--shadow);
+            transition: transform 0.2s ease, border-color 0.2s ease;
+        }
+
+        .main-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--accent-color);
+        }
+
+        .card-icon {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            background: rgba(56, 189, 248, 0.12);
+            color: var(--accent-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+            flex-shrink: 0;
+        }
+
+        .special-icon {
+            background: rgba(34, 197, 94, 0.12);
+            color: #22c55e;
+        }
+
+        .card-content {
+            flex-grow: 1;
+        }
+
+        .card-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .card-desc {
+            font-size: 13px;
+            color: var(--text-muted);
+            line-height: 1.5;
+        }
+    </style>
+</head>
+<body>
+
+    <header class="top-navbar">
+        <a href="{{ url_for('index') }}" class="btn-home">
+            <i class="fa-solid fa-house"></i> الرئيسية
+        </a>
+        <button class="theme-toggle-btn" onclick="toggleTheme()" title="تغيير المظهر">
+            <i class="fa-solid fa-moon" id="theme-icon"></i>
+        </button>
+    </header>
+
+    <div class="container">
+        <div class="hero-section">
+            <h1 class="hero-title">اختر نوع الكتب الدراسية:</h1>
+        </div>
+
+        <div class="sections-grid">
+            <!-- الكتب المدرسية -->
+            <a href="{{ url_for('select_type', cat_type='school_books') }}" class="main-card">
+                <div class="card-icon"><i class="fa-solid fa-book"></i></div>
+                <div class="card-content">
+                    <div class="card-title">الكتب المدرسية الرسمية 📚</div>
+                    <div class="card-desc">كتب الوزارة والكتب الدراسية المقررة الأساسية للعام الدراسي.</div>
+                </div>
+            </a>
+
+            <!-- الكتب الخارجية -->
+            <a href="{{ url_for('select_type', cat_type='external_books') }}" class="main-card">
+                <div class="card-icon special-icon"><i class="fa-solid fa-book-open-reader"></i></div>
+                <div class="card-content">
+                    <div class="card-title" style="color: #22c55e;">الكتب الخارجية والملخصات الخارجية 📘</div>
+                    <div class="card-desc">الكتب الخارجية المساعدة والمراجع وشروحات الأساتذة الكبار.</div>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <script>
+        function toggleTheme() {
+            const currentTheme = document.body.getAttribute('data-theme');
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            document.body.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            updateThemeUI(newTheme);
+        }
+
+        function updateThemeUI(theme) {
+            const icon = document.getElementById('theme-icon');
+            icon.className = theme === 'light' ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
+        }
+
+        const savedTheme = localStorage.getItem('theme') || 'dark';
+        document.body.setAttribute('data-theme', savedTheme);
+        updateThemeUI(savedTheme);
+    </script>
+</body>
+</html>
