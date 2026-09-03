@@ -167,10 +167,10 @@
             <select name="category" id="category" onchange="toggleFormFields()">
                 <option value="school_books">📖 الكتب المدرسية الرسمية</option>
                 <option value="external_books">📘 الكتب الخارجية والملخصات</option>
-                <option value="summary">📝 المذكرات والتلخيصات</option>
-                <option value="evaluation">📊 التقييمات المدرسية</option>
+                <option value="summaries">📝 المذكرات والتلخيصات</option>
+                <option value="evaluations">📊 التقييمات المدرسية</option>
                 <option value="platform">🌐 منصة تعليمية</option>
-                <option value="lesson">📺 شرح / مراجعة (حسب التخصص)</option>
+                <option value="lessons">📺 شرح / مراجعة (حسب التخصص أو المادة)</option>
             </select>
 
             <!-- 2. نوع المواد (أساسية أم تخصصية) -->
@@ -536,7 +536,7 @@
                 lessonFields.style.display = 'none';
             } else {
                 subjectTypeContainer.style.display = 'block';
-                lessonFields.style.display = (cat === 'lesson') ? 'block' : 'none';
+                lessonFields.style.display = (cat === 'lesson' || cat === 'lessons') ? 'block' : 'none';
             }
             toggleSubjectTypeFields();
         }
