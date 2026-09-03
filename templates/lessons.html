@@ -48,6 +48,15 @@
 
         h1 { color: var(--accent-color); text-align: center; font-size: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 12px; margin-bottom: 20px; }
 
+        .section-header {
+            color: var(--accent-color);
+            font-weight: bold;
+            margin: 22px 0 10px 0;
+            font-size: 15px;
+            border-bottom: 1px dashed var(--border-color);
+            padding-bottom: 6px;
+        }
+
         .btn-item {
             display: flex;
             align-items: center;
@@ -55,7 +64,7 @@
             background: var(--item-bg);
             color: var(--text-color);
             padding: 16px;
-            margin: 12px 0;
+            margin: 10px 0;
             border-radius: 10px;
             text-decoration: none;
             font-weight: bold;
@@ -96,13 +105,26 @@
 <body>
 
     <div class="top-navbar">
-        <a href="/tracks" class="btn-back"><i class="fa-solid fa-arrow-right"></i> المسارات</a>
+        <a href="{{ back_url or '/tracks' }}" class="btn-back"><i class="fa-solid fa-arrow-right"></i> الرجوع</a>
         <button class="theme-toggle-btn" onclick="toggleTheme()"><i class="fa-solid fa-moon" id="theme-icon"></i></button>
     </div>
 
     <div class="container">
         <h1>📺 {{ title }}</h1>
-        {% if items %}
+        
+        {% if grouped_lessons %}
+            {% for section_name, lesson_list in grouped_lessons.items() %}
+                <div class="section-header">📌 {{ section_name }}</div>
+                {% for item in lesson_list %}
+                    <a href="{{ item.link }}" target="_blank" class="btn-item">
+                        <div class="lesson-info">
+                            <span>{{ item.title }}</span>
+                        </div>
+                        <i class="fa-circle-play fa-regular play-icon"></i>
+                    </a>
+                {% endfor %}
+            {% endfor %}
+        {% elif items %}
             {% for item in items %}
                 <a href="{{ item.link }}" target="_blank" class="btn-item">
                     <div class="lesson-info">
@@ -115,7 +137,7 @@
                 </a>
             {% endfor %}
         {% else %}
-            <p class="empty-msg">لا توجد شروحات مضافة لهذا المسار حالياً.</p>
+            <p class="empty-msg">لا توجد شروحات مضافة حالياً.</p>
         {% endif %}
     </div>
 
