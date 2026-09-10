@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>إنشاء حساب جديد - سهلتها لك</title>
+    <title>إنشاء حساب جديد - منصة السعيد</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: Tahoma, sans-serif; }
         body { 
@@ -26,23 +26,25 @@
             text-align: center; 
         }
         .card h2 { color: #00ffcc; font-size: 22px; margin-bottom: 25px; }
-        .input-box { width: 100%; padding: 14px; margin-bottom: 15px; background: #2a2a2a; border: 1px solid #444; color: #fff; border-radius: 8px; font-size: 15px; outline: none; }
+        .input-box { width: 100%; padding: 14px; margin-bottom: 15px; background: #2a2a2a; border: 1px solid #444; color: #fff; border-radius: 8px; font-size: 15px; outline: none; transition: 0.3s ease; }
         .input-box:focus { border-color: #00ffcc; }
-        .btn { width: 100%; padding: 14px; background: #00ffcc; border: none; color: #000; font-weight: bold; font-size: 16px; border-radius: 8px; cursor: pointer; margin-top: 5px; }
+        .btn { width: 100%; padding: 14px; background: #00ffcc; border: none; color: #000; font-weight: bold; font-size: 16px; border-radius: 8px; cursor: pointer; margin-top: 5px; transition: 0.3s ease; }
+        .btn:hover { background: #00e6b8; }
         .link-text { margin-top: 20px; font-size: 14px; color: #ccc; }
         .link-text a { color: #00ffcc; text-decoration: none; font-weight: bold; }
+        .link-text a:hover { text-decoration: underline; }
     </style>
 </head>
 <body>
     <div class="card">
         <h2>إنشاء حساب جديد</h2>
-        <form method="POST">
+        <form method="POST" action="{{ url_for('register') }}">
             <input type="text" name="name" class="input-box" placeholder="الاسم بالكامل" required>
             <input type="text" name="identifier" class="input-box" placeholder="البريد الإلكتروني أو رقم الهاتف" required>
             <input type="password" name="password" class="input-box" placeholder="كلمة المرور" required>
             <button type="submit" class="btn">تسجيل حساب</button>
         </form>
-        <p class="link-text">لديك حساب بالفعل؟ <a href="/login">سجل دخولك</a></p>
+        <p class="link-text">لديك حساب بالفعل؟ <a href="{{ url_for('login') }}">سجل دخولك</a></p>
     </div>
 </body>
 </html>
