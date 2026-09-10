@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>لوحة التحكم - الأدمن</title>
+    <title>لوحة التحكم - منصة السعيد</title>
     <!-- أيقونات FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -91,7 +91,7 @@
 <body>
 
     <div class="top-navbar">
-        <a href="/" class="btn-back"><i class="fa-solid fa-house"></i> الرئيسية</a>
+        <a href="{{ url_for('index') }}" class="btn-back"><i class="fa-solid fa-house"></i> الرئيسية</a>
         <button class="theme-toggle-btn" onclick="toggleTheme()"><i class="fa-solid fa-moon" id="theme-icon"></i></button>
     </div>
 
@@ -140,12 +140,12 @@
                                 <div class="reply-box"><strong>💡 الرد الحالي:</strong> {{ item.reply }}</div>
                             {% endif %}
 
-                            <form action="/admin/reply_forum/{{ loop.index0 }}" method="POST" style="margin-top: 10px;">
+                            <form action="{{ url_for('reply_forum', index=loop.index0) }}" method="POST" style="margin-top: 10px;">
                                 <input type="text" name="reply" placeholder="اكتب ردك هنا..." value="{{ item.reply or '' }}" required style="margin-bottom: 8px;">
                                 <button type="submit" class="btn-submit" style="background-color: var(--accent-color); padding: 8px; font-size: 13px;">💬 حفظ / تعديل الرد</button>
                             </form>
 
-                            <form action="/admin/delete/forum/{{ loop.index0 }}" method="POST" style="margin-top: 8px;">
+                            <form action="{{ url_for('delete_item', cat_type='forum', index=loop.index0) }}" method="POST" style="margin-top: 8px;">
                                 <button type="submit" class="btn-delete" style="float: none; width: 100%; text-align: center;">🗑️ حذف السؤال</button>
                             </form>
                         </div>
@@ -161,7 +161,7 @@
     <div class="container">
         <h2 style="text-align: center;"><i class="fa-solid fa-plus-circle"></i> إضافة محتوى جديد</h2>
         
-        <form method="POST">
+        <form method="POST" action="{{ url_for('admin') }}">
             <!-- 1. اختيار قسم المحتوى -->
             <label>اختر قسم المحتوى:</label>
             <select name="category" id="category" onchange="toggleFormFields()">
@@ -234,7 +234,7 @@
                     {% for item in items %}
                         <div class="item-row">
                             <span>{{ item.title }}</span>
-                            <form action="/admin/delete_general/school_books/{{ sub_id }}/{{ loop.index0 }}" method="POST" style="margin:0;">
+                            <form action="{{ url_for('delete_general_item', cat_type='school_books', subject_id=sub_id, index=loop.index0) }}" method="POST" style="margin:0;">
                                 <button type="submit" class="btn-delete">حذف</button>
                             </form>
                         </div>
@@ -249,7 +249,7 @@
                     {% for item in items %}
                         <div class="item-row">
                             <span>{{ item.title }}</span>
-                            <form action="/admin/delete_specialized/school_books/{{ trk_id }}/{{ loop.index0 }}" method="POST" style="margin:0;">
+                            <form action="{{ url_for('delete_specialized_item', cat_type='school_books', track_id=trk_id, index=loop.index0) }}" method="POST" style="margin:0;">
                                 <button type="submit" class="btn-delete">حذف</button>
                             </form>
                         </div>
@@ -262,7 +262,7 @@
                 {% for book in data.school_books %}
                     <div class="item-row">
                         <span>{{ book.title }}</span>
-                        <form action="/admin/delete/school_book/{{ loop.index0 }}" method="POST" style="margin:0;">
+                        <form action="{{ url_for('delete_item', cat_type='school_book', index=loop.index0) }}" method="POST" style="margin:0;">
                             <button type="submit" class="btn-delete">حذف</button>
                         </form>
                     </div>
@@ -285,7 +285,7 @@
                     {% for item in items %}
                         <div class="item-row">
                             <span>{{ item.title }}</span>
-                            <form action="/admin/delete_general/external_books/{{ sub_id }}/{{ loop.index0 }}" method="POST" style="margin:0;">
+                            <form action="{{ url_for('delete_general_item', cat_type='external_books', subject_id=sub_id, index=loop.index0) }}" method="POST" style="margin:0;">
                                 <button type="submit" class="btn-delete">حذف</button>
                             </form>
                         </div>
@@ -300,7 +300,7 @@
                     {% for item in items %}
                         <div class="item-row">
                             <span>{{ item.title }}</span>
-                            <form action="/admin/delete_specialized/external_books/{{ trk_id }}/{{ loop.index0 }}" method="POST" style="margin:0;">
+                            <form action="{{ url_for('delete_specialized_item', cat_type='external_books', track_id=trk_id, index=loop.index0) }}" method="POST" style="margin:0;">
                                 <button type="submit" class="btn-delete">حذف</button>
                             </form>
                         </div>
@@ -313,7 +313,7 @@
                 {% for book in data.external_books %}
                     <div class="item-row">
                         <span>{{ book.title }}</span>
-                        <form action="/admin/delete/external_book/{{ loop.index0 }}" method="POST" style="margin:0;">
+                        <form action="{{ url_for('delete_item', cat_type='external_book', index=loop.index0) }}" method="POST" style="margin:0;">
                             <button type="submit" class="btn-delete">حذف</button>
                         </form>
                     </div>
@@ -336,7 +336,7 @@
                     {% for item in items %}
                         <div class="item-row">
                             <span>{{ item.title }}</span>
-                            <form action="/admin/delete_general/summaries/{{ sub_id }}/{{ loop.index0 }}" method="POST" style="margin:0;">
+                            <form action="{{ url_for('delete_general_item', cat_type='summaries', subject_id=sub_id, index=loop.index0) }}" method="POST" style="margin:0;">
                                 <button type="submit" class="btn-delete">حذف</button>
                             </form>
                         </div>
@@ -351,7 +351,7 @@
                     {% for item in items %}
                         <div class="item-row">
                             <span>{{ item.title }}</span>
-                            <form action="/admin/delete_specialized/summaries/{{ trk_id }}/{{ loop.index0 }}" method="POST" style="margin:0;">
+                            <form action="{{ url_for('delete_specialized_item', cat_type='summaries', track_id=trk_id, index=loop.index0) }}" method="POST" style="margin:0;">
                                 <button type="submit" class="btn-delete">حذف</button>
                             </form>
                         </div>
@@ -364,7 +364,7 @@
                 {% for sum_item in data.summaries %}
                     <div class="item-row">
                         <span>{{ sum_item.title }}</span>
-                        <form action="/admin/delete/summary/{{ loop.index0 }}" method="POST" style="margin:0;">
+                        <form action="{{ url_for('delete_item', cat_type='summary', index=loop.index0) }}" method="POST" style="margin:0;">
                             <button type="submit" class="btn-delete">حذف</button>
                         </form>
                     </div>
@@ -387,7 +387,7 @@
                     {% for item in items %}
                         <div class="item-row">
                             <span>{{ item.title }}</span>
-                            <form action="/admin/delete_general/evaluations/{{ sub_id }}/{{ loop.index0 }}" method="POST" style="margin:0;">
+                            <form action="{{ url_for('delete_general_item', cat_type='evaluations', subject_id=sub_id, index=loop.index0) }}" method="POST" style="margin:0;">
                                 <button type="submit" class="btn-delete">حذف</button>
                             </form>
                         </div>
@@ -402,7 +402,7 @@
                     {% for item in items %}
                         <div class="item-row">
                             <span>{{ item.title }}</span>
-                            <form action="/admin/delete_specialized/evaluations/{{ trk_id }}/{{ loop.index0 }}" method="POST" style="margin:0;">
+                            <form action="{{ url_for('delete_specialized_item', cat_type='evaluations', track_id=trk_id, index=loop.index0) }}" method="POST" style="margin:0;">
                                 <button type="submit" class="btn-delete">حذف</button>
                             </form>
                         </div>
@@ -415,7 +415,7 @@
                 {% for eval_item in data.evaluations %}
                     <div class="item-row">
                         <span>{{ eval_item.title }}</span>
-                        <form action="/admin/delete/evaluation/{{ loop.index0 }}" method="POST" style="margin:0;">
+                        <form action="{{ url_for('delete_item', cat_type='evaluation', index=loop.index0) }}" method="POST" style="margin:0;">
                             <button type="submit" class="btn-delete">حذف</button>
                         </form>
                     </div>
@@ -435,7 +435,7 @@
                 {% for plat in data.platforms %}
                     <div class="item-row">
                         <span>{{ plat.title }}</span>
-                        <form action="/admin/delete/platform/{{ loop.index0 }}" method="POST" style="margin:0;">
+                        <form action="{{ url_for('delete_item', cat_type='platform', index=loop.index0) }}" method="POST" style="margin:0;">
                             <button type="submit" class="btn-delete">حذف</button>
                         </form>
                     </div>
@@ -460,7 +460,7 @@
                     {% for item in items %}
                         <div class="item-row">
                             <span>[{{ item.section }}] {{ item.title }}</span>
-                            <form action="/admin/delete_general/lessons/{{ sub_id }}/{{ loop.index0 }}" method="POST" style="margin:0;">
+                            <form action="{{ url_for('delete_general_item', cat_type='lessons', subject_id=sub_id, index=loop.index0) }}" method="POST" style="margin:0;">
                                 <button type="submit" class="btn-delete">حذف</button>
                             </form>
                         </div>
@@ -475,7 +475,7 @@
                     {% for item in items %}
                         <div class="item-row">
                             <span>[{{ item.section }}] {{ item.title }}</span>
-                            <form action="/admin/delete_specialized/lessons/{{ trk_id }}/{{ loop.index0 }}" method="POST" style="margin:0;">
+                            <form action="{{ url_for('delete_specialized_item', cat_type='lessons', track_id=trk_id, index=loop.index0) }}" method="POST" style="margin:0;">
                                 <button type="submit" class="btn-delete">حذف</button>
                             </form>
                         </div>
