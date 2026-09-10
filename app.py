@@ -524,5 +524,37 @@ def delete_specialized_item(cat_type, track_id, index):
         save_data(data)
     return redirect(url_for('admin'))
 
+# --- مسارات الأرشفة و محركات البحث (SEO) ---
+
+@app.route('/robots.txt')
+def robots():
+    robots_content = f"User-agent: *\nAllow: /\nSitemap: {request.url_root}sitemap.xml"
+    return robots_content, 200, {'Content-Type': 'text/plain; charset=utf-8'}
+
+@app.route('/sitemap.xml')
+def sitemap():
+    base_url = request.url_root.rstrip('/')
+    urls = [
+        '/',
+        '/login',
+        '/register',
+        '/forum',
+        '/platforms'
+    ]
+    
+    xml_entries = ""
+    for url in urls:
+        xml_entries += f"""  <url>
+    <loc>{base_url}{url}</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>\n"""
+
+    sitemap_xml = f'''<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+{xml_entries}</urlset>'''
+
+    return sitemap_xml, 200, {'Content-Type': 'application/xml; charset=utf-8'}
+
 if __name__ == '__main__':
     app.run(debug=True)
