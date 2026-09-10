@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>منتدى الأسئلة والاستفسارات - سهلتها لك</title>
+    <title>منتدى الأسئلة والاستفسارات - منصة السعيد</title>
+    <!-- أيقونات FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
@@ -15,6 +16,7 @@
             --accent-color: #38bdf8;
             --shadow: rgba(0, 0, 0, 0.4);
             --input-bg: #0f172a;
+            --btn-hover: #0284c7;
         }
 
         [data-theme="light"] {
@@ -26,6 +28,7 @@
             --accent-color: #0284c7;
             --shadow: rgba(0, 0, 0, 0.08);
             --input-bg: #f1f5f9;
+            --btn-hover: #0369a1;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: Tahoma, 'Segoe UI', sans-serif; transition: background-color 0.3s, color 0.3s; }
@@ -40,16 +43,16 @@
             padding: 10px 5px;
         }
 
-        .btn-back { display: inline-flex; align-items: center; gap: 8px; background: var(--border-color); color: var(--text-color); padding: 8px 16px; border-radius: 8px; text-decoration: none; font-weight: bold; font-size: 14px; }
-        .theme-toggle-btn { background: none; border: 1px solid var(--border-color); color: var(--text-color); padding: 8px 12px; border-radius: 8px; cursor: pointer; }
+        .btn-back { display: inline-flex; align-items: center; gap: 8px; background: var(--card-bg); color: var(--text-color); padding: 8px 16px; border-radius: 8px; text-decoration: none; font-weight: bold; font-size: 14px; border: 1px solid var(--border-color); }
+        .theme-toggle-btn { background: var(--card-bg); border: 1px solid var(--border-color); color: var(--text-color); padding: 8px 12px; border-radius: 8px; cursor: pointer; }
 
         .container { max-width: 650px; margin: 0 auto 20px auto; background: var(--card-bg); padding: 25px; border-radius: 16px; text-align: right; border: 1px solid var(--border-color); box-shadow: 0 4px 12px var(--shadow); }
         
-        h2 { color: var(--accent-color); border-bottom: 1px solid var(--border-color); padding-bottom: 10px; margin-bottom: 15px; font-size: 18px; text-align: center; }
+        h2 { color: var(--accent-color); border-bottom: 1px solid var(--border-color); padding-bottom: 10px; margin-bottom: 15px; font-size: 18px; text-align: center; display: flex; align-items: center; justify-content: center; gap: 8px; }
 
         textarea {
             width: 100%;
-            height: 100px;
+            height: 110px;
             background-color: var(--input-bg);
             color: var(--text-color);
             border: 1px solid var(--border-color);
@@ -58,10 +61,18 @@
             resize: none;
             margin-bottom: 12px;
             font-size: 14px;
+            outline: none;
+        }
+
+        textarea:focus {
+            border-color: var(--accent-color);
         }
 
         .btn-submit {
-            display: block;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
             width: 100%;
             padding: 12px;
             background-color: var(--accent-color);
@@ -71,6 +82,11 @@
             font-size: 15px;
             font-weight: bold;
             cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn-submit:hover {
+            background-color: var(--btn-hover);
         }
 
         .question-card {
@@ -95,6 +111,7 @@
             font-size: 15px;
             line-height: 1.6;
             margin-bottom: 10px;
+            white-space: pre-line;
         }
 
         .reply-box {
@@ -111,6 +128,9 @@
             color: var(--accent-color);
             margin-bottom: 4px;
             font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
 
         .empty-msg {
@@ -124,14 +144,14 @@
 <body>
 
     <div class="top-navbar">
-        <a href="/" class="btn-back"><i class="fa-solid fa-house"></i> الرئيسية</a>
+        <a href="{{ url_for('index') }}" class="btn-back"><i class="fa-solid fa-house"></i> الرئيسية</a>
         <button class="theme-toggle-btn" onclick="toggleTheme()"><i class="fa-solid fa-moon" id="theme-icon"></i></button>
     </div>
 
     <!-- قسم طرح سؤال جديد -->
     <div class="container">
         <h2><i class="fa-solid fa-circle-question"></i> اسأل واستفسر</h2>
-        <form action="/forum" method="POST">
+        <form action="{{ url_for('forum') }}" method="POST">
             <textarea name="question" placeholder="اكتب سؤالك أو استفسارك هنا وسيقوم الأدمن بالرد عليك..." required></textarea>
             <button type="submit" class="btn-submit"><i class="fa-solid fa-paper-plane"></i> نشر السؤال</button>
         </form>
