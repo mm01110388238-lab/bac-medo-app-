@@ -4,7 +4,7 @@ from flask import Flask, render_template, request, redirect, url_for, session
 from upstash_redis import Redis
 
 app = Flask(__name__)
-app.secret_key = 'medo_bac_2026_secret_key'
+app.secret_key = 'elsaeed_platform_2026_secret_key'
 
 WHATSAPP_NUMBER = "201110388238"
 
@@ -237,7 +237,6 @@ def general_items(cat_type, subject_id):
     }
     template_name = template_map.get(cat_type, 'books.html')
     
-    # تجميع الشروحات حسب الأقسام للمواد الأساسية
     grouped_lessons = {}
     if cat_type == 'lessons':
         for item in items:
@@ -412,7 +411,6 @@ def admin():
         track = request.form.get('track')
         section = (request.form.get('section') or request.form.get('main_title') or '').strip() or 'شروحات عامة'
 
-        # توحيد اسم القسم لمنع تعارض المسميات المفردة والجمع
         cat_map = {
             'school_book': 'school_books',
             'school_books': 'school_books',
