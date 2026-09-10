@@ -4,6 +4,22 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>منصة السعيد - الرئيسية</title>
+
+    <!-- أيقونة الموقع (Favicon) -->
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='favicon.png') }}">
+
+    <!-- وسوم الـ SEO لمحركات البحث -->
+    <meta name="description" content="منصة السعيد التعليمية - مكانك الأول للوصول لجميع الكتب المدرسية، المذكرات، التلخيصات، الشروحات والتقييمات.">
+    <meta name="keywords" content="منصة السعيد, كتب دراسية, مذكرات ثانوية عامة, ملخصات, شروحات, تقييمات">
+    <meta name="author" content="منصة السعيد">
+
+    <!-- وسوم المعاينة والتواصل الاجتماعي (Open Graph / Google) -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="منصة السعيد - الرئيسية">
+    <meta property="og:description" content="مكانك الأول للوصول لجميع الكتب والتلاخيص والشروحات للطلاب.">
+    <meta property="og:image" content="{{ url_for('static', filename='favicon.png', _external=True) }}">
+
     <!-- أيقونات FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
