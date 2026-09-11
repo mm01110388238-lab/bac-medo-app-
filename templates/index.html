@@ -12,9 +12,9 @@
     <!-- كود التحقق من جوجل -->
     <meta name="google-site-verification" content="pLF0j7ZDSt-KKoTGk3WC2sbJUlyAKsXxPbiZ0QEwPMg" />
 
-    <!-- أيقونة الموقع (Favicon) -->
-    <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}">
-    <link rel="apple-touch-icon" href="{{ url_for('static', filename='favicon.png') }}">
+    <!-- أيقونة الموقع (Favicon) واللوجو -->
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='logo.png') }}">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='logo.png') }}">
 
     <!-- وسوم الـ SEO لمحركات البحث -->
     <meta name="description" content="منصة السعيد التعليمية - مكانك الأول للوصول لجميع الكتب المدرسية، المذكرات، التلخيصات، الشروحات والتقييمات.">
@@ -25,7 +25,7 @@
     <meta property="og:type" content="website">
     <meta property="og:title" content="منصة السعيد - الرئيسية">
     <meta property="og:description" content="مكانك الأول للوصول لجميع الكتب والتلاخيص والشروحات للطلاب.">
-    <meta property="og:image" content="{{ url_for('static', filename='favicon.png', _external=True) }}">
+    <meta property="og:image" content="{{ url_for('static', filename='logo.png', _external=True) }}">
 
     <!-- أيقونات FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -139,6 +139,86 @@
             font-weight: bold;
             white-space: nowrap;
             border: none;
+        }
+
+        /* شريط إشعار تثبيت التطبيق العلوي */
+        .install-banner {
+            display: none;
+            position: fixed;
+            top: 72px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 92%;
+            max-width: 770px;
+            background: var(--card-bg);
+            border: 2px solid var(--accent-color);
+            border-radius: 14px;
+            padding: 10px 15px;
+            z-index: 999;
+            box-shadow: 0 8px 25px var(--shadow);
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            animation: slideDown 0.3s ease-out;
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translate(-50%, -15px); }
+            to { opacity: 1; transform: translate(-50%, 0); }
+        }
+
+        .install-banner-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .install-banner-img {
+            width: 45px;
+            height: 45px;
+            border-radius: 10px;
+            object-fit: cover;
+            border: 1px solid var(--accent-color);
+        }
+
+        .install-banner-text h4 {
+            font-size: 13px;
+            color: var(--text-color);
+            margin-bottom: 2px;
+            font-weight: bold;
+        }
+
+        .install-banner-text p {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin: 0;
+        }
+
+        .install-banner-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-install {
+            background: var(--accent-color);
+            color: #0f172a;
+            border: none;
+            padding: 7px 12px;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 12px;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .btn-dismiss {
+            background: transparent;
+            color: var(--text-muted);
+            border: none;
+            font-size: 16px;
+            cursor: pointer;
+            padding: 4px;
         }
 
         /* الترحيب */
@@ -318,6 +398,25 @@
         </div>
     </header>
 
+    <!-- شريط تثبيت التطبيق العلوي مع اللوجو -->
+    <div id="install-banner" class="install-banner">
+        <div class="install-banner-info">
+            <img src="{{ url_for('static', filename='logo.png') }}" alt="لوجو المنصة" class="install-banner-img">
+            <div class="install-banner-text">
+                <h4>تثبيت منصة السعيد 🎓</h4>
+                <p>ثبّت التطبيق على هاتفك للوصول السريع</p>
+            </div>
+        </div>
+        <div class="install-banner-actions">
+            <button id="btn-install-app" class="btn-install">
+                <i class="fa-solid fa-download"></i> تثبيت
+            </button>
+            <button id="btn-close-install" class="btn-dismiss" title="إغلاق">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+    </div>
+
     <!-- المحتوى الرئيسي -->
     <div class="container">
         
@@ -389,10 +488,43 @@
     </div>
 
     <script>
-        // السكربت الخاص بتسجيل Service Worker الخاص بتثبيت التطبيق (PWA)
+        // السكربت الخاص بتسجيل Service Worker وبرمجة إشعار التثبيت (PWA)
+        let deferredPrompt;
+        const installBanner = document.getElementById('install-banner');
+        const installBtn = document.getElementById('btn-install-app');
+        const closeBtn = document.getElementById('btn-close-install');
+
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('/sw.js').catch(err => console.log('SW registration failed:', err));
+            });
+        }
+
+        // التقاط حدث التثبيت وإظهار الشريط
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            if (installBanner) {
+                installBanner.style.display = 'flex';
+            }
+        });
+
+        if (installBtn) {
+            installBtn.addEventListener('click', async () => {
+                if (deferredPrompt) {
+                    deferredPrompt.prompt();
+                    const { outcome } = await deferredPrompt.userChoice;
+                    deferredPrompt = null;
+                    installBanner.style.display = 'none';
+                }
+            });
+        }
+
+        if (closeBtn) {
+            closeBtn.addEventListener('click', () => {
+                if (installBanner) {
+                    installBanner.style.display = 'none';
+                }
             });
         }
 
