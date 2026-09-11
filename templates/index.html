@@ -3,7 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#0f172a">
     <title>منصة السعيد - الرئيسية</title>
+
+    <!-- ملف Web Manifest للتطبيقات PWA -->
+    <link rel="manifest" href="{{ url_for('manifest') }}">
 
     <!-- كود التحقق من جوجل -->
     <meta name="google-site-verification" content="pLF0j7ZDSt-KKoTGk3WC2sbJUlyAKsXxPbiZ0QEwPMg" />
@@ -17,7 +21,7 @@
     <meta name="keywords" content="منصة السعيد, كتب دراسية, مذكرات ثانوية عامة, ملخصات, شروحات, تقييمات">
     <meta name="author" content="منصة السعيد">
 
-    <!-- وسوم المعاينة والتواصل الاجتماعي (Open Graph / Google) -->
+    <!-- وسوم المعاينة والتواصل الاجتماعي -->
     <meta property="og:type" content="website">
     <meta property="og:title" content="منصة السعيد - الرئيسية">
     <meta property="og:description" content="مكانك الأول للوصول لجميع الكتب والتلاخيص والشروحات للطلاب.">
@@ -56,7 +60,7 @@
             top: 0;
             left: 0;
             right: 0;
-            height: 60px;
+            height: 65px;
             background-color: var(--card-bg);
             border-bottom: 1px solid var(--border-color);
             display: flex;
@@ -70,40 +74,71 @@
         .user-welcome {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
             font-weight: bold;
             font-size: 14px;
             color: var(--accent-color);
+            overflow: hidden;
+            max-width: 60%;
+        }
+
+        .user-info-text {
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .user-name {
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            max-width: 65%;
+        }
+
+        .user-track-badge {
+            font-size: 10px;
+            color: var(--text-muted);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            font-weight: normal;
         }
 
         .header-actions {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
+        }
+
+        .btn-header-icon {
+            background: var(--bg-color);
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            padding: 7px 10px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: 0.2s ease;
+        }
+
+        .btn-header-icon:hover {
+            border-color: var(--accent-color);
+            color: var(--accent-color);
         }
 
         .btn-logout {
             background: #ef4444;
             color: #fff;
-            padding: 6px 10px;
+            padding: 7px 10px;
             border-radius: 8px;
             text-decoration: none;
             font-size: 12px;
             font-weight: bold;
             white-space: nowrap;
-        }
-
-        .theme-toggle-btn {
-            background: none;
-            border: 1px solid var(--border-color);
-            color: var(--text-color);
-            padding: 6px 10px;
-            border-radius: 8px;
-            cursor: pointer;
+            border: none;
         }
 
         /* الترحيب */
@@ -258,18 +293,27 @@
 </head>
 <body>
 
-    <!-- الهيدر العلوي: الاسم ومود الصفحة والخروج -->
+    <!-- الهيدر العلوي: الاسم والمسار والإعدادات والخروج -->
     <header class="top-navbar">
-        <div class="user-welcome" title="{{ user }}">
-            <i class="fa-solid fa-circle-user"></i>
-            <span>أهلاً، {{ user }}</span>
+        <div class="user-welcome">
+            <i class="fa-solid fa-circle-user fa-lg"></i>
+            <div class="user-info-text">
+                <span class="user-name">أهلاً، {{ current_user.name if current_user else session.get('user', 'طالب') }}</span>
+                {% if current_user and current_user.track and TRACKS.get(current_user.track) %}
+                    <span class="user-track-badge">{{ TRACKS.get(current_user.track) }}</span>
+                {% endif %}
+            </div>
         </div>
+        
         <div class="header-actions">
-            <button class="theme-toggle-btn" onclick="toggleTheme()" title="تغيير المظهر">
+            <a href="{{ url_for('settings') }}" class="btn-header-icon" title="إعدادات الحساب والمسار">
+                <i class="fa-solid fa-gear"></i>
+            </a>
+            <button class="btn-header-icon" onclick="toggleTheme()" title="تغيير المظهر">
                 <i class="fa-solid fa-moon" id="theme-icon"></i>
             </button>
             <a href="{{ url_for('logout') }}" class="btn-logout" title="تسجيل الخروج">
-                <i class="fa-solid fa-right-from-bracket"></i> خروج
+                <i class="fa-solid fa-right-from-bracket"></i>
             </a>
         </div>
     </header>
@@ -345,6 +389,14 @@
     </div>
 
     <script>
+        // السكربت الخاص بتسجيل Service Worker الخاص بتثبيت التطبيق (PWA)
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js').catch(err => console.log('SW registration failed:', err));
+            });
+        }
+
+        // تبديل المظهر (Dark / Light Theme)
         function toggleTheme() {
             const currentTheme = document.body.getAttribute('data-theme');
             const newTheme = currentTheme === 'light' ? 'dark' : 'light';
