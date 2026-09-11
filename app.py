@@ -574,32 +574,47 @@ def delete_specialized_item(cat_type, track_id, index):
         save_data(data)
     return redirect(url_for('admin'))
 
-# --- ملفات PWA للتثبيت والمُزامنة ---
+# --- ملفات PWA للتثبيت والمُزامنة (تم التحديث لربط الصورة الصحيحة) ---
 
 @app.route('/manifest.json')
 def manifest():
+    logo_url = url_for('static', filename='logo.png', _external=True) + '?v=2'
     manifest_data = {
         "name": "منصة السعيد التعليمية",
         "short_name": "منصة السعيد",
         "start_url": "/",
         "display": "standalone",
-        "background_color": "#121212",
-        "theme_color": "#00ffcc",
+        "background_color": "#0f172a",
+        "theme_color": "#38bdf8",
         "icons": [
             {
-                "src": "https://cdn-icons-png.flaticon.com/512/3429/3429149.png",
+                "src": logo_url,
+                "sizes": "192x192",
+                "type": "image/png",
+                "purpose": "any maskable"
+            },
+            {
+                "src": logo_url,
                 "sizes": "512x512",
-                "type": "image/png"
+                "type": "image/png",
+                "purpose": "any maskable"
             }
         ]
     }
-    return json.dumps(manifest_data), 200, {'Content-Type': 'application/json; charset=utf-8'}
+    return json.dumps(manifest_data, ensure_ascii=False), 200, {'Content-Type': 'application/json; charset=utf-8'}
 
 @app.route('/sw.js')
 def service_worker():
     sw_code = """
+    const CACHE_NAME = 'elsaeed-v2';
     self.addEventListener('install', (e) => self.skipWaiting());
-    self.addEventListener('activate', (e) => self.clients.claim());
+    self.addEventListener('activate', (e) => {
+        e.waitUntil(
+            caches.keys().then((keys) => {
+                return Promise.all(keys.map((key) => caches.delete(key)));
+            }).then(() => self.clients.claim())
+        );
+    });
     self.addEventListener('fetch', (e) => {});
     """
     return sw_code, 200, {'Content-Type': 'application/javascript; charset=utf-8'}
