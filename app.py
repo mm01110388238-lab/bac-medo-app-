@@ -115,18 +115,27 @@ def save_data(data):
 def inject_globals():
     data = load_data()
     user_note = ""
-    if 'user' in session:
-        user_note = data.get('notes', {}).get(str(session['user']), "")
+    current_user = None
+
+    if 'user_identifier' in session or 'user' in session:
+        user_id = session.get('user_identifier') or session.get('user')
+        user_note = data.get('notes', {}).get(str(user_id), "")
+        for u in data.get('users', []):
+            if u.get('identifier') == user_id or u.get('name') == session.get('user'):
+                current_user = u
+                break
+
     return {
         'whatsapp_number': WHATSAPP_NUMBER,
         'whatsapp_link': f"https://wa.me/{WHATSAPP_NUMBER}",
         'user_note': user_note,
+        'current_user': current_user,
         'SECTION_NAMES': SECTION_NAMES,
         'GENERAL_SUBJECTS': GENERAL_SUBJECTS,
         'TRACKS': TRACKS
     }
 
-# --- مسارات الحسابات والتسجيل ---
+# --- مسارات الحسابات والتسجيل والإعدادات ---
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -137,6 +146,7 @@ def register():
         name = request.form.get('name', '').strip()
         identifier = request.form.get('identifier', '').strip()
         password = request.form.get('password', '').strip()
+        track = request.form.get('track', 'eng_prog').strip()
         
         if identifier and password:
             data = load_data()
@@ -144,16 +154,20 @@ def register():
                 if u.get('identifier') == identifier:
                     return "الحساب مسجل بالفعل! <a href='/login'>سجل دخولك من هنا</a>"
             
-            data['users'].append({
+            user_obj = {
                 'name': name or 'مستخدم',
                 'identifier': identifier, 
-                'password': password
-            })
+                'password': password,
+                'track': track
+            }
+            data['users'].append(user_obj)
             save_data(data)
-            session['user'] = name or identifier
+            
+            session['user'] = user_obj['name']
+            session['user_identifier'] = identifier
             return redirect(url_for('index'))
             
-    return render_template('register.html')
+    return render_template('register.html', tracks=TRACKS)
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -168,15 +182,52 @@ def login():
         for u in data.get('users', []):
             if u.get('identifier') == identifier and u.get('password') == password:
                 session['user'] = u.get('name', identifier)
+                session['user_identifier'] = u.get('identifier')
                 return redirect(url_for('index'))
         
         return "بيانات الدخول غير صحيحة! <a href='/login'>حاول مرة أخرى</a>"
         
     return render_template('login.html')
 
+@app.route('/settings', methods=['GET', 'POST'])
+def settings():
+    if 'user' not in session:
+        return redirect(url_for('login'))
+        
+    data = load_data()
+    user_id = session.get('user_identifier') or session.get('user')
+    current_user = None
+    user_index = -1
+
+    for idx, u in enumerate(data.get('users', [])):
+        if u.get('identifier') == user_id or u.get('name') == session.get('user'):
+            current_user = u
+            user_index = idx
+            break
+
+    if request.method == 'POST':
+        name = request.form.get('name', '').strip()
+        track = request.form.get('track', '').strip()
+        password = request.form.get('password', '').strip()
+
+        if current_user and user_index != -1:
+            if name:
+                data['users'][user_index]['name'] = name
+                session['user'] = name
+            if track and track in TRACKS:
+                data['users'][user_index]['track'] = track
+            if password:
+                data['users'][user_index]['password'] = password
+
+            save_data(data)
+            return redirect(url_for('index'))
+
+    return render_template('settings.html', user=current_user, tracks=TRACKS)
+
 @app.route('/logout')
 def logout():
     session.pop('user', None)
+    session.pop('user_identifier', None)
     return redirect(url_for('login'))
 
 # --- مسارات المنصة الرئيسية ---
@@ -185,7 +236,7 @@ def logout():
 def index():
     if 'user' not in session:
         return redirect(url_for('login'))
-    return render_template('index.html', user=session.get('user'))
+    return render_template('index.html')
 
 # 1. صفحة اختيار نوع المواد
 @app.route('/select_type/<cat_type>')
@@ -375,7 +426,7 @@ def save_note():
         return redirect(url_for('login'))
     
     note_text = request.form.get('note', '').strip()
-    user_key = str(session.get('user'))
+    user_key = str(session.get('user_identifier') or session.get('user'))
     
     data = load_data()
     data.setdefault('notes', {})
@@ -461,7 +512,6 @@ def reply_forum(index):
         save_data(data)
     return redirect(url_for('admin'))
 
-# حذف المحتويات العامة
 @app.route('/admin/delete/<cat_type>/<int:index>', methods=['POST'])
 def delete_item(cat_type, index):
     if not session.get('logged_in'):
@@ -495,7 +545,6 @@ def delete_item(cat_type, index):
 
     return redirect(url_for('admin'))
 
-# حذف المحتويات الخاصة بالمواد الأساسية
 @app.route('/admin/delete_general/<cat_type>/<subject_id>/<int:index>', methods=['POST'])
 def delete_general_item(cat_type, subject_id, index):
     if not session.get('logged_in'):
@@ -508,7 +557,6 @@ def delete_general_item(cat_type, subject_id, index):
         save_data(data)
     return redirect(url_for('admin'))
 
-# حذف المحتويات الخاصة بالمسارات التخصصية
 @app.route('/admin/delete_specialized/<cat_type>/<track_id>/<int:index>', methods=['POST'])
 def delete_specialized_item(cat_type, track_id, index):
     if not session.get('logged_in'):
@@ -524,6 +572,36 @@ def delete_specialized_item(cat_type, track_id, index):
         save_data(data)
     return redirect(url_for('admin'))
 
+# --- ملفات PWA للتثبيت والمُزامنة ---
+
+@app.route('/manifest.json')
+def manifest():
+    manifest_data = {
+        "name": "منصة السعيد التعليمية",
+        "short_name": "منصة السعيد",
+        "start_url": "/",
+        "display": "standalone",
+        "background_color": "#121212",
+        "theme_color": "#00ffcc",
+        "icons": [
+            {
+                "src": "https://cdn-icons-png.flaticon.com/512/3429/3429149.png",
+                "sizes": "512x512",
+                "type": "image/png"
+            }
+        ]
+    }
+    return json.dumps(manifest_data), 200, {'Content-Type': 'application/json; charset=utf-8'}
+
+@app.route('/sw.js')
+def service_worker():
+    sw_code = """
+    self.addEventListener('install', (e) => self.skipWaiting());
+    self.addEventListener('activate', (e) => self.clients.claim());
+    self.addEventListener('fetch', (e) => {});
+    """
+    return sw_code, 200, {'Content-Type': 'application/javascript; charset=utf-8'}
+
 # --- مسارات الأرشفة و محركات البحث (SEO) ---
 
 @app.route('/robots.txt')
@@ -538,6 +616,7 @@ def sitemap():
         '/',
         '/login',
         '/register',
+        '/settings',
         '/forum',
         '/platforms'
     ]
