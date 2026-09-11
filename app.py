@@ -111,19 +111,23 @@ def save_data(data):
         except Exception as e:
             print("Redis save error:", e)
 
+def get_current_user(data):
+    if 'user_identifier' in session or 'user' in session:
+        user_id = session.get('user_identifier') or session.get('user')
+        for u in data.get('users', []):
+            if u.get('identifier') == user_id or u.get('name') == session.get('user'):
+                return u
+    return None
+
 @app.context_processor
 def inject_globals():
     data = load_data()
     user_note = ""
-    current_user = None
+    current_user = get_current_user(data)
 
-    if 'user_identifier' in session or 'user' in session:
-        user_id = session.get('user_identifier') or session.get('user')
+    if current_user:
+        user_id = current_user.get('identifier') or current_user.get('name')
         user_note = data.get('notes', {}).get(str(user_id), "")
-        for u in data.get('users', []):
-            if u.get('identifier') == user_id or u.get('name') == session.get('user'):
-                current_user = u
-                break
 
     return {
         'whatsapp_number': WHATSAPP_NUMBER,
@@ -238,7 +242,7 @@ def index():
         return redirect(url_for('login'))
     return render_template('index.html')
 
-# 1. صفحة اختيار نوع المواد
+# 1. صفحة عرض المواد المدمجة مباشرة لكل قسم
 @app.route('/select_type/<cat_type>')
 def select_type(cat_type):
     if 'user' not in session:
@@ -250,19 +254,23 @@ def select_type(cat_type):
     if cat_type not in SECTION_NAMES:
         return redirect(url_for('index'))
     
+    data = load_data()
+    user = get_current_user(data)
+    user_track = user.get('track', 'eng_prog') if user else 'eng_prog'
+    track_name = TRACKS.get(user_track, 'المسار التخصصي')
     cat_title = SECTION_NAMES[cat_type]
-    return render_template('select_type.html', cat_type=cat_type, cat_title=cat_title)
+    
+    return render_template('category_subjects.html', 
+                           cat_type=cat_type, 
+                           cat_title=cat_title, 
+                           general_subjects=GENERAL_SUBJECTS,
+                           user_track=user_track,
+                           track_name=track_name)
 
-# 2. صفحة المواد الأساسية
+# 2. صفحة المواد الأساسية (متوافقة)
 @app.route('/general/<cat_type>')
 def general_subjects(cat_type):
-    if 'user' not in session:
-        return redirect(url_for('login'))
-    if cat_type not in SECTION_NAMES:
-        return redirect(url_for('index'))
-        
-    cat_title = SECTION_NAMES[cat_type]
-    return render_template('general_subjects.html', cat_type=cat_type, cat_title=cat_title, subjects=GENERAL_SUBJECTS)
+    return redirect(url_for('select_type', cat_type=cat_type))
 
 # 3. عرض المحتوى لمادة أساسية محددة
 @app.route('/general/<cat_type>/<subject_id>')
@@ -304,20 +312,14 @@ def general_items(cat_type, subject_id):
         'summaries': items if cat_type == 'summaries' else [],
         'evaluations': items if cat_type == 'evaluations' else [],
         'grouped_lessons': grouped_lessons,
-        'back_url': url_for('general_subjects', cat_type=cat_type)
+        'back_url': url_for('select_type', cat_type=cat_type)
     }
     return render_template(template_name, **context)
 
-# 4. صفحة اختيار المسار التخصصي
+# 4. صفحة اختيار المسار التخصصي (متوافقة)
 @app.route('/specialized/<cat_type>')
 def specialized_tracks(cat_type):
-    if 'user' not in session:
-        return redirect(url_for('login'))
-    if cat_type not in SECTION_NAMES:
-        return redirect(url_for('index'))
-        
-    cat_title = SECTION_NAMES[cat_type]
-    return render_template('tracks.html', tracks=TRACKS, cat_type=cat_type, cat_title=cat_title)
+    return redirect(url_for('select_type', cat_type=cat_type))
 
 # 5. عرض المحتوى لمسار تخصصي محدد
 @app.route('/specialized/<cat_type>/<track_id>')
@@ -364,7 +366,7 @@ def specialized_items(cat_type, track_id):
         'summaries': items if cat_type == 'summaries' else [],
         'evaluations': items if cat_type == 'evaluations' else [],
         'grouped_lessons': grouped_lessons,
-        'back_url': url_for('specialized_tracks', cat_type=cat_type)
+        'back_url': url_for('select_type', cat_type=cat_type)
     }
     return render_template(template_name, **context)
 
