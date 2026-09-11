@@ -3,9 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>المواد الأساسية - {{ cat_title }}</title>
+    <title>المواد الأساسية - {{ cat_title }} - منصة السعيد</title>
+
+    <!-- أيقونة الموقع (Favicon) -->
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}">
+
     <!-- أيقونات FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <style>
         :root {
             --bg-color: #0f172a;
@@ -29,7 +34,7 @@
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: Tahoma, 'Segoe UI', sans-serif; transition: background-color 0.3s, color 0.3s; }
         body { background-color: var(--bg-color); color: var(--text-color); padding: 15px; text-align: center; min-height: 100vh; position: relative; }
-        .container { max-width: 650px; margin: 0 auto; padding-top: 70px; }
+        .container { max-width: 700px; margin: 0 auto; padding-top: 75px; padding-bottom: 40px; }
 
         /* الهيدر العلوي */
         .top-navbar {
@@ -59,6 +64,12 @@
             text-decoration: none;
             font-weight: bold;
             font-size: 14px;
+            transition: 0.2s ease;
+        }
+
+        .btn-back:hover {
+            border-color: var(--accent-color);
+            color: var(--accent-color);
         }
 
         .theme-toggle-btn {
@@ -75,11 +86,11 @@
             display: inline-block;
             background-color: rgba(56, 189, 248, 0.15);
             color: var(--accent-color);
-            padding: 5px 14px;
+            padding: 6px 16px;
             border-radius: 20px;
             font-size: 13px;
             font-weight: bold;
-            margin-bottom: 10px;
+            margin-bottom: 12px;
             border: 1px solid rgba(56, 189, 248, 0.3);
         }
 
@@ -93,8 +104,8 @@
         /* شبكة المواد */
         .subjects-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-            gap: 15px;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 16px;
             text-align: right;
         }
 
@@ -151,7 +162,7 @@
         <a href="{{ url_for('select_type', cat_type=cat_type) }}" class="btn-back">
             <i class="fa-solid fa-arrow-right"></i> رجوع
         </a>
-        <button class="theme-toggle-btn" onclick="toggleTheme()">
+        <button class="theme-toggle-btn" onclick="toggleTheme()" title="تغيير المظهر">
             <i class="fa-solid fa-moon" id="theme-icon"></i>
         </button>
     </header>
