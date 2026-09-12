@@ -1,10 +1,16 @@
 import os
 import json
+from datetime import timedelta
 from flask import Flask, render_template, request, redirect, url_for, session
 from upstash_redis import Redis
 
 app = Flask(__name__)
 app.secret_key = 'elsaeed_platform_2026_secret_key'
+
+# --- إعدادات الجلسة الدائمة لحل مشكلة تسجيل الدخول المتكرر ---
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=365)
+app.config['SESSION_COOKIE_NAME'] = 'elsaeed_session'
+app.config['SESSION_REFRESH_EACH_REQUEST'] = True
 
 # --- أرقام التواصل والروابط الرسمية ---
 DEVELOPER_WA = "201110388238"
@@ -135,6 +141,10 @@ def get_current_user(data):
                 return u
     return None
 
+@app.before_request
+def make_session_permanent():
+    session.permanent = True
+
 @app.context_processor
 def inject_globals():
     data = load_data()
@@ -195,6 +205,7 @@ def register():
             data['users'].append(user_obj)
             save_data(data)
             
+            session.permanent = True
             session['user'] = user_obj['name']
             session['user_identifier'] = identifier
             return redirect(url_for('index'))
@@ -213,6 +224,7 @@ def login():
         data = load_data()
         for u in data.get('users', []):
             if u.get('identifier') == identifier and u.get('password') == password:
+                session.permanent = True
                 session['user'] = u.get('name', identifier)
                 session['user_identifier'] = u.get('identifier')
                 return redirect(url_for('index'))
@@ -503,6 +515,7 @@ def admin():
         cleaned_pass = "".join(c for c in raw_pass if c.isalnum()).lower()
         
         if cleaned_pass == "medo2026":
+            session.permanent = True
             session['logged_in'] = True
         else:
             return render_template('admin_login.html', error="كلمة السر غير صحيحة!")
