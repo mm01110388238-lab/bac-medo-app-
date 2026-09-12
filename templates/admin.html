@@ -14,6 +14,7 @@
             --text-muted: #94a3b8;
             --border-color: #334155;
             --accent-color: #38bdf8;
+            --gold-color: #f59e0b;
             --shadow: rgba(0, 0, 0, 0.4);
             --input-bg: #0f172a;
         }
@@ -25,6 +26,7 @@
             --text-muted: #64748b;
             --border-color: #e2e8f0;
             --accent-color: #0284c7;
+            --gold-color: #d97706;
             --shadow: rgba(0, 0, 0, 0.08);
             --input-bg: #f1f5f9;
         }
@@ -151,6 +153,10 @@
             border-bottom: 1px solid var(--border-color); 
             border-left: 1px solid var(--border-color); 
         }
+
+        .user-card.subscribed {
+            border-right-color: var(--gold-color);
+        }
         
         .forum-card { 
             background: var(--input-bg); 
@@ -203,6 +209,16 @@
             padding-bottom: 4px; 
         }
 
+        .status-badge {
+            display: inline-block;
+            font-size: 11px;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-weight: bold;
+        }
+        .status-active { background: rgba(34, 197, 94, 0.2); color: #22c55e; }
+        .status-inactive { background: rgba(148, 163, 184, 0.2); color: var(--text-muted); }
+
         h2, h3 { 
             color: var(--accent-color); 
             border-bottom: 1px solid var(--border-color); 
@@ -221,10 +237,58 @@
         </button>
     </div>
 
-    <!-- قسم إحصائيات وقائمة المستخدمين (قابل للطي) -->
+    <!-- 1. التحكم في فيديو تفاصيل المنصة -->
+    <div class="container">
+        <h2><i class="fa-solid fa-circle-play"></i> فيديو تفاصيل وشرح المنصة</h2>
+        <form method="POST" action="{{ url_for('admin') }}">
+            <label>رابط فيديو يوتيوب:</label>
+            <input type="url" name="platform_video_url" value="{{ platform_video_url or '' }}" placeholder="https://www.youtube.com/watch?v=...">
+            <button type="submit" class="btn-submit" style="background-color: var(--accent-color); color: #0f172a;">💾 حفظ رابط الفيديو</button>
+        </form>
+    </div>
+
+    <!-- 2. إدارة أسبوعيات كتيب البكالوريا (إضافة وحذف PDFs) -->
+    <div class="container">
+        <button class="toggle-btn" onclick="toggleSection('booklet-pdfs-section', 'booklet-pdfs-icon')">
+            <span><i class="fa-solid fa-book-bookmark"></i> إدارة الـ PDFs الأسبوعية لكتيب البكالوريا</span>
+            <i class="fa-solid fa-chevron-down" id="booklet-pdfs-icon"></i>
+        </button>
+
+        <div id="booklet-pdfs-section" class="collapsible-content">
+            <form method="POST" action="{{ url_for('admin') }}" style="margin-bottom: 20px;">
+                <input type="hidden" name="add_weekly_pdf" value="1">
+                <label>عنوان ملف الـ PDF الأسبوعي:</label>
+                <input type="text" name="weekly_title" placeholder="مثال: ملخص الأسبوع الأول - الفيزياء" required>
+
+                <label>رابط الملف (Google Drive / رابط مباشر):</label>
+                <input type="url" name="weekly_link" placeholder="https://..." required>
+
+                <label>اسم أو رقم الأسبوع:</label>
+                <input type="text" name="weekly_num" placeholder="مثال: الأسبوع الأول">
+
+                <button type="submit" class="btn-submit" style="background-color: var(--gold-color); color: #0f172a;">➕ إضافة ملف أسبوعي جديد</button>
+            </form>
+
+            <div class="sub-header">📂 الملفات الأسبوعية المضافة حالياً:</div>
+            {% if weekly_pdfs %}
+                {% for pdf in weekly_pdfs %}
+                    <div class="item-row">
+                        <span><strong>[{{ pdf.week }}]</strong> {{ pdf.title }}</span>
+                        <form action="{{ url_for('delete_weekly', index=loop.index0) }}" method="POST" style="margin:0;">
+                            <button type="submit" class="btn-delete">حذف</button>
+                        </form>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p style="color: var(--text-muted); font-size: 13px; text-align: center; margin-top: 10px;">لا توجد ملفات أسبوعية مضافة حالياً.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- 3. قسم الأعضاء وإدارة اشتراكات كتيب البكالوريا (قابل للطي) -->
     <div class="container">
         <button class="toggle-btn" onclick="toggleSection('users-section', 'users-icon')">
-            <span><i class="fa-solid fa-users"></i> الأعضاء المسجلين (العدد: {{ total_users }})</span>
+            <span><i class="fa-solid fa-users"></i> الاعضاء المسجلين وإدارة الاشتراكات (العدد: {{ total_users }})</span>
             <i class="fa-solid fa-chevron-down" id="users-icon"></i>
         </button>
         
@@ -233,10 +297,28 @@
             <div id="users-list">
                 {% if users %}
                     {% for u in users %}
-                        <div class="user-card searchable-user">
+                        {% set user_id_str = u.identifier or u.name %}
+                        {% set is_sub = user_id_str in subscribers or u.identifier in subscribers %}
+                        <div class="user-card searchable-user {% if is_sub %}subscribed{% endif %}">
                             <div>👤 <strong>الاسم:</strong> <span class="u-name">{{ u.name }}</span></div>
                             <div style="margin-top: 4px;">📱 <strong>الحساب:</strong> <span class="u-id">{{ u.identifier }}</span></div>
                             <div style="margin-top: 4px;">🔑 <strong>كلمة السر:</strong> <code style="color: var(--accent-color); background: var(--card-bg); padding: 2px 6px; border-radius: 4px;">{{ u.password }}</code></div>
+                            <div style="margin-top: 6px;">
+                                <strong>حالة الكتيب:</strong> 
+                                {% if is_sub %}
+                                    <span class="status-badge status-active">مشترك 🟢</span>
+                                {% else %}
+                                    <span class="status-badge status-inactive">غير مشترك ⚪</span>
+                                {% endif %}
+                            </div>
+
+                            <form method="POST" action="{{ url_for('admin') }}" style="margin-top: 10px;">
+                                <input type="hidden" name="toggle_subscription" value="1">
+                                <input type="hidden" name="target_user" value="{{ u.identifier }}">
+                                <button type="submit" class="btn-submit" style="background-color: {% if is_sub %}#dc2626{% else %}#16a34a{% endif %}; padding: 6px 10px; font-size: 12px;">
+                                    {% if is_sub %}❌ إلغاء تفعيل كتيب البكالوريا{% else %}✅ تفعيل كتيب البكالوريا{% endif %}
+                                </button>
+                            </form>
                         </div>
                     {% endfor %}
                 {% else %}
@@ -246,7 +328,7 @@
         </div>
     </div>
 
-    <!-- قسم المنتدى والرد على أسئلة الطلاب (قابل للطي) -->
+    <!-- 4. قسم المنتدى والرد على أسئلة الطلاب (قابل للطي) -->
     <div class="container">
         <button class="toggle-btn" onclick="toggleSection('forum-section', 'forum-icon')">
             <span><i class="fa-solid fa-comments"></i> إدارة المنتدى والأسئلة (العدد: {{ forum|length }})</span>
@@ -283,23 +365,22 @@
         </div>
     </div>
 
-    <!-- قسم إضافة المحتوى -->
+    <!-- 5. قسم إضافة المحتوى -->
     <div class="container">
         <h2 style="text-align: center;"><i class="fa-solid fa-plus-circle"></i> إضافة محتوى جديد</h2>
         
         <form method="POST" action="{{ url_for('admin') }}">
-            <!-- 1. اختيار قسم المحتوى -->
+            <!-- اختيار قسم المحتوى -->
             <label for="category">اختر قسم المحتوى:</label>
             <select name="category" id="category" onchange="toggleFormFields()">
-                <option value="school_books">📖 الكتب المدرسية الرسمية</option>
-                <option value="external_books">📘 الكتب الخارجية والملخصات</option>
-                <option value="summaries">📝 المذكرات والتلخيصات</option>
+                <option value="external_books">📘 الكتب الخارجية للحل</option>
+                <option value="summaries">📝 تلخيص الدروس</option>
                 <option value="evaluations">📊 التقييمات المدرسية</option>
                 <option value="platform">🌐 منصة تعليمية</option>
                 <option value="lessons">📺 شرح / مراجعة (حسب التخصص أو المادة)</option>
             </select>
 
-            <!-- 2. نوع المواد (أساسية أم تخصصية) -->
+            <!-- نوع المواد (أساسية أم تخصصية) -->
             <div id="subject-type-container">
                 <label for="subject_type">نوع المواد:</label>
                 <select name="subject_type" id="subject_type" onchange="toggleSubjectTypeFields()">
@@ -308,7 +389,7 @@
                 </select>
             </div>
 
-            <!-- 3. قائمة المواد الأساسية -->
+            <!-- قائمة المواد الأساسية -->
             <div id="general-subject-container">
                 <label>اختر المادة الأساسية:</label>
                 <select name="general_subject">
@@ -318,7 +399,7 @@
                 </select>
             </div>
 
-            <!-- 4. قائمة المسارات التخصصية -->
+            <!-- قائمة المسارات التخصصية -->
             <div id="track-container" style="display: none;">
                 <label>اختر المسار والتخصص:</label>
                 <select name="track">
@@ -328,7 +409,7 @@
                 </select>
             </div>
 
-            <!-- 5. اسم القسم / العنوان الرئيسي (للشروحات فقط) -->
+            <!-- اسم القسم / العنوان الرئيسي (للشروحات فقط) -->
             <div id="lesson-fields" style="display: none;">
                 <label>اسم القسم / العنوان الرئيسي:</label>
                 <input type="text" name="section" placeholder="مثال: الدرس الأول - التأسيس">
@@ -346,61 +427,10 @@
 
     <!-- ==================== أقسام إدارة وحذف المحتويات (قابلة للطي) ==================== -->
 
-    <!-- 1. إدارة الكتب المدرسية -->
-    <div class="container">
-        <button class="toggle-btn" onclick="toggleSection('del-school-books', 'icon-sb')">
-            <span><i class="fa-solid fa-book"></i> إدارة وحذف الكتب المدرسية الرسمية</span>
-            <i class="fa-solid fa-chevron-down" id="icon-sb"></i>
-        </button>
-        <div id="del-school-books" class="collapsible-content">
-            {% for sub_id, sub_name in general_subjects.items() %}
-                {% set items = data.get('general_items', {}).get('school_books', {}).get(sub_id, []) %}
-                {% if items %}
-                    <div class="sub-header">📖 {{ sub_name }} (أساسي)</div>
-                    {% for item in items %}
-                        <div class="item-row">
-                            <span>{{ item.title }}</span>
-                            <form action="{{ url_for('delete_general_item', cat_type='school_books', subject_id=sub_id, index=loop.index0) }}" method="POST" style="margin:0;">
-                                <button type="submit" class="btn-delete">حذف</button>
-                            </form>
-                        </div>
-                    {% endfor %}
-                {% endif %}
-            {% endfor %}
-
-            {% for trk_id, trk_name in tracks.items() %}
-                {% set items = data.get('specialized_items', {}).get('school_books', {}).get(trk_id, []) %}
-                {% if items %}
-                    <div class="sub-header">🎓 {{ trk_name }}</div>
-                    {% for item in items %}
-                        <div class="item-row">
-                            <span>{{ item.title }}</span>
-                            <form action="{{ url_for('delete_specialized_item', cat_type='school_books', track_id=trk_id, index=loop.index0) }}" method="POST" style="margin:0;">
-                                <button type="submit" class="btn-delete">حذف</button>
-                            </form>
-                        </div>
-                    {% endfor %}
-                {% endif %}
-            {% endfor %}
-
-            {% if data.school_books %}
-                <div class="sub-header">📂 كتب عامة غير مصنفة</div>
-                {% for book in data.school_books %}
-                    <div class="item-row">
-                        <span>{{ book.title }}</span>
-                        <form action="{{ url_for('delete_item', cat_type='school_books', index=loop.index0) }}" method="POST" style="margin:0;">
-                            <button type="submit" class="btn-delete">حذف</button>
-                        </form>
-                    </div>
-                {% endfor %}
-            {% endif %}
-        </div>
-    </div>
-
-    <!-- 2. إدارة الكتب الخارجية والملخصات -->
+    <!-- إدارة الكتب الخارجية والملخصات -->
     <div class="container">
         <button class="toggle-btn" onclick="toggleSection('del-external-books', 'icon-eb')">
-            <span><i class="fa-solid fa-book-open"></i> إدارة وحذف الكتب الخارجية والملخصات</span>
+            <span><i class="fa-solid fa-book-open"></i> إدارة وحذف الكتب الخارجية للحل</span>
             <i class="fa-solid fa-chevron-down" id="icon-eb"></i>
         </button>
         <div id="del-external-books" class="collapsible-content">
@@ -448,10 +478,10 @@
         </div>
     </div>
 
-    <!-- 3. إدارة المذكرات والتلخيصات -->
+    <!-- إدارة تلخيص الدروس -->
     <div class="container">
         <button class="toggle-btn" onclick="toggleSection('del-summaries', 'icon-sum')">
-            <span><i class="fa-solid fa-note-sticky"></i> إدارة وحذف المذكرات والتلخيصات</span>
+            <span><i class="fa-solid fa-file-lines"></i> إدارة وحذف تلخيص الدروس</span>
             <i class="fa-solid fa-chevron-down" id="icon-sum"></i>
         </button>
         <div id="del-summaries" class="collapsible-content">
@@ -499,7 +529,7 @@
         </div>
     </div>
 
-    <!-- 4. إدارة التقييمات المدرسية -->
+    <!-- إدارة التقييمات المدرسية -->
     <div class="container">
         <button class="toggle-btn" onclick="toggleSection('del-evaluations', 'icon-eval')">
             <span><i class="fa-solid fa-chart-line"></i> إدارة وحذف التقييمات المدرسية</span>
@@ -550,7 +580,7 @@
         </div>
     </div>
 
-    <!-- 5. إدارة المنصات التعليمية -->
+    <!-- إدارة المنصات التعليمية -->
     <div class="container">
         <button class="toggle-btn" onclick="toggleSection('del-platforms', 'icon-plat')">
             <span><i class="fa-solid fa-globe"></i> إدارة وحذف المنصات التعليمية</span>
@@ -572,7 +602,7 @@
         </div>
     </div>
 
-    <!-- 6. إدارة الشروحات والدروس -->
+    <!-- إدارة الشروحات والدروس -->
     <div class="container">
         <button class="toggle-btn" onclick="toggleSection('del-lessons', 'icon-less')">
             <span><i class="fa-solid fa-tv"></i> إدارة وحذف الشروحات والمسارات</span>
@@ -611,9 +641,8 @@
         </div>
     </div>
 
-    <!-- ==================== JavaScript السكربتات ==================== -->
+    <!-- JavaScript السكربتات -->
     <script>
-        // فتح وإغلاق الأقسام القابلة للطي
         function toggleSection(sectionId, iconId) {
             const sec = document.getElementById(sectionId);
             const icon = document.getElementById(iconId);
@@ -628,7 +657,6 @@
             }
         }
 
-        // تصفية وقائمة البحث في الأعضاء
         function filterUsers() {
             const val = document.getElementById('search-users').value.toLowerCase().trim();
             const cards = document.querySelectorAll('.searchable-user');
@@ -639,7 +667,6 @@
             });
         }
 
-        // تصفية وقائمة البحث في المنتدى
         function filterForum() {
             const val = document.getElementById('search-forum').value.toLowerCase().trim();
             const cards = document.querySelectorAll('.searchable-forum');
@@ -650,7 +677,6 @@
             });
         }
 
-        // التحكم في إظهار وإخفاء حقول إضافة المحتوى
         function toggleFormFields() {
             var cat = document.getElementById('category').value;
             var subjectTypeContainer = document.getElementById('subject-type-container');
@@ -683,10 +709,8 @@
             }
         }
 
-        // إعداد الحقول عند التحميل المبدئي
         toggleFormFields();
 
-        // التبديل بين الثيم الداكن والفاتح
         function toggleTheme() {
             const currentTheme = document.documentElement.getAttribute('data-theme');
             const newTheme = currentTheme === 'light' ? 'dark' : 'light';
@@ -700,7 +724,6 @@
             icon.className = theme === 'light' ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
         }
 
-        // تطبيق الثيم المحفوظ عند التحميل
         const savedTheme = localStorage.getItem('theme') || 'dark';
         document.documentElement.setAttribute('data-theme', savedTheme);
         updateThemeIcon(savedTheme);
