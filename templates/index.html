@@ -418,47 +418,42 @@
                 <div class="card-title" style="color: var(--gold-color);">كتيب البكالوريا</div>
             </a>
 
-            <!-- 2. كارت كتالوج المنصة -->
-            <a href="{{ url_for('catalog') }}" class="main-card">
-                <div class="card-icon"><i class="fa-solid fa-book-open"></i></div>
-                <div class="card-title">كتالوج المنصة</div>
-            </a>
-
-            <!-- 3. كارت الكتب الخارجية للحل -->
+            <!-- 2. كارت الكتب الخارجية للحل -->
             <a href="{{ url_for('select_type', cat_type='external_books') }}" class="main-card">
                 <div class="card-icon"><i class="fa-solid fa-book"></i></div>
                 <div class="card-title">الكتب الخارجية للحل</div>
             </a>
 
-            <!-- 4. كارت تلخيص الدروس -->
+            <!-- 3. كارت تلخيص الدروس -->
             <a href="{{ url_for('select_type', cat_type='summaries') }}" class="main-card">
                 <div class="card-icon"><i class="fa-solid fa-file-lines"></i></div>
                 <div class="card-title">تلخيص الدروس</div>
             </a>
 
-            <!-- 5. كارت التقييمات المدرسية -->
+            <!-- 4. كارت التقييمات المدرسية -->
             <a href="{{ url_for('select_type', cat_type='evaluations') }}" class="main-card">
                 <div class="card-icon"><i class="fa-solid fa-pen-to-square"></i></div>
                 <div class="card-title">التقييمات المدرسية</div>
             </a>
 
-            <!-- 6. كارت الشروحات والمسارات -->
+            <!-- 5. كارت الشروحات والمسارات -->
             <a href="{{ url_for('select_type', cat_type='lessons') }}" class="main-card">
                 <div class="card-icon"><i class="fa-solid fa-graduation-cap"></i></div>
                 <div class="card-title">الشروحات والمسارات</div>
             </a>
 
-            <!-- 7. كارت منتدى الأسئلة -->
-            <a href="{{ url_for('forum') }}" class="main-card">
-                <div class="card-icon"><i class="fa-solid fa-comments"></i></div>
-                <div class="card-title">منتدى الأسئلة</div>
-            </a>
-
-            <!-- 8. كارت المنصات التعليمية -->
+            <!-- 6. كارت المنصات التعليمية -->
             <a href="{{ url_for('platforms') }}" class="main-card">
                 <div class="card-icon"><i class="fa-solid fa-globe"></i></div>
                 <div class="card-title">المنصات التعليمية</div>
             </a>
+
+            <!-- 7. كارت كتالوج المنصة (الأخير) -->
+            <a href="{{ url_for('catalog') }}" class="main-card">
+                <div class="card-icon"><i class="fa-solid fa-book-open"></i></div>
+                <div class="card-title">كتالوج المنصة</div>
+            </a>
+
         </div>
 
         <!-- قسم القنوات والصفحات الرسمية -->
