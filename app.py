@@ -6,7 +6,16 @@ from upstash_redis import Redis
 app = Flask(__name__)
 app.secret_key = 'elsaeed_platform_2026_secret_key'
 
-WHATSAPP_NUMBER = "201110388238"
+# --- أرقام التواصل والروابط الرسمية ---
+DEVELOPER_WA = "201110388238"
+SUPPORT_WA = "201221441631"
+
+BOOKLET_VIDEO_URL = "https://youtu.be/cqvxq_C7R9Q?si=4bqe5Ti5emcQSPxb"
+BOOKLET_PROMO_PDF = "https://drive.google.com/file/d/1oVLiR8NgPe5YsWANKJruKasEkoynQ8YN/view?usp=drivesdk"
+
+YT_CHANNEL_URL = "https://youtube.com/@mohamed25saeid?si=GCVoRwEzC499fsE5"
+WA_CHANNEL_URL = "https://whatsapp.com/channel/0029VbCdtHG2ER6cBCinCb0x"
+WA_COMMUNITY_URL = "https://chat.whatsapp.com/L102CxYGFfWLUwcVgvurpa"
 
 # الاتصال بقاعدة بيانات Upstash / Vercel KV تلقائياً
 url = os.getenv("UPSTASH_REDIS_REST_URL") or os.getenv("KV_REST_API_URL")
@@ -36,7 +45,8 @@ SECTION_NAMES = {
     'external_books': 'الكتب الخارجية',
     'summaries': 'المذكرات والتلخيصات',
     'evaluations': 'التقييمات المدرسية',
-    'lessons': 'الشروحات والمسارات'
+    'lessons': 'الشروحات والمسارات',
+    'booklet': 'كتيب البكالوريا'
 }
 
 def load_data():
@@ -48,6 +58,9 @@ def load_data():
         "summaries": [],
         "evaluations": [],
         "platforms": [],
+        "platform_video_url": "",
+        "booklet_subscribers": [],
+        "weekly_pdfs": [],
         "lessons": {key: [] for key in TRACKS.keys()},
         "general_items": {
             "school_books": {key: [] for key in GENERAL_SUBJECTS.keys()},
@@ -82,6 +95,9 @@ def load_data():
                     data.setdefault('summaries', [])
                     data.setdefault('evaluations', [])
                     data.setdefault('platforms', [])
+                    data.setdefault('platform_video_url', "")
+                    data.setdefault('booklet_subscribers', [])
+                    data.setdefault('weekly_pdfs', [])
                     data.setdefault('lessons', {key: [] for key in TRACKS.keys()})
                     
                     gen = data.setdefault('general_items', {})
@@ -124,14 +140,26 @@ def inject_globals():
     data = load_data()
     user_note = ""
     current_user = get_current_user(data)
+    is_subscribed = False
 
     if current_user:
-        user_id = current_user.get('identifier') or current_user.get('name')
-        user_note = data.get('notes', {}).get(str(user_id), "")
+        user_id = str(current_user.get('identifier') or current_user.get('name'))
+        user_note = data.get('notes', {}).get(user_id, "")
+        subscribers = data.get('booklet_subscribers', [])
+        is_subscribed = user_id in subscribers or current_user.get('identifier') in subscribers
 
     return {
-        'whatsapp_number': WHATSAPP_NUMBER,
-        'whatsapp_link': f"https://wa.me/{WHATSAPP_NUMBER}",
+        'developer_wa': DEVELOPER_WA,
+        'developer_wa_link': f"https://wa.me/{DEVELOPER_WA}",
+        'support_wa': SUPPORT_WA,
+        'support_wa_link': f"https://wa.me/{SUPPORT_WA}",
+        'booklet_video_url': BOOKLET_VIDEO_URL,
+        'booklet_promo_pdf': BOOKLET_PROMO_PDF,
+        'yt_channel_url': YT_CHANNEL_URL,
+        'wa_channel_url': WA_CHANNEL_URL,
+        'wa_community_url': WA_COMMUNITY_URL,
+        'platform_video_url': data.get('platform_video_url', ''),
+        'is_booklet_subscribed': is_subscribed,
         'user_note': user_note,
         'current_user': current_user,
         'SECTION_NAMES': SECTION_NAMES,
@@ -242,7 +270,29 @@ def index():
         return redirect(url_for('login'))
     return render_template('index.html')
 
-# 1. صفحة عرض المواد المدمجة مباشرة لكل قسم
+@app.route('/booklet')
+def booklet():
+    if 'user' not in session:
+        return redirect(url_for('login'))
+        
+    data = load_data()
+    current_user = get_current_user(data)
+    user_id = str(current_user.get('identifier') or current_user.get('name')) if current_user else ''
+    
+    subscribers = data.get('booklet_subscribers', [])
+    is_subscribed = user_id in subscribers or (current_user and current_user.get('identifier') in subscribers)
+    
+    weekly_pdfs = data.get('weekly_pdfs', []) if is_subscribed else []
+    
+    return render_template(
+        'booklet.html',
+        is_subscribed=is_subscribed,
+        weekly_pdfs=weekly_pdfs,
+        support_wa=SUPPORT_WA,
+        booklet_video=BOOKLET_VIDEO_URL,
+        booklet_promo_pdf=BOOKLET_PROMO_PDF
+    )
+
 @app.route('/select_type/<cat_type>')
 def select_type(cat_type):
     if 'user' not in session:
@@ -250,6 +300,9 @@ def select_type(cat_type):
         
     if cat_type == 'books':
         return render_template('select_book_type.html')
+        
+    if cat_type == 'booklet':
+        return redirect(url_for('booklet'))
         
     if cat_type not in SECTION_NAMES:
         return redirect(url_for('index'))
@@ -267,12 +320,10 @@ def select_type(cat_type):
                            user_track=user_track,
                            track_name=track_name)
 
-# 2. صفحة المواد الأساسية (متوافقة)
 @app.route('/general/<cat_type>')
 def general_subjects(cat_type):
     return redirect(url_for('select_type', cat_type=cat_type))
 
-# 3. عرض المحتوى لمادة أساسية محددة
 @app.route('/general/<cat_type>/<subject_id>')
 def general_items(cat_type, subject_id):
     if 'user' not in session:
@@ -316,12 +367,10 @@ def general_items(cat_type, subject_id):
     }
     return render_template(template_name, **context)
 
-# 4. صفحة اختيار المسار التخصصي (متوافقة)
 @app.route('/specialized/<cat_type>')
 def specialized_tracks(cat_type):
     return redirect(url_for('select_type', cat_type=cat_type))
 
-# 5. عرض المحتوى لمسار تخصصي محدد
 @app.route('/specialized/<cat_type>/<track_id>')
 def specialized_items(cat_type, track_id):
     if 'user' not in session:
@@ -370,7 +419,6 @@ def specialized_items(cat_type, track_id):
     }
     return render_template(template_name, **context)
 
-# مسارات متوافقة تلقائياً
 @app.route('/books')
 def books():
     return redirect(url_for('select_type', cat_type='books'))
@@ -455,52 +503,104 @@ def admin():
 
     data = load_data()
     
-    if request.method == 'POST' and 'category' in request.form:
-        category = request.form.get('category')
-        title = request.form.get('title', '').strip()
-        link = request.form.get('link', '').strip()
-        sub_type = request.form.get('subject_type', 'general')
-        gen_sub = request.form.get('general_subject')
-        track = request.form.get('track')
-        section = (request.form.get('section') or request.form.get('main_title') or '').strip() or 'شروحات عامة'
+    if request.method == 'POST':
+        # تحديث فيديو شروحات المنصة
+        if 'platform_video_url' in request.form:
+            data['platform_video_url'] = request.form.get('platform_video_url', '').strip()
+            save_data(data)
+            return redirect(url_for('admin'))
+            
+        # إضافة ملف PDF أسبوعي للكتيب
+        if 'add_weekly_pdf' in request.form:
+            title = request.form.get('weekly_title', '').strip()
+            link = request.form.get('weekly_link', '').strip()
+            week_num = request.form.get('weekly_num', '').strip()
+            if title and link:
+                data.setdefault('weekly_pdfs', []).append({
+                    'title': title,
+                    'link': link,
+                    'week': week_num or 'الأسبوع الحالي'
+                })
+                save_data(data)
+            return redirect(url_for('admin'))
 
-        cat_map = {
-            'school_book': 'school_books',
-            'school_books': 'school_books',
-            'external_book': 'external_books',
-            'external_books': 'external_books',
-            'summary': 'summaries',
-            'summaries': 'summaries',
-            'evaluation': 'evaluations',
-            'evaluations': 'evaluations',
-            'lesson': 'lessons',
-            'lessons': 'lessons',
-            'platform': 'platform'
-        }
-        
-        cat_key = cat_map.get(category, category)
+        # تفعيل اشتراك طالب في الكتيب
+        if 'toggle_subscription' in request.form:
+            target_user = request.form.get('target_user', '').strip()
+            subs = data.setdefault('booklet_subscribers', [])
+            if target_user in subs:
+                subs.remove(target_user)
+            else:
+                subs.append(target_user)
+            save_data(data)
+            return redirect(url_for('admin'))
 
-        if cat_key == 'platform':
-            data.setdefault('platforms', []).append({'title': title, 'link': link})
-        else:
-            item_data = {'title': title, 'link': link}
-            if cat_key == 'lessons':
-                item_data['section'] = section
-                
-            if sub_type == 'general' and gen_sub:
-                data.setdefault('general_items', {}).setdefault(cat_key, {}).setdefault(gen_sub, []).append(item_data)
-            elif sub_type == 'specialized' and track:
-                data.setdefault('specialized_items', {}).setdefault(cat_key, {}).setdefault(track, []).append(item_data)
+        # إضافة محتوى عام/تخصصي
+        if 'category' in request.form:
+            category = request.form.get('category')
+            title = request.form.get('title', '').strip()
+            link = request.form.get('link', '').strip()
+            sub_type = request.form.get('subject_type', 'general')
+            gen_sub = request.form.get('general_subject')
+            track = request.form.get('track')
+            section = (request.form.get('section') or request.form.get('main_title') or '').strip() or 'شروحات عامة'
+
+            cat_map = {
+                'school_book': 'school_books',
+                'school_books': 'school_books',
+                'external_book': 'external_books',
+                'external_books': 'external_books',
+                'summary': 'summaries',
+                'summaries': 'summaries',
+                'evaluation': 'evaluations',
+                'evaluations': 'evaluations',
+                'lesson': 'lessons',
+                'lessons': 'lessons',
+                'platform': 'platform'
+            }
+            
+            cat_key = cat_map.get(category, category)
+
+            if cat_key == 'platform':
+                data.setdefault('platforms', []).append({'title': title, 'link': link})
+            else:
+                item_data = {'title': title, 'link': link}
                 if cat_key == 'lessons':
-                    data.setdefault('lessons', {}).setdefault(track, []).append(item_data)
+                    item_data['section'] = section
+                    
+                if sub_type == 'general' and gen_sub:
+                    data.setdefault('general_items', {}).setdefault(cat_key, {}).setdefault(gen_sub, []).append(item_data)
+                elif sub_type == 'specialized' and track:
+                    data.setdefault('specialized_items', {}).setdefault(cat_key, {}).setdefault(track, []).append(item_data)
+                    if cat_key == 'lessons':
+                        data.setdefault('lessons', {}).setdefault(track, []).append(item_data)
 
-        save_data(data)
-        return redirect(url_for('admin'))
+            save_data(data)
+            return redirect(url_for('admin'))
 
     users = data.get('users', [])
     total_users = len(users)
 
-    return render_template('admin.html', tracks=TRACKS, general_subjects=GENERAL_SUBJECTS, data=data, users=users, total_users=total_users, forum=data.get('forum', []))
+    return render_template('admin.html', 
+                           tracks=TRACKS, 
+                           general_subjects=GENERAL_SUBJECTS, 
+                           data=data, 
+                           users=users, 
+                           total_users=total_users, 
+                           forum=data.get('forum', []),
+                           weekly_pdfs=data.get('weekly_pdfs', []),
+                           subscribers=data.get('booklet_subscribers', []))
+
+@app.route('/admin/delete_weekly/<int:index>', methods=['POST'])
+def delete_weekly(index):
+    if not session.get('logged_in'):
+        return redirect(url_for('admin'))
+    data = load_data()
+    pdfs = data.get('weekly_pdfs', [])
+    if 0 <= index < len(pdfs):
+        pdfs.pop(index)
+        save_data(data)
+    return redirect(url_for('admin'))
 
 @app.route('/admin/reply_forum/<int:index>', methods=['POST'])
 def reply_forum(index):
@@ -574,7 +674,7 @@ def delete_specialized_item(cat_type, track_id, index):
         save_data(data)
     return redirect(url_for('admin'))
 
-# --- ملفات PWA للتثبيت والمُزامنة (تم التحديث لربط الصورة الصحيحة) ---
+# --- ملفات PWA للتثبيت والمُزامنة ---
 
 @app.route('/manifest.json')
 def manifest():
@@ -619,7 +719,7 @@ def service_worker():
     """
     return sw_code, 200, {'Content-Type': 'application/javascript; charset=utf-8'}
 
-# --- مسارات الأرشفة و محركات البحث (SEO) ---
+# --- مسارات الأرشفة ومحركات البحث (SEO) ---
 
 @app.route('/robots.txt')
 def robots():
@@ -635,7 +735,8 @@ def sitemap():
         '/register',
         '/settings',
         '/forum',
-        '/platforms'
+        '/platforms',
+        '/booklet'
     ]
     
     xml_entries = ""
