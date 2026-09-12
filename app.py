@@ -41,12 +41,12 @@ GENERAL_SUBJECTS = {
 }
 
 SECTION_NAMES = {
-    'school_books': 'الكتب المدرسية',
-    'external_books': 'الكتب الخارجية',
-    'summaries': 'المذكرات والتلخيصات',
+    'external_books': 'الكتب الخارجية للحل',
+    'summaries': 'تلخيص الدروس',
     'evaluations': 'التقييمات المدرسية',
     'lessons': 'الشروحات والمسارات',
-    'booklet': 'كتيب البكالوريا'
+    'booklet': 'كتيب البكالوريا',
+    'catalog': 'كتالوج المنصة'
 }
 
 def load_data():
@@ -270,6 +270,12 @@ def index():
         return redirect(url_for('login'))
     return render_template('index.html')
 
+@app.route('/catalog')
+def catalog():
+    if 'user' not in session:
+        return redirect(url_for('login'))
+    return render_template('catalog.html')
+
 @app.route('/booklet')
 def booklet():
     if 'user' not in session:
@@ -303,6 +309,9 @@ def select_type(cat_type):
         
     if cat_type == 'booklet':
         return redirect(url_for('booklet'))
+
+    if cat_type == 'catalog':
+        return redirect(url_for('catalog'))
         
     if cat_type not in SECTION_NAMES:
         return redirect(url_for('index'))
@@ -421,7 +430,7 @@ def specialized_items(cat_type, track_id):
 
 @app.route('/books')
 def books():
-    return redirect(url_for('select_type', cat_type='books'))
+    return redirect(url_for('select_type', cat_type='external_books'))
 
 @app.route('/summaries')
 def summaries():
@@ -736,7 +745,8 @@ def sitemap():
         '/settings',
         '/forum',
         '/platforms',
-        '/booklet'
+        '/booklet',
+        '/catalog'
     ]
     
     xml_entries = ""
