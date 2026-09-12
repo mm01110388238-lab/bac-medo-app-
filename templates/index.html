@@ -17,14 +17,14 @@
     <link rel="apple-touch-icon" href="{{ url_for('static', filename='logo.png') }}">
 
     <!-- وسوم الـ SEO لمحركات البحث -->
-    <meta name="description" content="منصة السعيد التعليمية - مكانك الأول للوصول لجميع الكتب المدرسية، المذكرات، التلخيصات، الشروحات والتقييمات.">
-    <meta name="keywords" content="منصة السعيد, كتب دراسية, مذكرات ثانوية عامة, ملخصات, شروحات, تقييمات">
+    <meta name="description" content="منصة السعيد التعليمية - مكانك الأول للوصول لجميع الكتب المدرسية، المذكرات، التلخيصات، الشروحات والتقييمات وكتيب البكالوريا.">
+    <meta name="keywords" content="منصة السعيد, كتيب البكالوريا, كتب دراسية, مذكرات ثانوية عامة, ملخصات, شروحات, تقييمات">
     <meta name="author" content="منصة السعيد">
 
     <!-- وسوم المعاينة والتواصل الاجتماعي -->
     <meta property="og:type" content="website">
     <meta property="og:title" content="منصة السعيد - الرئيسية">
-    <meta property="og:description" content="مكانك الأول للوصول لجميع الكتب والتلاخيص والشروحات للطلاب.">
+    <meta property="og:description" content="مكانك الأول للوصول لجميع الكتب والتلاخيص والشروحات وكتيب البكالوريا للطلاب.">
     <meta property="og:image" content="{{ url_for('static', filename='logo.png', _external=True) }}">
 
     <!-- أيقونات FontAwesome -->
@@ -37,6 +37,7 @@
             --text-muted: #94a3b8;
             --border-color: #334155;
             --accent-color: #38bdf8;
+            --gold-color: #f59e0b;
             --shadow: rgba(0, 0, 0, 0.4);
         }
 
@@ -47,6 +48,7 @@
             --text-muted: #64748b;
             --border-color: #e2e8f0;
             --accent-color: #0284c7;
+            --gold-color: #d97706;
             --shadow: rgba(0, 0, 0, 0.08);
         }
 
@@ -237,6 +239,37 @@
             color: var(--text-muted);
         }
 
+        /* فيديو المنصة إن وجد */
+        .video-box {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 15px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 12px var(--shadow);
+            text-align: center;
+        }
+        .video-box h3 {
+            font-size: 15px;
+            margin-bottom: 10px;
+            color: var(--accent-color);
+        }
+        .video-container {
+            position: relative;
+            padding-bottom: 56.25%;
+            height: 0;
+            overflow: hidden;
+            border-radius: 12px;
+        }
+        .video-container iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: 0;
+        }
+
         /* شبكة الأقسام الرئيسية */
         .sections-grid {
             display: grid;
@@ -258,11 +291,35 @@
             text-align: center;
             box-shadow: 0 4px 12px var(--shadow);
             transition: transform 0.2s ease, border-color 0.2s ease;
+            position: relative;
         }
 
         .main-card:hover {
             transform: translateY(-4px);
             border-color: var(--accent-color);
+        }
+
+        /* كارت مميز لكتيب البكالوريا */
+        .booklet-card {
+            grid-column: 1 / -1;
+            background: linear-gradient(135deg, var(--card-bg) 0%, rgba(245, 158, 11, 0.1) 100%);
+            border: 2px solid var(--gold-color);
+        }
+
+        .booklet-card:hover {
+            border-color: #fbbf24;
+        }
+
+        .badge-featured {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            background: var(--gold-color);
+            color: #0f172a;
+            font-size: 11px;
+            font-weight: bold;
+            padding: 3px 8px;
+            border-radius: 20px;
         }
 
         .card-icon {
@@ -278,6 +335,11 @@
             margin-bottom: 12px;
         }
 
+        .card-icon-gold {
+            background: rgba(245, 158, 11, 0.15);
+            color: var(--gold-color);
+        }
+
         .card-title {
             font-size: 16px;
             font-weight: bold;
@@ -288,6 +350,54 @@
             font-size: 12px;
             color: var(--text-muted);
         }
+
+        /* قسم القنوات الرسمية */
+        .social-section {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 18px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 12px var(--shadow);
+        }
+
+        .social-title {
+            font-size: 15px;
+            font-weight: bold;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--accent-color);
+        }
+
+        .social-links {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+        }
+
+        .btn-social {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 10px 12px;
+            border-radius: 10px;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: bold;
+            color: #fff;
+            transition: opacity 0.2s;
+        }
+
+        .btn-social:hover {
+            opacity: 0.9;
+        }
+
+        .yt-btn { background: #ff0000; }
+        .wa-channel-btn { background: #25d366; }
+        .wa-community-btn { background: #128c7e; }
 
         /* صندوق الملاحظات */
         .extra-box {
@@ -334,8 +444,8 @@
         /* الأزرار السفلية (التواصل والأدمن) */
         .bottom-actions {
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 12px;
             margin-top: 10px;
         }
 
@@ -343,15 +453,15 @@
             background: var(--card-bg);
             border: 1px solid var(--border-color);
             border-radius: 14px;
-            padding: 14px;
+            padding: 12px;
             text-decoration: none;
             color: var(--text-color);
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 10px;
+            gap: 8px;
             font-weight: bold;
-            font-size: 14px;
+            font-size: 13px;
             box-shadow: 0 4px 12px var(--shadow);
             transition: transform 0.2s ease, border-color 0.2s ease;
         }
@@ -360,14 +470,19 @@
             transform: translateY(-2px);
         }
 
-        .whatsapp-style {
+        .whatsapp-support-style {
             border-color: #25d366;
             color: #25d366;
         }
 
+        .whatsapp-dev-style {
+            border-color: #38bdf8;
+            color: #38bdf8;
+        }
+
         .admin-style {
-            border-color: var(--accent-color);
-            color: var(--accent-color);
+            border-color: #a855f7;
+            color: #a855f7;
         }
     </style>
 </head>
@@ -422,15 +537,35 @@
         
         <div class="hero-section">
             <h1 class="hero-title">منصة السعيد 🎓</h1>
-            <p class="hero-subtitle">مكانك الأول للوصول لجميع الكتب والتلاخيص والشروحات</p>
+            <p class="hero-subtitle">مكانك الأول للوصول لجميع الكتب والتلاخيص والشروحات وكتيب البكالوريا</p>
         </div>
+
+        <!-- فيديو تفاصيل المنصة إذا تم إضافته من الأدمن -->
+        {% if platform_video_url %}
+        <div class="video-box">
+            <h3><i class="fa-solid fa-circle-play"></i> فيديو تفاصيل وشرح استخدام المنصة</h3>
+            <div class="video-container">
+                {% set video_id = platform_video_url.split('v=')[-1].split('?')[0] if 'v=' in platform_video_url else platform_video_url.split('/')[-1].split('?')[0] %}
+                <iframe src="https://www.youtube.com/embed/{{ video_id }}" allowfullscreen></iframe>
+            </div>
+        </div>
+        {% endif %}
 
         <!-- شبكة الأقسام الرئيسية -->
         <div class="sections-grid">
+            
+            <!-- كارت كتيب البكالوريا المميز -->
+            <a href="{{ url_for('booklet') }}" class="main-card booklet-card">
+                <span class="badge-featured">حصري 🔥</span>
+                <div class="card-icon card-icon-gold"><i class="fa-solid fa-book-bookmark"></i></div>
+                <div class="card-title" style="color: var(--gold-color);">كتيب البكالوريا 📘</div>
+                <div class="card-desc">مشروع الكتيب، الكتالوج الشامل، والـ PDFs الأسبوعية للمشتركين</div>
+            </a>
+
             <a href="{{ url_for('select_type', cat_type='books') }}" class="main-card">
                 <div class="card-icon"><i class="fa-solid fa-book"></i></div>
                 <div class="card-title">الكتب الدراسية</div>
-                <div class="card-desc">جميع المناهج والكتب الوزارية</div>
+                <div class="card-desc">الكتب المدرسية والكتب الخارجية</div>
             </a>
 
             <a href="{{ url_for('select_type', cat_type='summaries') }}" class="main-card">
@@ -452,13 +587,20 @@
             </a>
         </div>
 
-        <!-- صندوق الملاحظات الشخصية -->
-        <div class="extra-box">
-            <div class="extra-title"><i class="fa-solid fa-note-sticky"></i> ملاحظاتك الشخصية</div>
-            <form action="{{ url_for('save_note') }}" method="POST" class="note-form">
-                <textarea name="note" placeholder="دون ملاحظاتك أو جدولك الدراسي هنا...">{{ user_note }}</textarea>
-                <button type="submit" class="btn-submit">حفظ الملاحظة</button>
-            </form>
+        <!-- قسم القنوات والصفحات الرسمية -->
+        <div class="social-section">
+            <div class="social-title"><i class="fa-solid fa-bullhorn"></i> قنواتنا ومجتمعاتنا الرسمية</div>
+            <div class="social-links">
+                <a href="{{ yt_channel_url }}" target="_blank" class="btn-social yt-btn">
+                    <i class="fa-brands fa-youtube"></i> قناة اليوتيوب
+                </a>
+                <a href="{{ wa_channel_url }}" target="_blank" class="btn-social wa-channel-btn">
+                    <i class="fa-brands fa-whatsapp"></i> قناة الواتساب
+                </a>
+                <a href="{{ wa_community_url }}" target="_blank" class="btn-social wa-community-btn">
+                    <i class="fa-solid fa-users"></i> مجتمع الواتساب
+                </a>
+            </div>
         </div>
 
         <!-- رابط المنتدى والمنصات -->
@@ -475,10 +617,22 @@
             </a>
         </div>
 
+        <!-- صندوق الملاحظات الشخصية -->
+        <div class="extra-box">
+            <div class="extra-title"><i class="fa-solid fa-note-sticky"></i> ملاحظاتك الشخصية</div>
+            <form action="{{ url_for('save_note') }}" method="POST" class="note-form">
+                <textarea name="note" placeholder="دون ملاحظاتك أو جدولك الدراسي هنا...">{{ user_note }}</textarea>
+                <button type="submit" class="btn-submit">حفظ الملاحظة</button>
+            </form>
+        </div>
+
         <!-- أزرار التواصل والأدمن في الأسفل -->
         <div class="bottom-actions">
-            <a href="{{ whatsapp_link }}" target="_blank" class="btn-bottom-card whatsapp-style">
-                <i class="fa-brands fa-whatsapp fa-lg"></i> تواصل واتساب
+            <a href="{{ support_wa_link }}" target="_blank" class="btn-bottom-card whatsapp-support-style">
+                <i class="fa-brands fa-whatsapp fa-lg"></i> الدعم والاشتراكات
+            </a>
+            <a href="{{ developer_wa_link }}" target="_blank" class="btn-bottom-card whatsapp-dev-style">
+                <i class="fa-solid fa-code"></i> مطور المنصة
             </a>
             <a href="{{ url_for('admin') }}" class="btn-bottom-card admin-style">
                 <i class="fa-solid fa-user-shield"></i> لوحة التحكم
