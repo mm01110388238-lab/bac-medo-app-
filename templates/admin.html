@@ -29,10 +29,32 @@
             --input-bg: #f1f5f9;
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: Tahoma, 'Segoe UI', sans-serif; transition: background-color 0.3s, color 0.3s; }
-        body { background-color: var(--bg-color); color: var(--text-color); padding: 15px; text-align: center; min-height: 100vh; }
+        * { 
+            box-sizing: border-box; 
+            margin: 0; 
+            padding: 0; 
+            font-family: Tahoma, 'Segoe UI', sans-serif; 
+            transition: background-color 0.3s, color 0.3s; 
+        }
         
-        .container { max-width: 650px; margin: 0 auto 20px auto; background: var(--card-bg); padding: 20px; border-radius: 16px; text-align: right; border: 1px solid var(--border-color); box-shadow: 0 4px 12px var(--shadow); }
+        body { 
+            background-color: var(--bg-color); 
+            color: var(--text-color); 
+            padding: 15px; 
+            text-align: center; 
+            min-height: 100vh; 
+        }
+        
+        .container { 
+            max-width: 650px; 
+            margin: 0 auto 20px auto; 
+            background: var(--card-bg); 
+            padding: 20px; 
+            border-radius: 16px; 
+            text-align: right; 
+            border: 1px solid var(--border-color); 
+            box-shadow: 0 4px 12px var(--shadow); 
+        }
         
         .top-navbar {
             display: flex;
@@ -43,20 +65,109 @@
             padding: 10px 5px;
         }
 
-        .btn-back { display: inline-flex; align-items: center; gap: 8px; background: var(--border-color); color: var(--text-color); padding: 8px 16px; border-radius: 8px; text-decoration: none; font-weight: bold; font-size: 14px; }
-        .theme-toggle-btn { background: none; border: 1px solid var(--border-color); color: var(--text-color); padding: 8px 12px; border-radius: 8px; cursor: pointer; }
-
-        input, select { width: 100%; padding: 12px; margin: 8px 0 16px 0; border-radius: 8px; border: 1px solid var(--border-color); background: var(--input-bg); color: var(--text-color); box-sizing: border-box; font-size: 14px; }
-        label { font-size: 14px; font-weight: bold; color: var(--accent-color); }
-
-        .btn-submit { display: block; width: 100%; padding: 12px; background: #16a34a; color: white; border: none; border-radius: 8px; font-size: 15px; font-weight: bold; cursor: pointer; }
-        .btn-delete { background: #dc2626; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 13px; float: left; }
+        .btn-back { 
+            display: inline-flex; 
+            align-items: center; 
+            gap: 8px; 
+            background: var(--border-color); 
+            color: var(--text-color); 
+            padding: 8px 16px; 
+            border-radius: 8px; 
+            text-decoration: none; 
+            font-weight: bold; 
+            font-size: 14px; 
+        }
         
-        .item-row { background: var(--input-bg); padding: 12px 15px; margin: 8px 0; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--border-color); font-size: 14px; }
-        .user-card { background: var(--input-bg); padding: 12px 15px; margin: 8px 0; border-radius: 8px; border-right: 4px solid var(--accent-color); border-top: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color); border-left: 1px solid var(--border-color); }
+        .theme-toggle-btn { 
+            background: none; 
+            border: 1px solid var(--border-color); 
+            color: var(--text-color); 
+            padding: 8px 12px; 
+            border-radius: 8px; 
+            cursor: pointer; 
+        }
+
+        input, select { 
+            width: 100%; 
+            padding: 12px; 
+            margin: 8px 0 16px 0; 
+            border-radius: 8px; 
+            border: 1px solid var(--border-color); 
+            background: var(--input-bg); 
+            color: var(--text-color); 
+            box-sizing: border-box; 
+            font-size: 14px; 
+        }
         
-        .forum-card { background: var(--input-bg); padding: 15px; margin: 10px 0; border-radius: 10px; border: 1px solid var(--border-color); }
-        .reply-box { background: rgba(56, 189, 248, 0.1); border-right: 3px solid var(--accent-color); padding: 8px 12px; margin: 8px 0; border-radius: 4px; font-size: 13px; }
+        label { 
+            font-size: 14px; 
+            font-weight: bold; 
+            color: var(--accent-color); 
+        }
+
+        .btn-submit { 
+            display: block; 
+            width: 100%; 
+            padding: 12px; 
+            background: #16a34a; 
+            color: white; 
+            border: none; 
+            border-radius: 8px; 
+            font-size: 15px; 
+            font-weight: bold; 
+            cursor: pointer; 
+        }
+        
+        .btn-delete { 
+            background: #dc2626; 
+            color: white; 
+            border: none; 
+            padding: 6px 12px; 
+            border-radius: 6px; 
+            cursor: pointer; 
+            font-size: 13px; 
+            float: left; 
+        }
+        
+        .item-row { 
+            background: var(--input-bg); 
+            padding: 12px 15px; 
+            margin: 8px 0; 
+            border-radius: 8px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            border: 1px solid var(--border-color); 
+            font-size: 14px; 
+        }
+        
+        .user-card { 
+            background: var(--input-bg); 
+            padding: 12px 15px; 
+            margin: 8px 0; 
+            border-radius: 8px; 
+            border-right: 4px solid var(--accent-color); 
+            border-top: 1px solid var(--border-color); 
+            border-bottom: 1px solid var(--border-color); 
+            border-left: 1px solid var(--border-color); 
+        }
+        
+        .forum-card { 
+            background: var(--input-bg); 
+            padding: 15px; 
+            margin: 10px 0; 
+            border-radius: 10px; 
+            border: 1px solid var(--border-color); 
+        }
+        
+        .reply-box { 
+            background: rgba(56, 189, 248, 0.1); 
+            border-right: 3px solid var(--accent-color); 
+            padding: 8px 12px; 
+            margin: 8px 0; 
+            border-radius: 4px; 
+            font-size: 13px; 
+        }
 
         .toggle-btn {
             width: 100%;
@@ -83,16 +194,31 @@
             border-color: var(--accent-color);
         }
 
-        .sub-header { color: var(--accent-color); font-weight: bold; margin: 14px 0 6px 0; font-size: 14px; border-bottom: 1px dashed var(--border-color); padding-bottom: 4px; }
+        .sub-header { 
+            color: var(--accent-color); 
+            font-weight: bold; 
+            margin: 14px 0 6px 0; 
+            font-size: 14px; 
+            border-bottom: 1px dashed var(--border-color); 
+            padding-bottom: 4px; 
+        }
 
-        h2, h3 { color: var(--accent-color); border-bottom: 1px solid var(--border-color); padding-bottom: 8px; margin-bottom: 15px; font-size: 18px; }
+        h2, h3 { 
+            color: var(--accent-color); 
+            border-bottom: 1px solid var(--border-color); 
+            padding-bottom: 8px; 
+            margin-bottom: 15px; 
+            font-size: 18px; 
+        }
     </style>
 </head>
 <body>
 
     <div class="top-navbar">
         <a href="{{ url_for('index') }}" class="btn-back"><i class="fa-solid fa-house"></i> الرئيسية</a>
-        <button class="theme-toggle-btn" onclick="toggleTheme()"><i class="fa-solid fa-moon" id="theme-icon"></i></button>
+        <button class="theme-toggle-btn" onclick="toggleTheme()" aria-label="تبديل الثيم">
+            <i class="fa-solid fa-moon" id="theme-icon"></i>
+        </button>
     </div>
 
     <!-- قسم إحصائيات وقائمة المستخدمين (قابل للطي) -->
@@ -163,7 +289,7 @@
         
         <form method="POST" action="{{ url_for('admin') }}">
             <!-- 1. اختيار قسم المحتوى -->
-            <label>اختر قسم المحتوى:</label>
+            <label for="category">اختر قسم المحتوى:</label>
             <select name="category" id="category" onchange="toggleFormFields()">
                 <option value="school_books">📖 الكتب المدرسية الرسمية</option>
                 <option value="external_books">📘 الكتب الخارجية والملخصات</option>
@@ -175,7 +301,7 @@
 
             <!-- 2. نوع المواد (أساسية أم تخصصية) -->
             <div id="subject-type-container">
-                <label>نوع المواد:</label>
+                <label for="subject_type">نوع المواد:</label>
                 <select name="subject_type" id="subject_type" onchange="toggleSubjectTypeFields()">
                     <option value="general">📖 المواد الأساسية لجميع المسارات</option>
                     <option value="specialized">🎓 المواد التخصصية لكل مسار</option>
@@ -262,7 +388,7 @@
                 {% for book in data.school_books %}
                     <div class="item-row">
                         <span>{{ book.title }}</span>
-                        <form action="{{ url_for('delete_item', cat_type='school_book', index=loop.index0) }}" method="POST" style="margin:0;">
+                        <form action="{{ url_for('delete_item', cat_type='school_books', index=loop.index0) }}" method="POST" style="margin:0;">
                             <button type="submit" class="btn-delete">حذف</button>
                         </form>
                     </div>
@@ -313,7 +439,7 @@
                 {% for book in data.external_books %}
                     <div class="item-row">
                         <span>{{ book.title }}</span>
-                        <form action="{{ url_for('delete_item', cat_type='external_book', index=loop.index0) }}" method="POST" style="margin:0;">
+                        <form action="{{ url_for('delete_item', cat_type='external_books', index=loop.index0) }}" method="POST" style="margin:0;">
                             <button type="submit" class="btn-delete">حذف</button>
                         </form>
                     </div>
@@ -364,7 +490,7 @@
                 {% for sum_item in data.summaries %}
                     <div class="item-row">
                         <span>{{ sum_item.title }}</span>
-                        <form action="{{ url_for('delete_item', cat_type='summary', index=loop.index0) }}" method="POST" style="margin:0;">
+                        <form action="{{ url_for('delete_item', cat_type='summaries', index=loop.index0) }}" method="POST" style="margin:0;">
                             <button type="submit" class="btn-delete">حذف</button>
                         </form>
                     </div>
@@ -415,7 +541,7 @@
                 {% for eval_item in data.evaluations %}
                     <div class="item-row">
                         <span>{{ eval_item.title }}</span>
-                        <form action="{{ url_for('delete_item', cat_type='evaluation', index=loop.index0) }}" method="POST" style="margin:0;">
+                        <form action="{{ url_for('delete_item', cat_type='evaluations', index=loop.index0) }}" method="POST" style="margin:0;">
                             <button type="submit" class="btn-delete">حذف</button>
                         </form>
                     </div>
@@ -485,47 +611,46 @@
         </div>
     </div>
 
+    <!-- ==================== JavaScript السكربتات ==================== -->
     <script>
+        // فتح وإغلاق الأقسام القابلة للطي
         function toggleSection(sectionId, iconId) {
             const sec = document.getElementById(sectionId);
             const icon = document.getElementById(iconId);
-            if (sec.style.display === "block") {
-                sec.style.display = "none";
-                icon.className = "fa-solid fa-chevron-down";
-            } else {
+            const isHidden = window.getComputedStyle(sec).display === "none";
+
+            if (isHidden) {
                 sec.style.display = "block";
                 icon.className = "fa-solid fa-chevron-up";
+            } else {
+                sec.style.display = "none";
+                icon.className = "fa-solid fa-chevron-down";
             }
         }
 
+        // تصفية وقائمة البحث في الأعضاء
         function filterUsers() {
-            const val = document.getElementById('search-users').value.toLowerCase();
+            const val = document.getElementById('search-users').value.toLowerCase().trim();
             const cards = document.querySelectorAll('.searchable-user');
             cards.forEach(card => {
                 const name = card.querySelector('.u-name').innerText.toLowerCase();
                 const id = card.querySelector('.u-id').innerText.toLowerCase();
-                if (name.includes(val) || id.includes(val)) {
-                    card.style.display = "block";
-                } else {
-                    card.style.display = "none";
-                }
+                card.style.display = (name.includes(val) || id.includes(val)) ? "block" : "none";
             });
         }
 
+        // تصفية وقائمة البحث في المنتدى
         function filterForum() {
-            const val = document.getElementById('search-forum').value.toLowerCase();
+            const val = document.getElementById('search-forum').value.toLowerCase().trim();
             const cards = document.querySelectorAll('.searchable-forum');
             cards.forEach(card => {
                 const user = card.querySelector('.f-user').innerText.toLowerCase();
                 const q = card.querySelector('.f-q').innerText.toLowerCase();
-                if (user.includes(val) || q.includes(val)) {
-                    card.style.display = "block";
-                } else {
-                    card.style.display = "none";
-                }
+                card.style.display = (user.includes(val) || q.includes(val)) ? "block" : "none";
             });
         }
 
+        // التحكم في إظهار وإخفاء حقول إضافة المحتوى
         function toggleFormFields() {
             var cat = document.getElementById('category').value;
             var subjectTypeContainer = document.getElementById('subject-type-container');
@@ -536,7 +661,7 @@
                 lessonFields.style.display = 'none';
             } else {
                 subjectTypeContainer.style.display = 'block';
-                lessonFields.style.display = (cat === 'lesson' || cat === 'lessons') ? 'block' : 'none';
+                lessonFields.style.display = (cat === 'lessons') ? 'block' : 'none';
             }
             toggleSubjectTypeFields();
         }
@@ -558,12 +683,14 @@
             }
         }
 
+        // إعداد الحقول عند التحميل المبدئي
         toggleFormFields();
 
+        // التبديل بين الثيم الداكن والفاتح
         function toggleTheme() {
-            const currentTheme = document.body.getAttribute('data-theme');
+            const currentTheme = document.documentElement.getAttribute('data-theme');
             const newTheme = currentTheme === 'light' ? 'dark' : 'light';
-            document.body.setAttribute('data-theme', newTheme);
+            document.documentElement.setAttribute('data-theme', newTheme);
             localStorage.setItem('theme', newTheme);
             updateThemeIcon(newTheme);
         }
@@ -573,8 +700,9 @@
             icon.className = theme === 'light' ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
         }
 
+        // تطبيق الثيم المحفوظ عند التحميل
         const savedTheme = localStorage.getItem('theme') || 'dark';
-        document.body.setAttribute('data-theme', savedTheme);
+        document.documentElement.setAttribute('data-theme', savedTheme);
         updateThemeIcon(savedTheme);
     </script>
 </body>
