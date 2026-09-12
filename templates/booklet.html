@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#0f172a">
+    <title>كتيب البكالوريا - منصة السعيد</title>
+
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='logo.png') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-color: #ffffff;
+            --text-muted: #94a3b8;
+            --border-color: #334155;
+            --accent-color: #38bdf8;
+            --gold-color: #f59e0b;
+            --shadow: rgba(0, 0, 0, 0.4);
+        }
+
+        [data-theme="light"] {
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-color: #0f172a;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+            --accent-color: #0284c7;
+            --gold-color: #d97706;
+            --shadow: rgba(0, 0, 0, 0.08);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: Tahoma, 'Segoe UI', sans-serif; transition: background-color 0.3s, color 0.3s; }
+        body { background-color: var(--bg-color); color: var(--text-color); padding: 15px; min-height: 100vh; }
+        .container { max-width: 700px; margin: 0 auto; padding-top: 75px; padding-bottom: 40px; }
+
+        /* الهيدر العلوي */
+        .top-navbar {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            height: 65px;
+            background-color: var(--card-bg);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 15px;
+            z-index: 1000;
+            box-shadow: 0 2px 10px var(--shadow);
+        }
+
+        .btn-back {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--bg-color);
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            padding: 8px 14px;
+            border-radius: 10px;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: bold;
+        }
+
+        .page-title {
+            font-size: 16px;
+            font-weight: bold;
+            color: var(--gold-color);
+        }
+
+        /* كارت العنوان */
+        .hero-card {
+            background: linear-gradient(135deg, var(--card-bg) 0%, rgba(245, 158, 11, 0.12) 100%);
+            border: 2px solid var(--gold-color);
+            border-radius: 18px;
+            padding: 25px 20px;
+            text-align: center;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 15px var(--shadow);
+        }
+
+        .hero-card h2 {
+            font-size: 22px;
+            color: var(--gold-color);
+            margin-bottom: 8px;
+        }
+
+        .hero-card p {
+            font-size: 13px;
+            color: var(--text-muted);
+            line-height: 1.6;
+        }
+
+        /* أزرار المشترك والغير مشترك */
+        .action-cards {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .card-btn {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 16px;
+            text-decoration: none;
+            color: var(--text-color);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            box-shadow: 0 4px 12px var(--shadow);
+            transition: transform 0.2s, border-color 0.2s;
+        }
+
+        .card-btn:hover {
+            transform: translateY(-3px);
+        }
+
+        .card-btn div {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card-btn strong {
+            font-size: 15px;
+            margin-bottom: 3px;
+        }
+
+        .card-btn span {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .btn-video { border-color: #ff0000; }
+        .btn-video i { color: #ff0000; }
+
+        .btn-pdf { border-color: var(--accent-color); }
+        .btn-pdf i { color: var(--accent-color); }
+
+        .btn-subscribe {
+            border-color: #25d366;
+            background: linear-gradient(135deg, var(--card-bg) 0%, rgba(37, 211, 102, 0.1) 100%);
+        }
+        .btn-subscribe i { color: #25d366; }
+        .btn-subscribe strong { color: #25d366; }
+
+        /* حالة المشترك */
+        .subscribed-banner {
+            background: rgba(34, 197, 94, 0.12);
+            border: 2px solid #22c55e;
+            border-radius: 16px;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .subscribed-banner i {
+            color: #22c55e;
+            margin-bottom: 10px;
+        }
+
+        .subscribed-banner h3 {
+            color: #22c55e;
+            font-size: 18px;
+            margin-bottom: 6px;
+        }
+
+        .subscribed-banner p {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        /* قائمة الملفات الأسبوعية */
+        .weekly-section h3 {
+            font-size: 16px;
+            margin-bottom: 15px;
+            color: var(--accent-color);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .pdfs-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .pdf-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 14px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+        }
+
+        .pdf-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .pdf-icon {
+            font-size: 22px;
+            color: #ef4444;
+        }
+
+        .week-tag {
+            display: inline-block;
+            font-size: 10px;
+            background: rgba(56, 189, 248, 0.15);
+            color: var(--accent-color);
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin-top: 3px;
+        }
+
+        .btn-download {
+            background: var(--accent-color);
+            color: #0f172a;
+            padding: 8px 14px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 12px;
+            font-weight: bold;
+            white-space: nowrap;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 30px;
+            background: var(--card-bg);
+            border: 1px dashed var(--border-color);
+            border-radius: 14px;
+            color: var(--text-muted);
+            font-size: 13px;
+        }
+        .empty-state i { margin-bottom: 8px; display: block; color: var(--accent-color); }
+    </style>
+</head>
+<body>
+
+    <header class="top-navbar">
+        <a href="{{ url_for('index') }}" class="btn-back"><i class="fa-solid fa-arrow-right"></i> الرئيسية</a>
+        <span class="page-title">كتيب البكالوريا 📘</span>
+    </header>
+
+    <div class="container">
+
+        {% if not is_subscribed %}
+            <!-- حالة الطالب غير المشترك -->
+            <div class="hero-card">
+                <h2>📘 كتيب البكالوريا الشامل</h2>
+                <p>مكانك المخصص لمتابعة كورس وكتيب البكالوريا، التحديثات والـ PDFs الأسبوعية الخاصة بطلاب الثانية بكالوريا.</p>
+            </div>
+
+            <div class="action-cards">
+                <!-- رابط فيديو التفاصيل -->
+                <a href="{{ booklet_video_url }}" target="_blank" class="card-btn btn-video">
+                    <i class="fa-brands fa-youtube fa-2xl"></i>
+                    <div>
+                        <strong>🎬 فيديو تفاصيل الكتيب</strong>
+                        <span>شاهد الشرح الكامل عن الكتيب ومحتوياته على يوتيوب</span>
+                    </div>
+                </a>
+
+                <!-- رابط الـ PDF الترويجي -->
+                <a href="{{ booklet_promo_pdf }}" target="_blank" class="card-btn btn-pdf">
+                    <i class="fa-solid fa-file-pdf fa-2xl"></i>
+                    <div>
+                        <strong>📄 الـ PDF الترويجي للكتيب</strong>
+                        <span>استعرض عينة مجانية وتفاصيل محتوى الكتيب</span>
+                    </div>
+                </a>
+
+                <!-- زر الاشتراك عبر الواتساب -->
+                {% set sub_msg = "السلام عليكم، أريد الاشتراك في كتيب البكالوريا" %}
+                <a href="https://wa.me/{{ support_wa }}?text={{ sub_msg|urlencode }}" target="_blank" class="card-btn btn-subscribe">
+                    <i class="fa-brands fa-whatsapp fa-2xl"></i>
+                    <div>
+                        <strong>💬 اشترك الآن في الكتيب</strong>
+                        <span>تواصل مع الدعم الفني لتفعيل حسابك واشتراكك فوراً</span>
+                    </div>
+                </a>
+            </div>
+
+        {% else %}
+            <!-- حالة الطالب المشترك -->
+            <div class="subscribed-banner">
+                <i class="fa-solid fa-circle-check fa-3x"></i>
+                <h3>أنت مشترك بالفعل في كتيب البكالوريا! 🎉</h3>
+                <p>مرحباً بك، يمكنك الآن الاطلاع وتحميل كافة الملفات والـ PDFs الأسبوعية.</p>
+            </div>
+
+            <div class="weekly-section">
+                <h3><i class="fa-solid fa-folder-open"></i> المحتوى والـ PDFs الأسبوعية</h3>
+                {% if weekly_pdfs %}
+                    <div class="pdfs-list">
+                        {% for item in weekly_pdfs %}
+                            <div class="pdf-card">
+                                <div class="pdf-info">
+                                    <i class="fa-solid fa-file-pdf pdf-icon"></i>
+                                    <div>
+                                        <strong>{{ item.title }}</strong><br>
+                                        <span class="week-tag">{{ item.week }}</span>
+                                    </div>
+                                </div>
+                                <a href="{{ item.link }}" target="_blank" class="btn-download">
+                                    <i class="fa-solid fa-download"></i> فتح / تحميل
+                                </a>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="empty-state">
+                        <i class="fa-solid fa-clock fa-2x"></i>
+                        <p>لم يتم إضافة ملفات أسبوعية بعد، سيتم إضافتها هنا أولاً بأول.</p>
+                    </div>
+                {% endif %}
+            </div>
+        {% endif %}
+
+    </div>
+
+</body>
+</html>
