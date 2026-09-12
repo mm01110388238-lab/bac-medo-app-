@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#0f172a">
+    <title>كتالوج المنصة - منصة السعيد</title>
+
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='logo.png') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-color: #ffffff;
+            --text-muted: #94a3b8;
+            --border-color: #334155;
+            --accent-color: #38bdf8;
+            --gold-color: #f59e0b;
+            --shadow: rgba(0, 0, 0, 0.4);
+        }
+
+        [data-theme="light"] {
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-color: #0f172a;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+            --accent-color: #0284c7;
+            --gold-color: #d97706;
+            --shadow: rgba(0, 0, 0, 0.08);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: Tahoma, 'Segoe UI', sans-serif; transition: background-color 0.3s, color 0.3s; }
+        body { background-color: var(--bg-color); color: var(--text-color); padding: 15px; min-height: 100vh; }
+        .container { max-width: 750px; margin: 0 auto; padding-top: 75px; padding-bottom: 40px; }
+
+        /* الهيدر العلوي */
+        .top-navbar {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            height: 65px;
+            background-color: var(--card-bg);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 15px;
+            z-index: 1000;
+            box-shadow: 0 2px 10px var(--shadow);
+        }
+
+        .btn-back {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--bg-color);
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            padding: 8px 14px;
+            border-radius: 10px;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: bold;
+        }
+
+        .page-title {
+            font-size: 16px;
+            font-weight: bold;
+            color: var(--accent-color);
+        }
+
+        /* عنوان الكتالوج */
+        .catalog-hero {
+            text-align: center;
+            margin-bottom: 25px;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 18px;
+            padding: 20px;
+            box-shadow: 0 4px 12px var(--shadow);
+        }
+
+        .catalog-hero h1 {
+            font-size: 22px;
+            color: var(--accent-color);
+            margin-bottom: 6px;
+        }
+
+        .catalog-hero p {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        /* البطاقات والأقسام */
+        .catalog-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 12px var(--shadow);
+        }
+
+        .card-header-title {
+            font-size: 16px;
+            font-weight: bold;
+            color: var(--accent-color);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 8px;
+        }
+
+        .card-content {
+            font-size: 14px;
+            line-height: 1.7;
+            color: var(--text-color);
+        }
+
+        .card-content p {
+            margin-bottom: 10px;
+        }
+
+        /* الفيديو */
+        .video-container {
+            position: relative;
+            padding-bottom: 56.25%;
+            height: 0;
+            overflow: hidden;
+            border-radius: 12px;
+            margin-top: 10px;
+        }
+
+        .video-container iframe {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%; border: 0;
+        }
+
+        .video-placeholder {
+            background: var(--bg-color);
+            border: 1px dashed var(--border-color);
+            border-radius: 12px;
+            padding: 25px;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 13px;
+        }
+
+        /* الأزرار الروابط */
+        .btn-action {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 10px 18px;
+            border-radius: 10px;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: bold;
+            color: #fff;
+            margin-top: 8px;
+            transition: transform 0.2s ease;
+        }
+
+        .btn-action:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn-wa { background: #25d366; }
+        .btn-yt { background: #ff0000; }
+        .btn-wa-community { background: #128c7e; }
+        .btn-primary-app { background: var(--accent-color); color: #0f172a; }
+
+        /* الأقسام السريعة */
+        .quick-nav-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 10px;
+            margin-top: 12px;
+        }
+
+        .quick-nav-btn {
+            background: var(--bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 12px;
+            text-decoration: none;
+            color: var(--text-color);
+            text-align: center;
+            font-size: 12px;
+            font-weight: bold;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .quick-nav-btn i {
+            font-size: 18px;
+            color: var(--accent-color);
+        }
+
+        /* الكلمة الأخيرة والآية القرآنية */
+        .quran-box {
+            background: rgba(56, 189, 248, 0.08);
+            border-right: 4px solid var(--accent-color);
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            text-align: center;
+            font-size: 15px;
+            font-weight: bold;
+            color: var(--accent-color);
+            line-height: 1.8;
+        }
+    </style>
+</head>
+<body>
+
+    <header class="top-navbar">
+        <a href="{{ url_for('index') }}" class="btn-back"><i class="fa-solid fa-arrow-right"></i> الرئيسية</a>
+        <span class="page-title">📖 كتالوج المنصة</span>
+    </header>
+
+    <div class="container">
+
+        <div class="catalog-hero">
+            <h1>📖 كتالوج منصة السعيد التعليمية</h1>
+            <p>دليلك الشامل لمعرفة هدف المنصة، فريق العمل، روابط التواصل والمحتوى المتاح</p>
+        </div>
+
+        <!-- 1. فيديو تفاصيل المنصة -->
+        <div class="catalog-card">
+            <div class="card-header-title">
+                <i class="fa-solid fa-circle-play"></i> 1. فيديو تفاصيل المنصة
+            </div>
+            <div class="card-content">
+                <p>فيديو قصير يشرح المنصة، هدفها التعليمي، وكيفية استفادة الطلاب منها بأفضل شكل.</p>
+                {% if platform_video_url %}
+                    <div class="video-container">
+                        {% set video_id = platform_video_url.split('v=')[-1].split('?')[0] if 'v=' in platform_video_url else platform_video_url.split('/')[-1].split('?')[0] %}
+                        <iframe src="https://www.youtube.com/embed/{{ video_id }}" allowfullscreen></iframe>
+                    </div>
+                {% else %}
+                    <div class="video-placeholder">
+                        <i class="fa-solid fa-film fa-2x"></i><br>
+                        سيتم رفع فيديو شرح المنصة التفصيلي قريباً من لوحة التحكم.
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- 2. مطور المنصة -->
+        <div class="catalog-card">
+            <div class="card-header-title">
+                <i class="fa-solid fa-code"></i> 2. مطور المنصة
+            </div>
+            <div class="card-content">
+                <p><strong>أهلاً بكم! أنا محمد أحمد عبد الحكيم</strong> (مواليد 2009، طالب بكالوريا).</p>
+                <p>قمت ببرمجة وتطوير منصة السعيد بهدف تقديم الفائدة لجميع زملائي الطلاب، وجعل هذا العمل صدقة جارية عن روح والدي (رحمه الله)، راجياً منكم الدعاء له بالرحمة والمغفرة.</p>
+                <a href="{{ developer_wa_link }}" target="_blank" class="btn-action btn-wa">
+                    <i class="fa-brands fa-whatsapp fa-lg"></i> تواصل مع المطور
+                </a>
+            </div>
+        </div>
+
+        <!-- 3. ما هو ربحنا من المنصة؟ -->
+        <div class="catalog-card">
+            <div class="card-header-title">
+                <i class="fa-solid fa-heart" style="color: #ef4444;"></i> 3. ما هو ربحنا من المنصة؟
+            </div>
+            <div class="card-content">
+                <p>هذه المنصة <strong>غير هادفة للربح كلياً</strong> ومتاحة مجاناً لدعم الطلاب.</p>
+                <p>الربح الوحيد الذي نتمناه ونحتاجه منكم هو:</p>
+                <ul>
+                    <li>دعوة صادقة لي بالتوفيق والقبول في كلية الحاسبات والمعلومات.</li>
+                    <li>الدعاء لوالدي (رحمه الله) بالرحمة والمغفرة.</li>
+                    <li>الدعاء لكل من ساهم وساند في تطوير ونشر المنصة.</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- 4. شكر وتقدير للمساهمين -->
+        <div class="catalog-card">
+            <div class="card-header-title">
+                <i class="fa-solid fa-trophy" style="color: var(--gold-color);"></i> 4. شكر وتقدير (المساهمون)
+            </div>
+            <div class="card-content">
+                <p>توجه المنصة أسمى عبارات الشكر والامتنان لكل من:</p>
+                <p>▪ <strong>أ/ محمد أحمد رشاد:</strong> كان بعد الله سبحانه وتعالى السبب الرئيسي في فكرة وإنشاء هذه المنصة، وله منا جزيل الشكر والدعاء.</p>
+                <p>▪ صانع المحتوى <strong>أ/ محمد سعيد:</strong> الذي ساهم بجهد كبير في التعديل على المنصة وتطويرها ونشرها لتصل إلى كافة الطلاب، وأصبح صاحب المنصة الرسمي بالتعاون معنا.</p>
+            </div>
+        </div>
+
+        <!-- 5. محتوى المنصة والأقسام التعليمية -->
+        <div class="catalog-card">
+            <div class="card-header-title">
+                <i class="fa-solid fa-graduation-cap"></i> 5. محتوى المنصة والأقسام التعليمية
+            </div>
+            <div class="card-content">
+                <p>تغطي المنصة المناهج الدراسية لطلاب (الثانية بكالوريا) بجميع مساراتها، ويمكنكم التنقل السريع بين الأقسام من هنا:</p>
+                <div class="quick-nav-grid">
+                    <a href="{{ url_for('booklet') }}" class="quick-nav-btn">
+                        <i class="fa-solid fa-book-bookmark" style="color: var(--gold-color);"></i>
+                        <span>كتيب البكالوريا</span>
+                    </a>
+                    <a href="{{ url_for('select_type', cat_type='books') }}" class="quick-nav-btn">
+                        <i class="fa-solid fa-book"></i>
+                        <span>الكتب الدراسية</span>
+                    </a>
+                    <a href="{{ url_for('select_type', cat_type='summaries') }}" class="quick-nav-btn">
+                        <i class="fa-solid fa-file-lines"></i>
+                        <span>تلخيص الدروس</span>
+                    </a>
+                    <a href="{{ url_for('select_type', cat_type='evaluations') }}" class="quick-nav-btn">
+                        <i class="fa-solid fa-pen-to-square"></i>
+                        <span>التقييمات المدرسية</span>
+                    </a>
+                    <a href="{{ url_for('select_type', cat_type='lessons') }}" class="quick-nav-btn">
+                        <i class="fa-solid fa-video"></i>
+                        <span>الشروحات والدروس</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- 6. تابعنا (اللينكات) -->
+        <div class="catalog-card">
+            <div class="card-header-title">
+                <i class="fa-solid fa-globe"></i> 6. تابعنا (اللينكات الرسمية)
+            </div>
+            <div class="card-content">
+                <p>تابعنا على منصاتنا الرسمية ليصلك كل جديد والتحديثات الأسبوعية للمنصة والكتب:</p>
+                <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px;">
+                    <a href="{{ yt_channel_url }}" target="_blank" class="btn-action btn-yt">
+                        <i class="fa-brands fa-youtube"></i> قناة اليوتيوب [اشترك]
+                    </a>
+                    <a href="{{ wa_channel_url }}" target="_blank" class="btn-action btn-wa">
+                        <i class="fa-brands fa-whatsapp"></i> قناة الواتساب [تابع]
+                    </a>
+                    <a href="{{ wa_community_url }}" target="_blank" class="btn-action btn-wa-community">
+                        <i class="fa-solid fa-users"></i> مجتمع الواتساب [انضم]
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- 7. تواصل معنا والدعم -->
+        <div class="catalog-card">
+            <div class="card-header-title">
+                <i class="fa-solid fa-headset"></i> 7. تواصل مع الدعم الفني
+            </div>
+            <div class="card-content">
+                <p>هل لديك استفسار، مشكلة تقنية، أو ترغب بالاشتراك في كتيب البكالوريا؟ فريق الدعم جاهز لمساعدتك.</p>
+                <a href="{{ support_wa_link }}" target="_blank" class="btn-action btn-wa">
+                    <i class="fa-brands fa-whatsapp fa-lg"></i> محادثة الدعم الفني مباشرة
+                </a>
+            </div>
+        </div>
+
+        <!-- 8. كلمة أخيرة -->
+        <div class="catalog-card">
+            <div class="card-header-title">
+                <i class="fa-solid fa-star" style="color: var(--gold-color);"></i> 8. كلمة أخيرة
+            </div>
+            <div class="card-content">
+                <p>إلى كل طالب وطالبة يسعون لتحقيق أحلامهم: الرحلة تحتاج إلى الصبر والعمل والمواظبة. لا تستسلموا لليأس أبداً، فكل جهد تبذلونه اليوم هو خطوة نحو مستقبلكم المشرق.</p>
+                
+                <div class="quran-box">
+                    ﴿ وَأَن لَّيْسَ لِلإِنسَانِ إِلاَّ مَا سَعَىٰ * وَأَنَّ سَعْيَهُ سَوْفَ يُرَىٰ ﴾
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</body>
+</html>
