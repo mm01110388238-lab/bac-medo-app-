@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>توضيح مهم - الكتب الخارجية للحل</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background-color: #0b0f19;
+            color: #ffffff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding-bottom: 40px;
+        }
+        .header-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            background-color: #111827;
+            border-bottom: 1px solid #1f2937;
+            margin-bottom: 25px;
+        }
+        .btn-back {
+            background-color: #1f2937;
+            color: #e5e7eb;
+            border: 1px solid #374151;
+            padding: 6px 16px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 14px;
+        }
+        .btn-back:hover {
+            background-color: #374151;
+            color: #fff;
+        }
+        .info-card {
+            background-color: #111827;
+            border: 1px solid #1f2937;
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 20px;
+        }
+        .info-title {
+            color: #38bdf8;
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .info-text {
+            color: #d1d5db;
+            font-size: 15px;
+            line-height: 1.8;
+        }
+        .highlight-box {
+            background-color: #1e293b;
+            border-right: 4px solid #38bdf8;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+        .btn-action {
+            background: linear-gradient(135deg, #25d366, #128c7e);
+            color: #fff;
+            padding: 12px 24px;
+            border-radius: 10px;
+            font-weight: 700;
+            text-decoration: none;
+            display: inline-block;
+            width: 100%;
+            text-align: center;
+            font-size: 16px;
+            border: none;
+        }
+        .btn-action:hover {
+            background: linear-gradient(135deg, #128c7e, #075e54);
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header-bar">
+        <h5 class="m-0 font-bold">توضيح مهم جداً</h5>
+        <a href="{{ url_for('select_type', cat_type='external_books') }}" class="btn-back">← العودة للخيارات</a>
+    </div>
+
+    <div class="container" style="max-width: 650px;">
+        
+        <div class="info-card">
+            <div class="info-title">
+                <i class="fa-solid fa-circle-exclamation text-warning"></i>
+                تفاصيل قسم كتب الحل الخارجية
+            </div>
+            
+            <div class="info-text">
+                <p>مرحباً بك يا بطل! هذا القسم مخصص لتقديم أجزاء الحل والتطبيقات الخاصة بالكتب الخارجية لمساعدتك في المذاكرة والتطبيق أولاً بأول.</p>
+                
+                <div class="highlight-box">
+                    <strong>📌 تنبيه هام:</strong> 
+                    يتم استلام أجزاء الكتب والمذكرات مباشرة عبر التواصل مع خدمة الدعم والمكتبة على الواتساب لضمان حصولك على أحدث نسخ الإجابات والحلول.
+                </div>
+
+                <h6 class="text-white mt-4 mb-2 font-bold">العروض المتاحة:</h6>
+                <ul>
+                    <li class="mb-2"><strong>كتاب منفرد:</strong> طلب جزء الحل لكتاب معين بـ 15 جنيه.</li>
+                    <li class="mb-2"><strong>عرض المحدد (35 ج):</strong> يتضمن 4 كتب (كتاب في كل مادة أساسية).</li>
+                    <li class="mb-2"><strong>عرض الدحيحة (50 ج):</strong> يتضمن 8 كتب (كتابين لكل مادة للتدريب المكثف).</li>
+                </ul>
+            </div>
+
+            <div class="mt-4">
+                <a href="https://wa.me/{{ bookstore_wa }}?text={{ 'السلام عليكم، قرأت التوضيح وعايز اطلب كتب الحل' | urlencode }}" target="_blank" class="btn-action">
+                    <i class="fa-brands fa-whatsapp me-2"></i> تواصل مع المكتبة للطلب الآن
+                </a>
+            </div>
+        </div>
+
+    </div>
+
+</body>
+</html>
