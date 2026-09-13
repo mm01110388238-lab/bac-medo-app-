@@ -288,7 +288,7 @@
             width: 100%;
             aspect-ratio: 16 / 9;
             overflow: hidden;
-            background: rgba(15, 23, 42, 0.5);
+            background: rgba(15, 23, 42, 0.6);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -304,6 +304,20 @@
 
         .main-card:hover .card-cover-img {
             transform: scale(1.06);
+        }
+
+        /* أيقونة بديلة في حالة عدم رفع الصورة بعد */
+        .card-fallback-icon {
+            width: 52px;
+            height: 52px;
+            background: rgba(56, 189, 248, 0.15);
+            color: var(--accent-color);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
         }
 
         .card-title {
@@ -446,14 +460,20 @@
             <a href="{{ url_for('booklet') }}" class="main-card booklet-card">
                 <span class="badge-featured">حصري 🔥</span>
                 <div class="card-img-container">
-                    <img src="{{ url_for('static', filename='booklet_cover.png') }}" alt="" class="card-cover-img" onerror="this.style.display='none'">
+                    <img src="{{ url_for('static', filename='booklet_cover.png') }}" alt="" class="card-cover-img" onerror="showFallback(this)">
+                    <div class="card-fallback-icon" style="display: none;">
+                        <i class="fa-solid fa-book-bookmark"></i>
+                    </div>
                 </div>
             </a>
 
             <!-- 2. كارت الكتب الخارجية للحل -->
             <a href="{{ url_for('select_type', cat_type='external_books') }}" class="main-card">
                 <div class="card-img-container">
-                    <img src="{{ url_for('static', filename='books_cover.png') }}" alt="" class="card-cover-img" onerror="this.style.display='none'">
+                    <img src="{{ url_for('static', filename='books_cover.png') }}" alt="" class="card-cover-img" onerror="showFallback(this)">
+                    <div class="card-fallback-icon" style="display: none;">
+                        <i class="fa-solid fa-book-open"></i>
+                    </div>
                 </div>
                 <div class="card-title">الكتب الخارجية للحل</div>
             </a>
@@ -461,7 +481,10 @@
             <!-- 3. كارت تلخيص الدروس -->
             <a href="{{ url_for('select_type', cat_type='summaries') }}" class="main-card">
                 <div class="card-img-container">
-                    <img src="{{ url_for('static', filename='summaries_cover.png') }}" alt="" class="card-cover-img" onerror="this.style.display='none'">
+                    <img src="{{ url_for('static', filename='summaries_cover.png') }}" alt="" class="card-cover-img" onerror="showFallback(this)">
+                    <div class="card-fallback-icon" style="display: none;">
+                        <i class="fa-solid fa-file-lines"></i>
+                    </div>
                 </div>
                 <div class="card-title">تلخيص الدروس</div>
             </a>
@@ -469,7 +492,10 @@
             <!-- 4. كارت التقييمات المدرسية -->
             <a href="{{ url_for('select_type', cat_type='evaluations') }}" class="main-card">
                 <div class="card-img-container">
-                    <img src="{{ url_for('static', filename='evaluations_cover.png') }}" alt="" class="card-cover-img" onerror="this.style.display='none'">
+                    <img src="{{ url_for('static', filename='evaluations_cover.png') }}" alt="" class="card-cover-img" onerror="showFallback(this)">
+                    <div class="card-fallback-icon" style="display: none;">
+                        <i class="fa-solid fa-pen-to-square"></i>
+                    </div>
                 </div>
                 <div class="card-title">التقييمات المدرسية</div>
             </a>
@@ -477,7 +503,10 @@
             <!-- 5. كارت الشروحات والمسارات -->
             <a href="{{ url_for('select_type', cat_type='lessons') }}" class="main-card">
                 <div class="card-img-container">
-                    <img src="{{ url_for('static', filename='lessons_cover.png') }}" alt="" class="card-cover-img" onerror="this.style.display='none'">
+                    <img src="{{ url_for('static', filename='lessons_cover.png') }}" alt="" class="card-cover-img" onerror="showFallback(this)">
+                    <div class="card-fallback-icon" style="display: none;">
+                        <i class="fa-solid fa-graduation-cap"></i>
+                    </div>
                 </div>
                 <div class="card-title">الشروحات والمسارات</div>
             </a>
@@ -485,7 +514,10 @@
             <!-- 6. كارت المنصات التعليمية -->
             <a href="{{ url_for('platforms') }}" class="main-card">
                 <div class="card-img-container">
-                    <img src="{{ url_for('static', filename='platforms_cover.png') }}" alt="" class="card-cover-img" onerror="this.style.display='none'">
+                    <img src="{{ url_for('static', filename='platforms_cover.png') }}" alt="" class="card-cover-img" onerror="showFallback(this)">
+                    <div class="card-fallback-icon" style="display: none;">
+                        <i class="fa-solid fa-globe"></i>
+                    </div>
                 </div>
                 <div class="card-title">المنصات التعليمية</div>
             </a>
@@ -493,7 +525,10 @@
             <!-- 7. كارت كتالوج المنصة -->
             <a href="{{ url_for('catalog') }}" class="main-card">
                 <div class="card-img-container">
-                    <img src="{{ url_for('static', filename='catalog_cover.png') }}" alt="" class="card-cover-img" onerror="this.style.display='none'">
+                    <img src="{{ url_for('static', filename='catalog_cover.png') }}" alt="" class="card-cover-img" onerror="showFallback(this)">
+                    <div class="card-fallback-icon" style="display: none;">
+                        <i class="fa-solid fa-book-journal-whills"></i>
+                    </div>
                 </div>
                 <div class="card-title">كتالوج المنصة</div>
             </a>
@@ -519,6 +554,15 @@
     </div>
 
     <script>
+        // إظهار الأيقونة الاحترافية البديلة في حالة عدم توفر الصورة
+        function showFallback(img) {
+            img.style.display = 'none';
+            const fallback = img.nextElementSibling;
+            if (fallback) {
+                fallback.style.display = 'flex';
+            }
+        }
+
         let deferredPrompt;
         const installBanner = document.getElementById('install-banner');
         const installBtn = document.getElementById('btn-install-app');
