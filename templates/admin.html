@@ -247,7 +247,17 @@
         </form>
     </div>
 
-    <!-- 2. إدارة أسبوعيات كتيب البكالوريا (إضافة وحذف PDFs) -->
+    <!-- 2. التحكم في فيديو تفاصيل الكتب الخارجية -->
+    <div class="container">
+        <h2><i class="fa-solid fa-book"></i> فيديو تفاصيل الكتب الخارجية للحل</h2>
+        <form method="POST" action="{{ url_for('admin') }}">
+            <label>رابط فيديو يوتيوب تفاصيل الكتب:</label>
+            <input type="url" name="external_books_video_url" value="{{ external_books_video_url or '' }}" placeholder="https://www.youtube.com/watch?v=...">
+            <button type="submit" class="btn-submit" style="background-color: var(--accent-color); color: #0f172a;">💾 حفظ رابط فيديو الكتب الخارجية</button>
+        </form>
+    </div>
+
+    <!-- 3. إدارة أسبوعيات كتيب البكالوريا (إضافة وحذف PDFs) -->
     <div class="container">
         <button class="toggle-btn" onclick="toggleSection('booklet-pdfs-section', 'booklet-pdfs-icon')">
             <span><i class="fa-solid fa-book-bookmark"></i> إدارة الـ PDFs الأسبوعية لكتيب البكالوريا</span>
@@ -285,7 +295,7 @@
         </div>
     </div>
 
-    <!-- 3. قسم الأعضاء وإدارة اشتراكات كتيب البكالوريا (قابل للطي) -->
+    <!-- 4. قسم الأعضاء وإدارة اشتراكات كتيب البكالوريا (قابل للطي) -->
     <div class="container">
         <button class="toggle-btn" onclick="toggleSection('users-section', 'users-icon')">
             <span><i class="fa-solid fa-users"></i> الاعضاء المسجلين وإدارة الاشتراكات (العدد: {{ total_users }})</span>
@@ -328,7 +338,7 @@
         </div>
     </div>
 
-    <!-- 4. قسم المنتدى والرد على أسئلة الطلاب (قابل للطي) -->
+    <!-- 5. قسم المنتدى والرد على أسئلة الطلاب (قابل للطي) -->
     <div class="container">
         <button class="toggle-btn" onclick="toggleSection('forum-section', 'forum-icon')">
             <span><i class="fa-solid fa-comments"></i> إدارة المنتدى والأسئلة (العدد: {{ forum|length }})</span>
@@ -365,7 +375,7 @@
         </div>
     </div>
 
-    <!-- 5. قسم إضافة المحتوى -->
+    <!-- 6. قسم إضافة المحتوى -->
     <div class="container">
         <h2 style="text-align: center;"><i class="fa-solid fa-plus-circle"></i> إضافة محتوى جديد</h2>
         
