@@ -23,9 +23,12 @@ YT_CHANNEL_URL = "https://youtube.com/@mohamed25saeid?si=GCVoRwEzC499fsE5"
 WA_CHANNEL_URL = "https://whatsapp.com/channel/0029VbCdtHG2ER6cBCinCb0x"
 WA_COMMUNITY_URL = "https://chat.whatsapp.com/L102CxYGFfWLUwcVgvurpa"
 
-# الاتصال بقاعدة بيانات Upstash / Vercel KV تلقائياً
-url = os.getenv("UPSTASH_REDIS_REST_URL") or os.getenv("KV_REST_API_URL")
-token = os.getenv("UPSTASH_REDIS_REST_TOKEN") or os.getenv("KV_REST_API_TOKEN")
+# الاتصال بقاعدة بيانات Upstash / Vercel KV تلقائياً مع تنظيف النصوص
+raw_url = os.getenv("UPSTASH_REDIS_REST_URL") or os.getenv("KV_REST_API_URL") or ""
+raw_token = os.getenv("UPSTASH_REDIS_REST_TOKEN") or os.getenv("KV_REST_API_TOKEN") or ""
+
+url = raw_url.strip()
+token = raw_token.strip()
 
 redis = Redis(url=url, token=token) if url and token else None
 
@@ -107,14 +110,22 @@ def load_data():
                     data.setdefault('lessons', {key: [] for key in TRACKS.keys()})
                     
                     gen = data.setdefault('general_items', {})
+                    if not isinstance(gen, dict):
+                        gen = {}
+                        data['general_items'] = gen
                     for cat in ['school_books', 'external_books', 'books', 'summaries', 'evaluations', 'lessons']:
-                        gen.setdefault(cat, {})
+                        if not isinstance(gen.get(cat), dict):
+                            gen[cat] = {}
                         for sub in GENERAL_SUBJECTS.keys():
                             gen[cat].setdefault(sub, [])
 
                     spec = data.setdefault('specialized_items', {})
+                    if not isinstance(spec, dict):
+                        spec = {}
+                        data['specialized_items'] = spec
                     for cat in ['school_books', 'external_books', 'books', 'summaries', 'evaluations', 'lessons']:
-                        spec.setdefault(cat, {})
+                        if not isinstance(spec.get(cat), dict):
+                            spec[cat] = {}
                         for trk in TRACKS.keys():
                             spec[cat].setdefault(trk, [])
                             
@@ -134,11 +145,18 @@ def save_data(data):
             print("Redis save error:", e)
 
 def get_current_user(data):
-    if 'user_identifier' in session or 'user' in session:
-        user_id = session.get('user_identifier') or session.get('user')
+    user_identifier = session.get('user_identifier')
+    if user_identifier:
         for u in data.get('users', []):
-            if u.get('identifier') == user_id or u.get('name') == session.get('user'):
+            if str(u.get('identifier')).strip() == str(user_identifier).strip():
                 return u
+                
+    user_name = session.get('user')
+    if user_name:
+        for u in data.get('users', []):
+            if u.get('name') == user_name:
+                return u
+
     return None
 
 @app.before_request
@@ -153,10 +171,13 @@ def inject_globals():
     is_subscribed = False
 
     if current_user:
-        user_id = str(current_user.get('identifier') or current_user.get('name'))
-        user_note = data.get('notes', {}).get(user_id, "")
-        subscribers = data.get('booklet_subscribers', [])
-        is_subscribed = user_id in subscribers or current_user.get('identifier') in subscribers
+        user_key = str(current_user.get('identifier') or current_user.get('name', ''))
+        user_note = data.get('notes', {}).get(user_key, "")
+        
+        subscribers = [str(s).strip() for s in data.get('booklet_subscribers', [])]
+        u_id = str(current_user.get('identifier', '')).strip()
+        u_name = str(current_user.get('name', '')).strip()
+        is_subscribed = (u_id in subscribers) or (u_name in subscribers)
 
     return {
         'developer_wa': DEVELOPER_WA,
@@ -193,7 +214,7 @@ def register():
         if identifier and password:
             data = load_data()
             for u in data.get('users', []):
-                if u.get('identifier') == identifier:
+                if str(u.get('identifier')).strip() == identifier:
                     return "الحساب مسجل بالفعل! <a href='/login'>سجل دخولك من هنا</a>"
             
             user_obj = {
@@ -223,7 +244,7 @@ def login():
         
         data = load_data()
         for u in data.get('users', []):
-            if u.get('identifier') == identifier and u.get('password') == password:
+            if str(u.get('identifier')).strip() == identifier and u.get('password') == password:
                 session.permanent = True
                 session['user'] = u.get('name', identifier)
                 session['user_identifier'] = u.get('identifier')
@@ -239,15 +260,14 @@ def settings():
         return redirect(url_for('login'))
         
     data = load_data()
-    user_id = session.get('user_identifier') or session.get('user')
-    current_user = None
+    current_user = get_current_user(data)
     user_index = -1
 
-    for idx, u in enumerate(data.get('users', [])):
-        if u.get('identifier') == user_id or u.get('name') == session.get('user'):
-            current_user = u
-            user_index = idx
-            break
+    if current_user:
+        for idx, u in enumerate(data.get('users', [])):
+            if u.get('identifier') == current_user.get('identifier'):
+                user_index = idx
+                break
 
     if request.method == 'POST':
         name = request.form.get('name', '').strip()
@@ -295,10 +315,13 @@ def booklet():
         
     data = load_data()
     current_user = get_current_user(data)
-    user_id = str(current_user.get('identifier') or current_user.get('name')) if current_user else ''
     
-    subscribers = data.get('booklet_subscribers', [])
-    is_subscribed = user_id in subscribers or (current_user and current_user.get('identifier') in subscribers)
+    subscribers = [str(s).strip() for s in data.get('booklet_subscribers', [])]
+    is_subscribed = False
+    if current_user:
+        u_id = str(current_user.get('identifier', '')).strip()
+        u_name = str(current_user.get('name', '')).strip()
+        is_subscribed = (u_id in subscribers) or (u_name in subscribers)
     
     weekly_pdfs = data.get('weekly_pdfs', []) if is_subscribed else []
     
@@ -497,12 +520,14 @@ def save_note():
         return redirect(url_for('login'))
     
     note_text = request.form.get('note', '').strip()
-    user_key = str(session.get('user_identifier') or session.get('user'))
-    
     data = load_data()
-    data.setdefault('notes', {})
-    data['notes'][user_key] = note_text
-    save_data(data)
+    current_user = get_current_user(data)
+    
+    if current_user:
+        user_key = str(current_user.get('identifier') or current_user.get('name'))
+        data.setdefault('notes', {})
+        data['notes'][user_key] = note_text
+        save_data(data)
     
     return redirect(request.referrer or url_for('index'))
 
@@ -687,12 +712,13 @@ def delete_specialized_item(cat_type, track_id, index):
         return redirect(url_for('admin'))
     
     data = load_data()
-    items = data.get('specialized_items', {}).get(cat_type, {}).get(track_id, [])
-    if 0 <= index < len(items):
-        items.pop(index)
+    spec_items = data.get('specialized_items', {}).get(cat_type, {}).get(track_id, [])
+    if 0 <= index < len(spec_items):
+        spec_items.pop(index)
         if cat_type == 'lessons' and track_id in data.get('lessons', {}):
-            if 0 <= index < len(data['lessons'][track_id]):
-                data['lessons'][track_id].pop(index)
+            lessons_list = data['lessons'][track_id]
+            if lessons_list is not spec_items and 0 <= index < len(lessons_list):
+                lessons_list.pop(index)
         save_data(data)
     return redirect(url_for('admin'))
 
