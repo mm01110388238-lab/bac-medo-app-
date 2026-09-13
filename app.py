@@ -15,6 +15,7 @@ app.config['SESSION_REFRESH_EACH_REQUEST'] = True
 # --- أرقام التواصل والروابط الرسمية ---
 DEVELOPER_WA = "201110388238"
 SUPPORT_WA = "201221441631"
+BOOKSTORE_WA = "201022574864"  # رقم واتساب دعم المكتبة
 
 BOOKLET_VIDEO_URL = "https://youtu.be/cqvxq_C7R9Q?si=4bqe5Ti5emcQSPxb"
 BOOKLET_PROMO_PDF = "https://drive.google.com/file/d/1oVLiR8NgPe5YsWANKJruKasEkoynQ8YN/view?usp=drivesdk"
@@ -68,6 +69,7 @@ def load_data():
         "evaluations": [],
         "platforms": [],
         "platform_video_url": "",
+        "external_books_video_url": "",
         "booklet_subscribers": [],
         "weekly_pdfs": [],
         "lessons": {key: [] for key in TRACKS.keys()},
@@ -105,6 +107,7 @@ def load_data():
                     data.setdefault('evaluations', [])
                     data.setdefault('platforms', [])
                     data.setdefault('platform_video_url', "")
+                    data.setdefault('external_books_video_url', "")
                     data.setdefault('booklet_subscribers', [])
                     data.setdefault('weekly_pdfs', [])
                     data.setdefault('lessons', {key: [] for key in TRACKS.keys()})
@@ -184,12 +187,15 @@ def inject_globals():
         'developer_wa_link': f"https://wa.me/{DEVELOPER_WA}",
         'support_wa': SUPPORT_WA,
         'support_wa_link': f"https://wa.me/{SUPPORT_WA}",
+        'bookstore_wa': BOOKSTORE_WA,
+        'bookstore_wa_link': f"https://wa.me/{BOOKSTORE_WA}",
         'booklet_video_url': BOOKLET_VIDEO_URL,
         'booklet_promo_pdf': BOOKLET_PROMO_PDF,
         'yt_channel_url': YT_CHANNEL_URL,
         'wa_channel_url': WA_CHANNEL_URL,
         'wa_community_url': WA_COMMUNITY_URL,
         'platform_video_url': data.get('platform_video_url', ''),
+        'external_books_video_url': data.get('external_books_video_url', ''),
         'is_booklet_subscribed': is_subscribed,
         'user_note': user_note,
         'current_user': current_user,
@@ -347,7 +353,12 @@ def select_type(cat_type):
 
     if cat_type == 'catalog':
         return redirect(url_for('catalog'))
-        
+
+    # توجيه قسم الكتب الخارجية للحل إلى صفحة الإعلانات والعروض المخصصة
+    if cat_type == 'external_books':
+        data = load_data()
+        return render_template('external_books.html', video_url=data.get('external_books_video_url', ''))
+
     if cat_type not in SECTION_NAMES:
         return redirect(url_for('index'))
     
@@ -557,6 +568,12 @@ def admin():
             save_data(data)
             return redirect(url_for('admin'))
             
+        # تحديث فيديو تفاصيل الكتب الخارجية
+        if 'external_books_video_url' in request.form:
+            data['external_books_video_url'] = request.form.get('external_books_video_url', '').strip()
+            save_data(data)
+            return redirect(url_for('admin'))
+
         # إضافة ملف PDF أسبوعي للكتيب
         if 'add_weekly_pdf' in request.form:
             title = request.form.get('weekly_title', '').strip()
