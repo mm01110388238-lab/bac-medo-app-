@@ -99,20 +99,24 @@ def load_data():
             if raw:
                 data = json.loads(raw) if isinstance(raw, str) else raw
                 if isinstance(data, dict):
-                    data.setdefault('users', [])
-                    data.setdefault('school_books', [])
-                    data.setdefault('external_books', [])
-                    data.setdefault('books', [])
-                    data.setdefault('summaries', [])
-                    data.setdefault('evaluations', [])
-                    data.setdefault('platforms', [])
-                    data.setdefault('platform_video_url', "")
-                    data.setdefault('external_books_video_url', "")
-                    data.setdefault('booklet_subscribers', [])
-                    data.setdefault('weekly_pdfs', [])
-                    data.setdefault('lessons', {key: [] for key in TRACKS.keys()})
+                    # حماية شام ضد القيم الفارغة (None) أو أنواع البيانات غير المتوافقة
+                    for k in ['users', 'school_books', 'external_books', 'books', 'summaries', 'evaluations', 'platforms', 'booklet_subscribers', 'weekly_pdfs', 'forum']:
+                        if not isinstance(data.get(k), list):
+                            data[k] = []
                     
-                    gen = data.setdefault('general_items', {})
+                    if not isinstance(data.get('notes'), dict):
+                        data['notes'] = {}
+                    
+                    if not isinstance(data.get('platform_video_url'), str):
+                        data['platform_video_url'] = ""
+                    
+                    if not isinstance(data.get('external_books_video_url'), str):
+                        data['external_books_video_url'] = ""
+
+                    if not isinstance(data.get('lessons'), dict):
+                        data['lessons'] = {key: [] for key in TRACKS.keys()}
+
+                    gen = data.get('general_items')
                     if not isinstance(gen, dict):
                         gen = {}
                         data['general_items'] = gen
@@ -120,9 +124,10 @@ def load_data():
                         if not isinstance(gen.get(cat), dict):
                             gen[cat] = {}
                         for sub in GENERAL_SUBJECTS.keys():
-                            gen[cat].setdefault(sub, [])
+                            if not isinstance(gen[cat].get(sub), list):
+                                gen[cat][sub] = []
 
-                    spec = data.setdefault('specialized_items', {})
+                    spec = data.get('specialized_items')
                     if not isinstance(spec, dict):
                         spec = {}
                         data['specialized_items'] = spec
@@ -130,10 +135,9 @@ def load_data():
                         if not isinstance(spec.get(cat), dict):
                             spec[cat] = {}
                         for trk in TRACKS.keys():
-                            spec[cat].setdefault(trk, [])
-                            
-                    data.setdefault('forum', [])
-                    data.setdefault('notes', {})
+                            if not isinstance(spec[cat].get(trk), list):
+                                spec[cat][trk] = []
+
                     return data
         except Exception as e:
             print("Redis load error:", e)
@@ -148,16 +152,19 @@ def save_data(data):
             print("Redis save error:", e)
 
 def get_current_user(data):
+    if not isinstance(data, dict):
+        return None
+    users = data.get('users') or []
     user_identifier = session.get('user_identifier')
     if user_identifier:
-        for u in data.get('users', []):
-            if str(u.get('identifier')).strip() == str(user_identifier).strip():
+        for u in users:
+            if isinstance(u, dict) and str(u.get('identifier', '')).strip() == str(user_identifier).strip():
                 return u
                 
     user_name = session.get('user')
     if user_name:
-        for u in data.get('users', []):
-            if u.get('name') == user_name:
+        for u in users:
+            if isinstance(u, dict) and u.get('name') == user_name:
                 return u
 
     return None
@@ -175,12 +182,16 @@ def inject_globals():
 
     if current_user:
         user_key = str(current_user.get('identifier') or current_user.get('name', ''))
-        user_note = data.get('notes', {}).get(user_key, "")
+        notes = data.get('notes') or {}
+        user_note = notes.get(user_key, "") if isinstance(notes, dict) else ""
         
-        subscribers = [str(s).strip() for s in data.get('booklet_subscribers', [])]
+        subscribers = [str(s).strip() for s in (data.get('booklet_subscribers') or [])]
         u_id = str(current_user.get('identifier', '')).strip()
         u_name = str(current_user.get('name', '')).strip()
         is_subscribed = (u_id in subscribers) or (u_name in subscribers)
+
+    ext_books_video = data.get('external_books_video_url', '') or ''
+    plat_video = data.get('platform_video_url', '') or ''
 
     return {
         'developer_wa': DEVELOPER_WA,
@@ -194,8 +205,9 @@ def inject_globals():
         'yt_channel_url': YT_CHANNEL_URL,
         'wa_channel_url': WA_CHANNEL_URL,
         'wa_community_url': WA_COMMUNITY_URL,
-        'platform_video_url': data.get('platform_video_url', ''),
-        'external_books_video_url': data.get('external_books_video_url', ''),
+        'platform_video_url': plat_video,
+        'external_books_video_url': ext_books_video,
+        'video_url': ext_books_video or plat_video,  # حماية للقوالب التي تطلب فيديو العام
         'is_booklet_subscribed': is_subscribed,
         'user_note': user_note,
         'current_user': current_user,
@@ -219,8 +231,8 @@ def register():
         
         if identifier and password:
             data = load_data()
-            for u in data.get('users', []):
-                if str(u.get('identifier')).strip() == identifier:
+            for u in (data.get('users') or []):
+                if isinstance(u, dict) and str(u.get('identifier')).strip() == identifier:
                     return "الحساب مسجل بالفعل! <a href='/login'>سجل دخولك من هنا</a>"
             
             user_obj = {
@@ -229,7 +241,7 @@ def register():
                 'password': password,
                 'track': track
             }
-            data['users'].append(user_obj)
+            data.setdefault('users', []).append(user_obj)
             save_data(data)
             
             session.permanent = True
@@ -249,8 +261,8 @@ def login():
         password = request.form.get('password', '').strip()
         
         data = load_data()
-        for u in data.get('users', []):
-            if str(u.get('identifier')).strip() == identifier and u.get('password') == password:
+        for u in (data.get('users') or []):
+            if isinstance(u, dict) and str(u.get('identifier')).strip() == identifier and u.get('password') == password:
                 session.permanent = True
                 session['user'] = u.get('name', identifier)
                 session['user_identifier'] = u.get('identifier')
@@ -269,9 +281,10 @@ def settings():
     current_user = get_current_user(data)
     user_index = -1
 
+    users = data.get('users') or []
     if current_user:
-        for idx, u in enumerate(data.get('users', [])):
-            if u.get('identifier') == current_user.get('identifier'):
+        for idx, u in enumerate(users):
+            if isinstance(u, dict) and u.get('identifier') == current_user.get('identifier'):
                 user_index = idx
                 break
 
@@ -322,7 +335,7 @@ def booklet():
     data = load_data()
     current_user = get_current_user(data)
     
-    subscribers = [str(s).strip() for s in data.get('booklet_subscribers', [])]
+    subscribers = [str(s).strip() for s in (data.get('booklet_subscribers') or [])]
     is_subscribed = False
     if current_user:
         u_id = str(current_user.get('identifier', '')).strip()
@@ -354,7 +367,6 @@ def select_type(cat_type):
     if cat_type == 'catalog':
         return redirect(url_for('catalog'))
 
-    # توجيه قسم الكتب الخارجية للحل إلى صفحة الإعلانات والعروض المخصصة
     if cat_type == 'external_books':
         data = load_data()
         return render_template('external_books.html', video_url=data.get('external_books_video_url', ''))
@@ -418,7 +430,10 @@ def general_items(cat_type, subject_id):
         'summaries': items if cat_type == 'summaries' else [],
         'evaluations': items if cat_type == 'evaluations' else [],
         'grouped_lessons': grouped_lessons,
-        'back_url': url_for('select_type', cat_type=cat_type)
+        'back_url': url_for('select_type', cat_type=cat_type),
+        'video_url': data.get('external_books_video_url', '') if cat_type == 'external_books' else data.get('platform_video_url', ''),
+        'external_books_video_url': data.get('external_books_video_url', ''),
+        'platform_video_url': data.get('platform_video_url', '')
     }
     return render_template(template_name, **context)
 
@@ -470,7 +485,10 @@ def specialized_items(cat_type, track_id):
         'summaries': items if cat_type == 'summaries' else [],
         'evaluations': items if cat_type == 'evaluations' else [],
         'grouped_lessons': grouped_lessons,
-        'back_url': url_for('select_type', cat_type=cat_type)
+        'back_url': url_for('select_type', cat_type=cat_type),
+        'video_url': data.get('external_books_video_url', '') if cat_type == 'external_books' else data.get('platform_video_url', ''),
+        'external_books_video_url': data.get('external_books_video_url', ''),
+        'platform_video_url': data.get('platform_video_url', '')
     }
     return render_template(template_name, **context)
 
@@ -537,6 +555,8 @@ def save_note():
     if current_user:
         user_key = str(current_user.get('identifier') or current_user.get('name'))
         data.setdefault('notes', {})
+        if not isinstance(data['notes'], dict):
+            data['notes'] = {}
         data['notes'][user_key] = note_text
         save_data(data)
     
@@ -700,8 +720,8 @@ def delete_item(cat_type, index):
             save_data(data)
     elif cat_type.startswith('lesson_'):
         track_key = cat_type.replace('lesson_', '')
-        if 'lessons' in data and track_key in data['lessons']:
-            if len(data['lessons'][track_key]) > index:
+        if 'lessons' in data and isinstance(data['lessons'], dict) and track_key in data['lessons']:
+            if isinstance(data['lessons'][track_key], list) and len(data['lessons'][track_key]) > index:
                 data['lessons'][track_key].pop(index)
                 save_data(data)
     elif cat_type == 'forum':
@@ -734,7 +754,7 @@ def delete_specialized_item(cat_type, track_id, index):
         spec_items.pop(index)
         if cat_type == 'lessons' and track_id in data.get('lessons', {}):
             lessons_list = data['lessons'][track_id]
-            if lessons_list is not spec_items and 0 <= index < len(lessons_list):
+            if lessons_list is not spec_items and isinstance(lessons_list, list) and 0 <= index < len(lessons_list):
                 lessons_list.pop(index)
         save_data(data)
     return redirect(url_for('admin'))
