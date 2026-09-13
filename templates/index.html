@@ -265,8 +265,9 @@
             border-color: var(--accent-color);
         }
 
-        /* كارت كتيب البكالوريا المتجاوَب كلياً مع جميع الأجهزة */
+        /* كارت كتيب البكالوريا البارز يمتد بعرض الصفحة بالكامل */
         .booklet-card {
+            grid-column: 1 / -1;
             border: 2px solid var(--gold-color);
             padding: 0;
             width: 100%;
@@ -288,15 +289,16 @@
 
         .badge-featured {
             position: absolute;
-            top: 10px;
-            left: 10px;
+            top: 12px;
+            left: 12px;
             background: var(--gold-color);
             color: #0f172a;
-            font-size: 10px;
+            font-size: 11px;
             font-weight: bold;
-            padding: 3px 8px;
+            padding: 4px 10px;
             border-radius: 12px;
             z-index: 2;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
         }
 
         .card-icon {
@@ -419,7 +421,7 @@
         <!-- شبكة الأقسام الرئيسية -->
         <div class="sections-grid">
             
-            <!-- 1. كارت كتيب البكالوريا المميز بصورة فقط متجاوبة -->
+            <!-- 1. كارت كتيب البكالوريا المميز بصورة فقط متجاوبة وبارزة -->
             <a href="{{ url_for('booklet') }}" class="main-card booklet-card">
                 <span class="badge-featured">حصري 🔥</span>
                 <img src="{{ url_for('static', filename='booklet_cover.png') }}" alt="كتيب البكالوريا" class="booklet-card-img">
