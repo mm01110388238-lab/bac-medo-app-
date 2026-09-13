@@ -288,7 +288,10 @@
             width: 100%;
             aspect-ratio: 16 / 9;
             overflow: hidden;
-            background: #0f172a;
+            background: rgba(15, 23, 42, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .card-cover-img {
@@ -443,14 +446,14 @@
             <a href="{{ url_for('booklet') }}" class="main-card booklet-card">
                 <span class="badge-featured">حصري 🔥</span>
                 <div class="card-img-container">
-                    <img src="{{ url_for('static', filename='booklet_cover.png') }}" alt="كتيب البكالوريا" class="card-cover-img">
+                    <img src="{{ url_for('static', filename='booklet_cover.png') }}" alt="" class="card-cover-img" onerror="this.style.display='none'">
                 </div>
             </a>
 
             <!-- 2. كارت الكتب الخارجية للحل -->
             <a href="{{ url_for('select_type', cat_type='external_books') }}" class="main-card">
                 <div class="card-img-container">
-                    <img src="{{ url_for('static', filename='books_cover.png') }}" alt="الكتب الخارجية للحل" class="card-cover-img">
+                    <img src="{{ url_for('static', filename='books_cover.png') }}" alt="" class="card-cover-img" onerror="this.style.display='none'">
                 </div>
                 <div class="card-title">الكتب الخارجية للحل</div>
             </a>
@@ -458,7 +461,7 @@
             <!-- 3. كارت تلخيص الدروس -->
             <a href="{{ url_for('select_type', cat_type='summaries') }}" class="main-card">
                 <div class="card-img-container">
-                    <img src="{{ url_for('static', filename='summaries_cover.png') }}" alt="تلخيص الدروس" class="card-cover-img">
+                    <img src="{{ url_for('static', filename='summaries_cover.png') }}" alt="" class="card-cover-img" onerror="this.style.display='none'">
                 </div>
                 <div class="card-title">تلخيص الدروس</div>
             </a>
@@ -466,7 +469,7 @@
             <!-- 4. كارت التقييمات المدرسية -->
             <a href="{{ url_for('select_type', cat_type='evaluations') }}" class="main-card">
                 <div class="card-img-container">
-                    <img src="{{ url_for('static', filename='evaluations_cover.png') }}" alt="التقييمات المدرسية" class="card-cover-img">
+                    <img src="{{ url_for('static', filename='evaluations_cover.png') }}" alt="" class="card-cover-img" onerror="this.style.display='none'">
                 </div>
                 <div class="card-title">التقييمات المدرسية</div>
             </a>
@@ -474,7 +477,7 @@
             <!-- 5. كارت الشروحات والمسارات -->
             <a href="{{ url_for('select_type', cat_type='lessons') }}" class="main-card">
                 <div class="card-img-container">
-                    <img src="{{ url_for('static', filename='lessons_cover.png') }}" alt="الشروحات والمسارات" class="card-cover-img">
+                    <img src="{{ url_for('static', filename='lessons_cover.png') }}" alt="" class="card-cover-img" onerror="this.style.display='none'">
                 </div>
                 <div class="card-title">الشروحات والمسارات</div>
             </a>
@@ -482,7 +485,7 @@
             <!-- 6. كارت المنصات التعليمية -->
             <a href="{{ url_for('platforms') }}" class="main-card">
                 <div class="card-img-container">
-                    <img src="{{ url_for('static', filename='platforms_cover.png') }}" alt="المنصات التعليمية" class="card-cover-img">
+                    <img src="{{ url_for('static', filename='platforms_cover.png') }}" alt="" class="card-cover-img" onerror="this.style.display='none'">
                 </div>
                 <div class="card-title">المنصات التعليمية</div>
             </a>
@@ -490,7 +493,7 @@
             <!-- 7. كارت كتالوج المنصة -->
             <a href="{{ url_for('catalog') }}" class="main-card">
                 <div class="card-img-container">
-                    <img src="{{ url_for('static', filename='catalog_cover.png') }}" alt="كتالوج المنصة" class="card-cover-img">
+                    <img src="{{ url_for('static', filename='catalog_cover.png') }}" alt="" class="card-cover-img" onerror="this.style.display='none'">
                 </div>
                 <div class="card-title">كتالوج المنصة</div>
             </a>
