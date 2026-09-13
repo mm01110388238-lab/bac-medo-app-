@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#0f172a">
-    <title>منصة السعيد - الرئيسية</title>
+    <title>مَـنـصَّـة السَّـعـيـد - الرئيسية</title>
 
     <!-- استدعاء خط القرآن الكريم (Amiri Quran) من جوجل -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -28,7 +28,7 @@
 
     <!-- وسوم المعاينة والتواصل الاجتماعي -->
     <meta property="og:type" content="website">
-    <meta property="og:title" content="منصة السعيد - الرئيسية">
+    <meta property="og:title" content="مَـنـصَّـة السَّـعـيـد - الرئيسية">
     <meta property="og:description" content="منصة السعيد التعليمية للطلاب">
     <meta property="og:image" content="{{ url_for('static', filename='logo.png', _external=True) }}">
 
@@ -256,7 +256,7 @@
         /* شبكة الأقسام الرئيسية */
         .sections-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
             gap: 15px;
             margin-bottom: 25px;
         }
@@ -265,7 +265,7 @@
             background: var(--card-bg);
             border: 1px solid var(--border-color);
             border-radius: 16px;
-            padding: 22px 15px;
+            padding: 0;
             text-decoration: none;
             color: var(--text-color);
             display: flex;
@@ -283,22 +283,39 @@
             border-color: var(--accent-color);
         }
 
-        /* كارت كتيب البكالوريا البارز يمتد بعرض الصفحة بالكامل */
-        .booklet-card {
-            grid-column: 1 / -1;
-            border: 2px solid var(--gold-color);
-            padding: 0;
+        /* حاوية صوّر الكروت */
+        .card-img-container {
             width: 100%;
             aspect-ratio: 16 / 9;
-            position: relative;
-            justify-content: center;
+            overflow: hidden;
+            background: #0f172a;
         }
 
-        .booklet-card-img {
+        .card-cover-img {
             width: 100%;
             height: 100%;
             object-fit: cover;
             display: block;
+            transition: transform 0.3s ease;
+        }
+
+        .main-card:hover .card-cover-img {
+            transform: scale(1.06);
+        }
+
+        .card-title {
+            font-size: 14px;
+            font-weight: bold;
+            padding: 12px 8px;
+            width: 100%;
+            background: var(--card-bg);
+        }
+
+        /* كارت كتيب البكالوريا المميز */
+        .booklet-card {
+            grid-column: 1 / -1;
+            border: 2px solid var(--gold-color);
+            width: 100%;
         }
 
         .booklet-card:hover {
@@ -307,8 +324,8 @@
 
         .badge-featured {
             position: absolute;
-            top: 12px;
-            left: 12px;
+            top: 10px;
+            left: 10px;
             background: var(--gold-color);
             color: #0f172a;
             font-size: 11px;
@@ -317,24 +334,6 @@
             border-radius: 12px;
             z-index: 2;
             box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-        }
-
-        .card-icon {
-            width: 55px;
-            height: 55px;
-            border-radius: 50%;
-            background: rgba(56, 189, 248, 0.12);
-            color: var(--accent-color);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 24px;
-            margin-bottom: 10px;
-        }
-
-        .card-title {
-            font-size: 16px;
-            font-weight: bold;
         }
 
         /* قسم القنوات الرسمية */
@@ -437,48 +436,62 @@
             <p class="quran-verse">﴿ وَأَنْ لَيْسَ لِلْإِنسَانِ إِلَّا مَا سَعَى ﴿٣٩﴾ وَأَنَّ سَعْيَهُ سَوْفَ يُرَى ﴾</p>
         </div>
 
-        <!-- شبكة الأقسام الرئيسية -->
+        <!-- شبكة الأقسام الرئيسية مصورة -->
         <div class="sections-grid">
             
-            <!-- 1. كارت كتيب البكالوريا المميز بصورة فقط متجاوبة وبارزة -->
+            <!-- 1. كارت كتيب البكالوريا المميز -->
             <a href="{{ url_for('booklet') }}" class="main-card booklet-card">
                 <span class="badge-featured">حصري 🔥</span>
-                <img src="{{ url_for('static', filename='booklet_cover.png') }}" alt="كتيب البكالوريا" class="booklet-card-img">
+                <div class="card-img-container">
+                    <img src="{{ url_for('static', filename='booklet_cover.png') }}" alt="كتيب البكالوريا" class="card-cover-img">
+                </div>
             </a>
 
             <!-- 2. كارت الكتب الخارجية للحل -->
             <a href="{{ url_for('select_type', cat_type='external_books') }}" class="main-card">
-                <div class="card-icon"><i class="fa-solid fa-book"></i></div>
+                <div class="card-img-container">
+                    <img src="{{ url_for('static', filename='books_cover.png') }}" alt="الكتب الخارجية للحل" class="card-cover-img">
+                </div>
                 <div class="card-title">الكتب الخارجية للحل</div>
             </a>
 
             <!-- 3. كارت تلخيص الدروس -->
             <a href="{{ url_for('select_type', cat_type='summaries') }}" class="main-card">
-                <div class="card-icon"><i class="fa-solid fa-file-lines"></i></div>
+                <div class="card-img-container">
+                    <img src="{{ url_for('static', filename='summaries_cover.png') }}" alt="تلخيص الدروس" class="card-cover-img">
+                </div>
                 <div class="card-title">تلخيص الدروس</div>
             </a>
 
             <!-- 4. كارت التقييمات المدرسية -->
             <a href="{{ url_for('select_type', cat_type='evaluations') }}" class="main-card">
-                <div class="card-icon"><i class="fa-solid fa-pen-to-square"></i></div>
+                <div class="card-img-container">
+                    <img src="{{ url_for('static', filename='evaluations_cover.png') }}" alt="التقييمات المدرسية" class="card-cover-img">
+                </div>
                 <div class="card-title">التقييمات المدرسية</div>
             </a>
 
             <!-- 5. كارت الشروحات والمسارات -->
             <a href="{{ url_for('select_type', cat_type='lessons') }}" class="main-card">
-                <div class="card-icon"><i class="fa-solid fa-graduation-cap"></i></div>
+                <div class="card-img-container">
+                    <img src="{{ url_for('static', filename='lessons_cover.png') }}" alt="الشروحات والمسارات" class="card-cover-img">
+                </div>
                 <div class="card-title">الشروحات والمسارات</div>
             </a>
 
             <!-- 6. كارت المنصات التعليمية -->
             <a href="{{ url_for('platforms') }}" class="main-card">
-                <div class="card-icon"><i class="fa-solid fa-globe"></i></div>
+                <div class="card-img-container">
+                    <img src="{{ url_for('static', filename='platforms_cover.png') }}" alt="المنصات التعليمية" class="card-cover-img">
+                </div>
                 <div class="card-title">المنصات التعليمية</div>
             </a>
 
-            <!-- 7. كارت كتالوج المنصة (الأخير) -->
+            <!-- 7. كارت كتالوج المنصة -->
             <a href="{{ url_for('catalog') }}" class="main-card">
-                <div class="card-icon"><i class="fa-solid fa-book-open"></i></div>
+                <div class="card-img-container">
+                    <img src="{{ url_for('static', filename='catalog_cover.png') }}" alt="كتالوج المنصة" class="card-cover-img">
+                </div>
                 <div class="card-title">كتالوج المنصة</div>
             </a>
 
