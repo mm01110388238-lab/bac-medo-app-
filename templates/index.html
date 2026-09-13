@@ -265,41 +265,19 @@
             border-color: var(--accent-color);
         }
 
-        /* كارت كتيب البكالوريا بصورة كاملة الحجم */
+        /* كارت كتيب البكالوريا بصورة كاملة وبدون اسم */
         .booklet-card {
-            background: linear-gradient(135deg, var(--card-bg) 0%, rgba(245, 158, 11, 0.12) 100%);
             border: 2px solid var(--gold-color);
             padding: 0;
-            min-height: 140px;
-            justify-content: flex-end;
+            height: 140px;
+            position: relative;
         }
 
-        .booklet-card-bg {
-            position: absolute;
-            top: 0;
-            left: 0;
+        .booklet-card-img {
             width: 100%;
             height: 100%;
             object-fit: cover;
-            z-index: 1;
-        }
-
-        .booklet-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(to top, rgba(15, 23, 42, 0.95) 0%, rgba(15, 23, 42, 0.4) 60%, rgba(15, 23, 42, 0.1) 100%);
-            z-index: 2;
-        }
-
-        .booklet-card-content {
-            position: relative;
-            z-index: 3;
-            padding: 15px;
-            width: 100%;
-            text-align: center;
+            display: block;
         }
 
         .booklet-card:hover {
@@ -316,7 +294,7 @@
             font-weight: bold;
             padding: 3px 8px;
             border-radius: 12px;
-            z-index: 4;
+            z-index: 2;
         }
 
         .card-icon {
@@ -330,11 +308,6 @@
             justify-content: center;
             font-size: 24px;
             margin-bottom: 10px;
-        }
-
-        .card-icon-gold {
-            background: rgba(245, 158, 11, 0.15);
-            color: var(--gold-color);
         }
 
         .card-title {
@@ -444,14 +417,10 @@
         <!-- شبكة الأقسام الرئيسية -->
         <div class="sections-grid">
             
-            <!-- 1. كارت كتيب البكالوريا المميز بصورة تغطي الكارت بالكامل -->
+            <!-- 1. كارت كتيب البكالوريا المميز بصورة فقط -->
             <a href="{{ url_for('booklet') }}" class="main-card booklet-card">
                 <span class="badge-featured">حصري 🔥</span>
-                <img src="{{ url_for('static', filename='booklet_cover.png') }}" alt="كتيب البكالوريا" class="booklet-card-bg" onerror="this.style.display='none'">
-                <div class="booklet-overlay"></div>
-                <div class="booklet-card-content">
-                    <div class="card-title" style="color: var(--gold-color);">كتيب البكالوريا</div>
-                </div>
+                <img src="{{ url_for('static', filename='booklet_cover.png') }}" alt="كتيب البكالوريا" class="booklet-card-img">
             </a>
 
             <!-- 2. كارت الكتب الخارجية للحل -->
@@ -511,7 +480,6 @@
     </div>
 
     <script>
-        // السكربت الخاص بتسجيل Service Worker وبرمجة إشعار التثبيت (PWA)
         let deferredPrompt;
         const installBanner = document.getElementById('install-banner');
         const installBtn = document.getElementById('btn-install-app');
@@ -523,7 +491,6 @@
             });
         }
 
-        // التقاط حدث التثبيت وإظهار الشريط
         window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault();
             deferredPrompt = e;
@@ -551,7 +518,6 @@
             });
         }
 
-        // تبديل المظهر (Dark / Light Theme)
         function toggleTheme() {
             const currentTheme = document.body.getAttribute('data-theme');
             const newTheme = currentTheme === 'light' ? 'dark' : 'light';
