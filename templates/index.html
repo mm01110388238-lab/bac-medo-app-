@@ -265,12 +265,14 @@
             border-color: var(--accent-color);
         }
 
-        /* كارت كتيب البكالوريا بصورة كاملة وبدون اسم */
+        /* كارت كتيب البكالوريا المتجاوَب كلياً مع جميع الأجهزة */
         .booklet-card {
             border: 2px solid var(--gold-color);
             padding: 0;
-            height: 140px;
+            width: 100%;
+            aspect-ratio: 16 / 9;
             position: relative;
+            justify-content: center;
         }
 
         .booklet-card-img {
@@ -417,7 +419,7 @@
         <!-- شبكة الأقسام الرئيسية -->
         <div class="sections-grid">
             
-            <!-- 1. كارت كتيب البكالوريا المميز بصورة فقط -->
+            <!-- 1. كارت كتيب البكالوريا المميز بصورة فقط متجاوبة -->
             <a href="{{ url_for('booklet') }}" class="main-card booklet-card">
                 <span class="badge-featured">حصري 🔥</span>
                 <img src="{{ url_for('static', filename='booklet_cover.png') }}" alt="كتيب البكالوريا" class="booklet-card-img">
