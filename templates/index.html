@@ -6,6 +6,11 @@
     <meta name="theme-color" content="#0f172a">
     <title>منصة السعيد - الرئيسية</title>
 
+    <!-- استدعاء خط القرآن الكريم (Amiri Quran) من جوجل -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Amiri+Quran&display=swap" rel="stylesheet">
+
     <!-- ملف Web Manifest للتطبيقات PWA -->
     <link rel="manifest" href="{{ url_for('manifest') }}">
 
@@ -223,7 +228,7 @@
             padding: 4px;
         }
 
-        /* الترحيب */
+        /* الترحيب والآية القرآنية */
         .hero-section {
             text-align: center;
             margin-bottom: 25px;
@@ -233,6 +238,18 @@
             font-weight: bold;
             margin-bottom: 6px;
             color: var(--accent-color);
+        }
+
+        .quran-verse {
+            font-family: 'Amiri Quran', serif;
+            font-size: clamp(12px, 3.8vw, 18px);
+            color: var(--gold-color);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            line-height: 2;
+            margin-top: 4px;
+            direction: rtl;
         }
 
         /* شبكة الأقسام الرئيسية */
@@ -416,6 +433,7 @@
         
         <div class="hero-section">
             <h1 class="hero-title">منصة السعيد 🎓</h1>
+            <p class="quran-verse">﴿ وَأَنْ لَيْسَ لِلْإِنسَانِ إِلَّا مَا سَعَى ﴿٣٩﴾ وَأَنَّ سَعْيَهُ سَوْفَ يُرَى ﴾</p>
         </div>
 
         <!-- شبكة الأقسام الرئيسية -->
