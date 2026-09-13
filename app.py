@@ -348,6 +348,10 @@ def select_type(cat_type):
     if 'user' not in session:
         return redirect(url_for('login'))
         
+    # توجيه قسم الكتب الخارجية للحل لصفحة العروض مباشرة دون عرض المواد
+    if cat_type == 'external_books':
+        return render_template('external_books.html')
+
     if cat_type == 'books':
         return render_template('select_book_type.html')
         
@@ -372,6 +376,13 @@ def select_type(cat_type):
                            general_subjects=GENERAL_SUBJECTS,
                            user_track=user_track,
                            track_name=track_name)
+
+# مسار عرض صفحة الوصف والتوضيح المهم للكتب الخارجية
+@app.route('/external_books_info')
+def external_books_info():
+    if 'user' not in session:
+        return redirect(url_for('login'))
+    return render_template('external_books_info.html')
 
 @app.route('/general/<cat_type>')
 def general_subjects(cat_type):
