@@ -136,6 +136,11 @@
             color: var(--accent-color);
         }
 
+        .btn-user-profile {
+            color: var(--accent-color);
+            border-color: var(--border-color);
+        }
+
         .btn-logout {
             background: #ef4444;
             color: #fff;
@@ -444,7 +449,6 @@
     <!-- الهيدر العلوي: الاسم والمسار والإعدادات والخروج -->
     <header class="top-navbar">
         <div class="user-welcome">
-            <i class="fa-solid fa-circle-user fa-lg"></i>
             <div class="user-info-text">
                 <span class="user-name">أهلاً، {{ current_user.name if current_user else session.get('user', 'طالب') }}</span>
                 {% if current_user and current_user.track and TRACKS.get(current_user.track) %}
@@ -454,8 +458,8 @@
         </div>
         
         <div class="header-actions">
-            <a href="{{ url_for('settings') }}" class="btn-header-icon" title="إعدادات الحساب والمسار">
-                <i class="fa-solid fa-gear"></i>
+            <a href="{{ url_for('settings') }}" class="btn-header-icon btn-user-profile" title="إعدادات الحساب والمسار">
+                <i class="fa-solid fa-circle-user fa-lg"></i>
             </a>
             <button class="btn-header-icon" onclick="toggleTheme()" title="تغيير المظهر">
                 <i class="fa-solid fa-moon" id="theme-icon"></i>
