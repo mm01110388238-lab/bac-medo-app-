@@ -352,6 +352,13 @@ def select_type(cat_type):
     if cat_type == 'external_books':
         return render_template('external_books.html')
 
+    # توجيه قسم تلخيص الدروس لتلخيص مادة تخصص الطالب المحددة مباشرة دون عرض المواد الأساسية
+    if cat_type == 'summaries':
+        data = get_data()
+        user = get_current_user(data)
+        user_track = user.get('track', 'eng_prog') if user else 'eng_prog'
+        return redirect(url_for('specialized_items', cat_type='summaries', track_id=user_track))
+
     if cat_type == 'books':
         return render_template('select_book_type.html')
         
@@ -470,6 +477,9 @@ def specialized_items(cat_type, track_id):
                     grouped_lessons[sec] = []
                 grouped_lessons[sec].append(item)
 
+    # زر العودة للرئيسية مباشرة في حالة التلخيصات
+    back_url = url_for('index') if cat_type == 'summaries' else url_for('select_type', cat_type=cat_type)
+
     context = {
         'title': f"{cat_title} - {track_title}",
         'items': items,
@@ -477,7 +487,7 @@ def specialized_items(cat_type, track_id):
         'summaries': items if cat_type == 'summaries' else [],
         'evaluations': items if cat_type == 'evaluations' else [],
         'grouped_lessons': grouped_lessons,
-        'back_url': url_for('select_type', cat_type=cat_type)
+        'back_url': back_url
     }
     return render_template(template_name, **context)
 
