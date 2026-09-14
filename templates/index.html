@@ -496,7 +496,7 @@
             <p class="quran-verse">﴿ وَأَنْ لَيْسَ لِلْإِنسَانِ إِلَّا مَا سَعَى ﴿٣٩﴾ وَأَنَّ سَعْيَهُ سَوْفَ يُرَى ﴾</p>
         </div>
 
-        <!-- 1. فيديو شرح وتفاصيل المنصة (يظهر في حالة حفظ رابط الفيديو من الأدمن) -->
+        <!-- 1. فيديو شرح وتفاصيل المنصة -->
         {% if platform_video_url %}
         <div class="video-section">
             <div class="video-title"><i class="fa-solid fa-circle-play"></i> فيديو شرح وتفاصيل المنصة</div>
@@ -507,7 +507,7 @@
         </div>
         {% endif %}
 
-        <!-- 2. فيديو تفاصيل الكتب الخارجية للحل (يظهر في حالة حفظ الرابط من الأدمن) -->
+        <!-- 2. فيديو تفاصيل الكتب الخارجية للحل -->
         {% if external_books_video_url %}
         <div class="video-section">
             <div class="video-title"><i class="fa-solid fa-book-open-reader"></i> فيديو تفاصيل الكتب الخارجية للحل</div>
@@ -532,8 +532,9 @@
                 </div>
             </a>
 
-            <!-- 2. كارت الكتب الخارجية للحل -->
+            <!-- 2. كارت الكتب الخارجية للحل (تم إضافة شارة حصري هنا) -->
             <a href="{{ url_for('select_type', cat_type='external_books') }}" class="main-card">
+                <span class="badge-featured">حصري 🔥</span>
                 <div class="card-img-container">
                     <img src="{{ url_for('static', filename='external_books_cover.png') }}?v=99" alt="الكتب الخارجية للحل" class="card-cover-img" onerror="showFallback(this)">
                     <div class="card-fallback-icon" style="display: none;">
