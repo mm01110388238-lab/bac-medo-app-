@@ -2,7 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#0f172a">
     <title>مَـنـصَّـة السَّـعـيـد - الرئيسية</title>
 
@@ -420,8 +420,8 @@
 
         .social-links {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 10px;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
         }
 
         .btn-social {
@@ -429,7 +429,7 @@
             align-items: center;
             justify-content: center;
             gap: 8px;
-            padding: 10px 12px;
+            padding: 12px;
             border-radius: 10px;
             text-decoration: none;
             font-size: 13px;
@@ -441,7 +441,6 @@
         .btn-social:hover { opacity: 0.9; }
         .yt-btn { background: #ff0000; }
         .wa-channel-btn { background: #25d366; }
-        .wa-community-btn { background: #128c7e; }
     </style>
 </head>
 <body>
@@ -610,9 +609,6 @@
                 </a>
                 <a href="{{ wa_channel_url }}" target="_blank" class="btn-social wa-channel-btn">
                     <i class="fa-brands fa-whatsapp"></i> قناة الواتساب
-                </a>
-                <a href="{{ wa_community_url }}" target="_blank" class="btn-social wa-community-btn">
-                    <i class="fa-solid fa-users"></i> مجتمع الواتساب
                 </a>
             </div>
         </div>
