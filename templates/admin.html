@@ -157,23 +157,6 @@
         .user-card.subscribed {
             border-right-color: var(--gold-color);
         }
-        
-        .forum-card { 
-            background: var(--input-bg); 
-            padding: 15px; 
-            margin: 10px 0; 
-            border-radius: 10px; 
-            border: 1px solid var(--border-color); 
-        }
-        
-        .reply-box { 
-            background: rgba(56, 189, 248, 0.1); 
-            border-right: 3px solid var(--accent-color); 
-            padding: 8px 12px; 
-            margin: 8px 0; 
-            border-radius: 4px; 
-            font-size: 13px; 
-        }
 
         .toggle-btn {
             width: 100%;
@@ -338,44 +321,7 @@
         </div>
     </div>
 
-    <!-- 5. قسم المنتدى والرد على أسئلة الطلاب (قابل للطي) -->
-    <div class="container">
-        <button class="toggle-btn" onclick="toggleSection('forum-section', 'forum-icon')">
-            <span><i class="fa-solid fa-comments"></i> إدارة المنتدى والأسئلة (العدد: {{ forum|length }})</span>
-            <i class="fa-solid fa-chevron-down" id="forum-icon"></i>
-        </button>
-        
-        <div id="forum-section" class="collapsible-content">
-            <input type="text" id="search-forum" class="search-input" placeholder="🔍 ابحث في الأسئلة أو باسم الطالب..." onkeyup="filterForum()">
-            <div id="forum-list">
-                {% if forum %}
-                    {% for item in forum %}
-                        <div class="forum-card searchable-forum">
-                            <div><strong>👤 الطالب:</strong> <span class="f-user">{{ item.user }}</span></div>
-                            <div style="margin: 8px 0;"><strong>❓ السؤال:</strong> <span class="f-q">{{ item.question }}</span></div>
-                            
-                            {% if item.reply %}
-                                <div class="reply-box"><strong>💡 الرد الحالي:</strong> {{ item.reply }}</div>
-                            {% endif %}
-
-                            <form action="{{ url_for('reply_forum', index=loop.index0) }}" method="POST" style="margin-top: 10px;">
-                                <input type="text" name="reply" placeholder="اكتب ردك هنا..." value="{{ item.reply or '' }}" required style="margin-bottom: 8px;">
-                                <button type="submit" class="btn-submit" style="background-color: var(--accent-color); padding: 8px; font-size: 13px;">💬 حفظ / تعديل الرد</button>
-                            </form>
-
-                            <form action="{{ url_for('delete_item', cat_type='forum', index=loop.index0) }}" method="POST" style="margin-top: 8px;">
-                                <button type="submit" class="btn-delete" style="float: none; width: 100%; text-align: center;">🗑️ حذف السؤال</button>
-                            </form>
-                        </div>
-                    {% endfor %}
-                {% else %}
-                    <p style="color: var(--text-muted); font-size: 14px; text-align: center;">لا توجد أسئلة مضافة في المنتدى حالياً.</p>
-                {% endif %}
-            </div>
-        </div>
-    </div>
-
-    <!-- 6. قسم إضافة المحتوى -->
+    <!-- 5. قسم إضافة المحتوى -->
     <div class="container">
         <h2 style="text-align: center;"><i class="fa-solid fa-plus-circle"></i> إضافة محتوى جديد</h2>
         
@@ -383,7 +329,6 @@
             <!-- اختيار قسم المحتوى -->
             <label for="category">اختر قسم المحتوى:</label>
             <select name="category" id="category" onchange="toggleFormFields()">
-                <option value="external_books">📘 الكتب الخارجية للحل</option>
                 <option value="summaries">📝 تلخيص الدروس</option>
                 <option value="evaluations">📊 التقييمات المدرسية</option>
                 <option value="platform">🌐 منصة تعليمية</option>
@@ -394,8 +339,8 @@
             <div id="subject-type-container">
                 <label for="subject_type">نوع المواد:</label>
                 <select name="subject_type" id="subject_type" onchange="toggleSubjectTypeFields()">
-                    <option value="general">📖 المواد الأساسية لجميع المسارات</option>
-                    <option value="specialized">🎓 المواد التخصصية لكل مسار</option>
+                    <option value="general" id="opt-general">📖 المواد الأساسية لجميع المسارات</option>
+                    <option value="specialized" id="opt-specialized">🎓 المواد التخصصية لكل مسار</option>
                 </select>
             </div>
 
@@ -437,57 +382,6 @@
 
     <!-- ==================== أقسام إدارة وحذف المحتويات (قابلة للطي) ==================== -->
 
-    <!-- إدارة الكتب الخارجية والملخصات -->
-    <div class="container">
-        <button class="toggle-btn" onclick="toggleSection('del-external-books', 'icon-eb')">
-            <span><i class="fa-solid fa-book-open"></i> إدارة وحذف الكتب الخارجية للحل</span>
-            <i class="fa-solid fa-chevron-down" id="icon-eb"></i>
-        </button>
-        <div id="del-external-books" class="collapsible-content">
-            {% for sub_id, sub_name in general_subjects.items() %}
-                {% set items = data.get('general_items', {}).get('external_books', {}).get(sub_id, []) %}
-                {% if items %}
-                    <div class="sub-header">📘 {{ sub_name }} (أساسي)</div>
-                    {% for item in items %}
-                        <div class="item-row">
-                            <span>{{ item.title }}</span>
-                            <form action="{{ url_for('delete_general_item', cat_type='external_books', subject_id=sub_id, index=loop.index0) }}" method="POST" style="margin:0;">
-                                <button type="submit" class="btn-delete">حذف</button>
-                            </form>
-                        </div>
-                    {% endfor %}
-                {% endif %}
-            {% endfor %}
-
-            {% for trk_id, trk_name in tracks.items() %}
-                {% set items = data.get('specialized_items', {}).get('external_books', {}).get(trk_id, []) %}
-                {% if items %}
-                    <div class="sub-header">🎓 {{ trk_name }}</div>
-                    {% for item in items %}
-                        <div class="item-row">
-                            <span>{{ item.title }}</span>
-                            <form action="{{ url_for('delete_specialized_item', cat_type='external_books', track_id=trk_id, index=loop.index0) }}" method="POST" style="margin:0;">
-                                <button type="submit" class="btn-delete">حذف</button>
-                            </form>
-                        </div>
-                    {% endfor %}
-                {% endif %}
-            {% endfor %}
-
-            {% if data.external_books %}
-                <div class="sub-header">📂 كتب خارجية عامة</div>
-                {% for book in data.external_books %}
-                    <div class="item-row">
-                        <span>{{ book.title }}</span>
-                        <form action="{{ url_for('delete_item', cat_type='external_books', index=loop.index0) }}" method="POST" style="margin:0;">
-                            <button type="submit" class="btn-delete">حذف</button>
-                        </form>
-                    </div>
-                {% endfor %}
-            {% endif %}
-        </div>
-    </div>
-
     <!-- إدارة تلخيص الدروس -->
     <div class="container">
         <button class="toggle-btn" onclick="toggleSection('del-summaries', 'icon-sum')">
@@ -495,21 +389,6 @@
             <i class="fa-solid fa-chevron-down" id="icon-sum"></i>
         </button>
         <div id="del-summaries" class="collapsible-content">
-            {% for sub_id, sub_name in general_subjects.items() %}
-                {% set items = data.get('general_items', {}).get('summaries', {}).get(sub_id, []) %}
-                {% if items %}
-                    <div class="sub-header">📝 {{ sub_name }} (أساسي)</div>
-                    {% for item in items %}
-                        <div class="item-row">
-                            <span>{{ item.title }}</span>
-                            <form action="{{ url_for('delete_general_item', cat_type='summaries', subject_id=sub_id, index=loop.index0) }}" method="POST" style="margin:0;">
-                                <button type="submit" class="btn-delete">حذف</button>
-                            </form>
-                        </div>
-                    {% endfor %}
-                {% endif %}
-            {% endfor %}
-
             {% for trk_id, trk_name in tracks.items() %}
                 {% set items = data.get('specialized_items', {}).get('summaries', {}).get(trk_id, []) %}
                 {% if items %}
@@ -677,26 +556,25 @@
             });
         }
 
-        function filterForum() {
-            const val = document.getElementById('search-forum').value.toLowerCase().trim();
-            const cards = document.querySelectorAll('.searchable-forum');
-            cards.forEach(card => {
-                const user = card.querySelector('.f-user').innerText.toLowerCase();
-                const q = card.querySelector('.f-q').innerText.toLowerCase();
-                card.style.display = (user.includes(val) || q.includes(val)) ? "block" : "none";
-            });
-        }
-
         function toggleFormFields() {
             var cat = document.getElementById('category').value;
             var subjectTypeContainer = document.getElementById('subject-type-container');
             var lessonFields = document.getElementById('lesson-fields');
+            var optGeneral = document.getElementById('opt-general');
+            var subjectTypeSelect = document.getElementById('subject_type');
 
             if (cat === 'platform') {
                 subjectTypeContainer.style.display = 'none';
                 lessonFields.style.display = 'none';
+            } else if (cat === 'summaries') {
+                // تلخيص الدروس متاح للمواد التخصصية فقط
+                subjectTypeContainer.style.display = 'block';
+                optGeneral.style.display = 'none';
+                subjectTypeSelect.value = 'specialized';
+                lessonFields.style.display = 'none';
             } else {
                 subjectTypeContainer.style.display = 'block';
+                optGeneral.style.display = 'block';
                 lessonFields.style.display = (cat === 'lessons') ? 'block' : 'none';
             }
             toggleSubjectTypeFields();
@@ -710,7 +588,7 @@
             var generalContainer = document.getElementById('general-subject-container');
             var trackContainer = document.getElementById('track-container');
 
-            if (subjectType === 'general') {
+            if (subjectType === 'general' && cat !== 'summaries') {
                 generalContainer.style.display = 'block';
                 trackContainer.style.display = 'none';
             } else {
