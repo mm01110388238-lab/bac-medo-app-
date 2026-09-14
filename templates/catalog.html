@@ -172,7 +172,6 @@
 
         .btn-wa { background: #25d366; }
         .btn-yt { background: #ff0000; }
-        .btn-wa-community { background: #128c7e; }
         .btn-primary-app { background: var(--accent-color); color: #0f172a; }
 
         /* الأقسام السريعة */
@@ -321,15 +320,12 @@
             </div>
             <div class="card-content">
                 <p>تابعنا على منصاتنا الرسمية ليصلك كل جديد والتحديثات الأسبوعية للمنصة والكتب:</p>
-                <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px;">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin-top: 10px;">
                     <a href="{{ yt_channel_url }}" target="_blank" class="btn-action btn-yt">
                         <i class="fa-brands fa-youtube"></i> قناة اليوتيوب [اشترك]
                     </a>
                     <a href="{{ wa_channel_url }}" target="_blank" class="btn-action btn-wa">
                         <i class="fa-brands fa-whatsapp"></i> قناة الواتساب [تابع]
-                    </a>
-                    <a href="{{ wa_community_url }}" target="_blank" class="btn-action btn-wa-community">
-                        <i class="fa-solid fa-users"></i> مجتمع الواتساب [انضم]
                     </a>
                 </div>
             </div>
