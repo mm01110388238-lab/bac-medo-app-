@@ -5,12 +5,11 @@ from flask import Flask, render_template, request, redirect, url_for, session, g
 from upstash_redis import Redis
 
 app = Flask(__name__)
+app.secret_key = os.getenv('SECRET_KEY', 'elsaeed_platform_2026_secret_key')
 
-# --- تغيير المفتاح واسم الكوكي لإجبار جميع المستخدمين على تسجيل الدخول من جديد ---
-app.secret_key = os.getenv('SECRET_KEY', 'elsaeed_platform_reset_2026_v2_key')
-
+# --- إعدادات الجلسة الدائمة لحل مشكلة تسجيل الدخول المتكرر ---
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=365)
-app.config['SESSION_COOKIE_NAME'] = 'elsaeed_session_v2'  # تغيير الاسم يلغي السيشنز القديمة فوراً
+app.config['SESSION_COOKIE_NAME'] = 'elsaeed_session'
 app.config['SESSION_REFRESH_EACH_REQUEST'] = True
 
 # --- أرقام التواصل والروابط الرسمية ---
@@ -223,6 +222,9 @@ def inject_globals():
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
+    if 'user' in session:
+        return redirect(url_for('index'))
+        
     if request.method == 'POST':
         name = request.form.get('name', '').strip()
         identifier = request.form.get('identifier', '').strip()
@@ -253,6 +255,9 @@ def register():
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    if 'user' in session:
+        return redirect(url_for('index'))
+        
     if request.method == 'POST':
         identifier = request.form.get('identifier', '').strip()
         password = request.form.get('password', '').strip()
@@ -265,7 +270,7 @@ def login():
                 session['user_identifier'] = u.get('identifier')
                 return redirect(url_for('index'))
         
-        return "بيانات الدخول غير صحيحة أو الحساب غير موجود! <a href='/register'>إنشاء حساب جديد من هنا</a>"
+        return "بيانات الدخول غير صحيحة! <a href='/login'>حاول مرة أخرى</a>"
         
     return render_template('login.html')
 
@@ -354,9 +359,11 @@ def select_type(cat_type):
     if 'user' not in session:
         return redirect(url_for('login'))
         
+    # توجيه قسم الكتب الخارجية للحل لصفحة العروض مباشرة دون عرض المواد
     if cat_type == 'external_books':
         return render_template('external_books.html')
 
+    # توجيه قسم تلخيص الدروس لتلخيص مادة تخصص الطالب المحددة مباشرة دون عرض المواد الأساسية
     if cat_type == 'summaries':
         data = get_data()
         user = get_current_user(data)
@@ -388,6 +395,7 @@ def select_type(cat_type):
                            user_track=user_track,
                            track_name=track_name)
 
+# مسار عرض صفحة الوصف والتوضيح المهم للكتب الخارجية
 @app.route('/external_books_info')
 def external_books_info():
     if 'user' not in session:
@@ -480,6 +488,7 @@ def specialized_items(cat_type, track_id):
                     grouped_lessons[sec] = []
                 grouped_lessons[sec].append(item)
 
+    # زر العودة للرئيسية مباشرة في حالة التلخيصات
     back_url = url_for('index') if cat_type == 'summaries' else url_for('select_type', cat_type=cat_type)
 
     context = {
@@ -581,16 +590,19 @@ def admin():
     data = get_data()
     
     if request.method == 'POST':
+        # تحديث فيديو شروحات المنصة
         if 'platform_video_url' in request.form:
             data['platform_video_url'] = request.form.get('platform_video_url', '').strip()
             save_data(data)
             return redirect(url_for('admin'))
             
+        # تحديث فيديو تفاصيل الكتب الخارجية
         if 'external_books_video_url' in request.form:
             data['external_books_video_url'] = request.form.get('external_books_video_url', '').strip()
             save_data(data)
             return redirect(url_for('admin'))
 
+        # إضافة ملف PDF أسبوعي للكتيب
         if 'add_weekly_pdf' in request.form:
             title = request.form.get('weekly_title', '').strip()
             link = request.form.get('weekly_link', '').strip()
@@ -604,6 +616,7 @@ def admin():
                 save_data(data)
             return redirect(url_for('admin'))
 
+        # تفعيل اشتراك طالب في الكتيب
         if 'toggle_subscription' in request.form:
             target_user = request.form.get('target_user', '').strip()
             if target_user:
@@ -615,6 +628,7 @@ def admin():
                 save_data(data)
             return redirect(url_for('admin'))
 
+        # إضافة محتوى عام/تخصصي
         if 'category' in request.form:
             category = request.form.get('category')
             title = request.form.get('title', '').strip()
