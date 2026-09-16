@@ -71,11 +71,6 @@ SECTION_NAMES = {
     'catalog': 'كتالوج المنصة'
 }
 
-# --- نظام التخزين المؤقت المحلي الذكي لزيادة السرعة وتقليل الضغط على Redis ---
-cached_data = None
-last_cache_time = 0
-CACHE_TTL = 30  # إعادة جلب البيانات من Redis كل 30 ثانية إن لم يتطلب الأمر تحديثاً لحظياً
-
 def load_data():
     default_data = {
         "users": [],
@@ -154,31 +149,17 @@ def load_data():
     return default_data
 
 def get_data(force_refresh=False):
-    global cached_data, last_cache_time
-    now = time.time()
-    
-    if 'data' in g and not force_refresh:
-        return g.data
-        
-    if not force_refresh and cached_data is not None and (now - last_cache_time < CACHE_TTL):
-        g.data = cached_data
-        return cached_data
-
-    cached_data = load_data()
-    last_cache_time = now
-    g.data = cached_data
-    return cached_data
+    # القراءة مباشرة من الـ Context للطلب الحالي أو من Redis لتجنب الكاش المحلي بين الحاويات
+    if 'data' not in g or force_refresh:
+        g.data = load_data()
+    return g.data
 
 def save_data(data):
-    global cached_data, last_cache_time
     if redis:
         try:
             redis.set('site_data', json.dumps(data, ensure_ascii=False))
         except Exception as e:
             print("Redis save error:", e)
-
-    cached_data = data
-    last_cache_time = time.time()
     g.data = data
 
 def get_current_user(data):
@@ -302,7 +283,7 @@ def settings():
     if 'user' not in session:
         return redirect(url_for('login'))
         
-    data = get_data()
+    data = get_data(force_refresh=True)
     current_user = get_current_user(data)
     user_index = -1
 
@@ -701,7 +682,7 @@ def admin():
 def delete_weekly(index):
     if not session.get('logged_in'):
         return redirect(url_for('admin'))
-    data = get_data()
+    data = get_data(force_refresh=True)
     pdfs = data.get('weekly_pdfs', [])
     if 0 <= index < len(pdfs):
         pdfs.pop(index)
@@ -714,7 +695,7 @@ def reply_forum(index):
         return redirect(url_for('admin'))
 
     reply_text = request.form.get('reply', '').strip()
-    data = get_data()
+    data = get_data(force_refresh=True)
     if 'forum' in data and isinstance(data['forum'], list) and len(data['forum']) > index:
         data['forum'][index]['reply'] = reply_text
         save_data(data)
@@ -725,7 +706,7 @@ def delete_item(cat_type, index):
     if not session.get('logged_in'):
         return redirect(url_for('admin'))
 
-    data = get_data()
+    data = get_data(force_refresh=True)
     mapping = {
         'external_book': 'external_books',
         'book': 'books',
@@ -760,7 +741,7 @@ def delete_general_item(cat_type, subject_id, index):
     if not session.get('logged_in'):
         return redirect(url_for('admin'))
     
-    data = get_data()
+    data = get_data(force_refresh=True)
     items = data.get('general_items', {}).get(cat_type, {}).get(subject_id, [])
     if 0 <= index < len(items):
         items.pop(index)
@@ -772,7 +753,7 @@ def delete_specialized_item(cat_type, track_id, index):
     if not session.get('logged_in'):
         return redirect(url_for('admin'))
     
-    data = get_data()
+    data = get_data(force_refresh=True)
     spec_items = data.get('specialized_items', {}).get(cat_type, {}).get(track_id, [])
     if 0 <= index < len(spec_items):
         removed_item = spec_items.pop(index)
