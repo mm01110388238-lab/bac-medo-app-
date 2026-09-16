@@ -24,9 +24,20 @@ YT_CHANNEL_URL = "https://youtube.com/@mohamed25saeid?si=GCVoRwEzC499fsE5"
 WA_CHANNEL_URL = "https://whatsapp.com/channel/0029VbCdtHG2ER6cBCinCb0x"
 WA_COMMUNITY_URL = "https://chat.whatsapp.com/L102CxYGFfWLUwcVgvurpa"
 
-# الاتصال بقاعدة بيانات Upstash / Vercel KV تلقائياً مع تنظيف النصوص
-raw_url = os.getenv("UPSTASH_REDIS_REST_URL") or os.getenv("KV_REST_API_URL") or ""
-raw_token = os.getenv("UPSTASH_REDIS_REST_TOKEN") or os.getenv("KV_REST_API_TOKEN") or ""
+# الاتصال بقاعدة بيانات Upstash / Vercel KV تلقائياً بجميع احتمالات الأسماء مع تنظيف النصوص
+raw_url = (
+    os.getenv("UPSTASH_REDIS_REST_URL") or 
+    os.getenv("KV_REST_API_URL") or 
+    os.getenv("REDIS_URL") or 
+    ""
+)
+
+raw_token = (
+    os.getenv("UPSTASH_REDIS_REST_TOKEN") or 
+    os.getenv("KV_REST_API_TOKEN") or 
+    os.getenv("KV_REST_API_READ_ONLY_TOKEN") or 
+    ""
+)
 
 url = raw_url.strip()
 token = raw_token.strip()
