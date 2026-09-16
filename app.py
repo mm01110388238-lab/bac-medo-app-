@@ -1,5 +1,6 @@
 import os
 import json
+import time
 from datetime import timedelta
 from flask import Flask, render_template, request, redirect, url_for, session, g
 from upstash_redis import Redis
@@ -24,9 +25,20 @@ YT_CHANNEL_URL = "https://youtube.com/@mohamed25saeid?si=GCVoRwEzC499fsE5"
 WA_CHANNEL_URL = "https://whatsapp.com/channel/0029VbCdtHG2ER6cBCinCb0x"
 WA_COMMUNITY_URL = "https://chat.whatsapp.com/L102CxYGFfWLUwcVgvurpa"
 
-# الاتصال بقاعدة بيانات Upstash / Vercel KV تلقائياً مع تنظيف النصوص
-raw_url = os.getenv("UPSTASH_REDIS_REST_URL") or os.getenv("KV_REST_API_URL") or ""
-raw_token = os.getenv("UPSTASH_REDIS_REST_TOKEN") or os.getenv("KV_REST_API_TOKEN") or ""
+# الاتصال بقاعدة بيانات Upstash / Vercel KV تلقائياً بجميع احتمالات الأسماء مع تنظيف النصوص
+raw_url = (
+    os.getenv("UPSTASH_REDIS_REST_URL") or 
+    os.getenv("KV_REST_API_URL") or 
+    os.getenv("REDIS_URL") or 
+    ""
+)
+
+raw_token = (
+    os.getenv("UPSTASH_REDIS_REST_TOKEN") or 
+    os.getenv("KV_REST_API_TOKEN") or 
+    os.getenv("KV_REST_API_READ_ONLY_TOKEN") or 
+    ""
+)
 
 url = raw_url.strip()
 token = raw_token.strip()
@@ -58,6 +70,11 @@ SECTION_NAMES = {
     'booklet': 'كتيب البكالوريا',
     'catalog': 'كتالوج المنصة'
 }
+
+# --- نظام التخزين المؤقت المحلي الذكي لزيادة السرعة وتقليل الضغط على Redis ---
+cached_data = None
+last_cache_time = 0
+CACHE_TTL = 30  # إعادة جلب البيانات من Redis كل 30 ثانية إن لم يتطلب الأمر تحديثاً لحظياً
 
 def load_data():
     default_data = {
@@ -136,19 +153,33 @@ def load_data():
 
     return default_data
 
-# التخزين المؤقت لتقليل عدد الاستعلامات لقاعدة البيانات أثناء الطلب الواحد
-def get_data():
-    if 'data' not in g:
-        g.data = load_data()
-    return g.data
+def get_data(force_refresh=False):
+    global cached_data, last_cache_time
+    now = time.time()
+    
+    if 'data' in g and not force_refresh:
+        return g.data
+        
+    if not force_refresh and cached_data is not None and (now - last_cache_time < CACHE_TTL):
+        g.data = cached_data
+        return cached_data
+
+    cached_data = load_data()
+    last_cache_time = now
+    g.data = cached_data
+    return cached_data
 
 def save_data(data):
+    global cached_data, last_cache_time
     if redis:
         try:
             redis.set('site_data', json.dumps(data, ensure_ascii=False))
-            g.data = data
         except Exception as e:
             print("Redis save error:", e)
+
+    cached_data = data
+    last_cache_time = time.time()
+    g.data = data
 
 def get_current_user(data):
     user_identifier = session.get('user_identifier')
@@ -221,7 +252,10 @@ def register():
         track = request.form.get('track', 'eng_prog').strip()
         
         if identifier and password:
-            data = get_data()
+            data = get_data(force_refresh=True)
+            if 'users' not in data:
+                data['users'] = []
+                
             for u in data.get('users', []):
                 if str(u.get('identifier')).strip() == identifier:
                     return "الحساب مسجل بالفعل! <a href='/login'>سجل دخولك من هنا</a>"
@@ -251,7 +285,7 @@ def login():
         identifier = request.form.get('identifier', '').strip()
         password = request.form.get('password', '').strip()
         
-        data = get_data()
+        data = get_data(force_refresh=True)
         for u in data.get('users', []):
             if str(u.get('identifier')).strip() == identifier and u.get('password') == password:
                 session.permanent = True
@@ -348,11 +382,9 @@ def select_type(cat_type):
     if 'user' not in session:
         return redirect(url_for('login'))
         
-    # توجيه قسم الكتب الخارجية للحل لصفحة العروض مباشرة دون عرض المواد
     if cat_type == 'external_books':
         return render_template('external_books.html')
 
-    # توجيه قسم تلخيص الدروس لتلخيص مادة تخصص الطالب المحددة مباشرة دون عرض المواد الأساسية
     if cat_type == 'summaries':
         data = get_data()
         user = get_current_user(data)
@@ -384,7 +416,6 @@ def select_type(cat_type):
                            user_track=user_track,
                            track_name=track_name)
 
-# مسار عرض صفحة الوصف والتوضيح المهم للكتب الخارجية
 @app.route('/external_books_info')
 def external_books_info():
     if 'user' not in session:
@@ -477,7 +508,6 @@ def specialized_items(cat_type, track_id):
                     grouped_lessons[sec] = []
                 grouped_lessons[sec].append(item)
 
-    # زر العودة للرئيسية مباشرة في حالة التلخيصات
     back_url = url_for('index') if cat_type == 'summaries' else url_for('select_type', cat_type=cat_type)
 
     context = {
@@ -576,22 +606,20 @@ def admin():
     if not session.get('logged_in'):
         return render_template('admin_login.html')
 
-    data = get_data()
+    # قراءة البيانات الحديثة دائماً عند فتح الأدمن
+    data = get_data(force_refresh=True)
     
     if request.method == 'POST':
-        # تحديث فيديو شروحات المنصة
         if 'platform_video_url' in request.form:
             data['platform_video_url'] = request.form.get('platform_video_url', '').strip()
             save_data(data)
             return redirect(url_for('admin'))
             
-        # تحديث فيديو تفاصيل الكتب الخارجية
         if 'external_books_video_url' in request.form:
             data['external_books_video_url'] = request.form.get('external_books_video_url', '').strip()
             save_data(data)
             return redirect(url_for('admin'))
 
-        # إضافة ملف PDF أسبوعي للكتيب
         if 'add_weekly_pdf' in request.form:
             title = request.form.get('weekly_title', '').strip()
             link = request.form.get('weekly_link', '').strip()
@@ -605,7 +633,6 @@ def admin():
                 save_data(data)
             return redirect(url_for('admin'))
 
-        # تفعيل اشتراك طالب في الكتيب
         if 'toggle_subscription' in request.form:
             target_user = request.form.get('target_user', '').strip()
             if target_user:
@@ -617,7 +644,6 @@ def admin():
                 save_data(data)
             return redirect(url_for('admin'))
 
-        # إضافة محتوى عام/تخصصي
         if 'category' in request.form:
             category = request.form.get('category')
             title = request.form.get('title', '').strip()
