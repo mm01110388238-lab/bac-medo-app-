@@ -25,41 +25,16 @@ YT_CHANNEL_URL = "https://youtube.com/@mohamed25saeid?si=GCVoRwEzC499fsE5"
 WA_CHANNEL_URL = "https://whatsapp.com/channel/0029VbCdtHG2ER6cBCinCb0x"
 WA_COMMUNITY_URL = "https://chat.whatsapp.com/L102CxYGFfWLUwcVgvurpa"
 
-# الاتصال بقاعدة بيانات Upstash / Vercel KV تلقائياً مع تنظيف النصوص من الأقواس والمسافات
-raw_url = (
-    os.getenv("KV_REST_API_URL") or 
-    os.getenv("UPSTASH_REDIS_REST_URL") or 
-    os.getenv("REDIS_URL") or 
-    ""
-)
-
-raw_token = (
-    os.getenv("KV_REST_API_TOKEN") or 
-    os.getenv("UPSTASH_REDIS_REST_TOKEN") or 
-    os.getenv("KV_REST_API_READ_ONLY_TOKEN") or 
-    ""
-)
-
-# تنظيف الرابط والتوكن تلقائياً لو تم نسخ أقواس Markdown مثل [https://...](https://...) أو مسافات
-def sanitize_val(val):
-    if not val:
-        return ""
-    val = val.strip().strip('"').strip("'")
-    if "(" in val and ")" in val:
-        val = val.split("(")[-1].rstrip(")")
-    if "]" in val:
-        val = val.split("]")[-1]
-    return val.strip()
-
-url = sanitize_val(raw_url)
-token = sanitize_val(raw_token)
+# --- الاتصال المباشر بقاعدة بيانات Upstash Redis ---
+UPSTASH_URL = "https://noted-lemming-132242.upstash.io"
+UPSTASH_TOKEN = "gQAAAAAAAgSSAAIgcDIxNzUxNDk0YzJmN2Y0NDEyOGFhNjEyNmQzNGRiYzMyNQ"
 
 redis = None
-if url and token:
-    try:
-        redis = Redis(url=url, token=token)
-    except Exception as e:
-        print("Redis connection error:", e)
+try:
+    redis = Redis(url=UPSTASH_URL, token=UPSTASH_TOKEN)
+    print("Upstash Redis Connected Successfully!")
+except Exception as e:
+    print("Redis connection error:", e)
 
 TRACKS = {
     'med_math': 'مسار الطب وعلوم الحياة / رياضيات',
@@ -122,7 +97,13 @@ def load_data():
         try:
             raw = redis.get('site_data')
             if raw:
-                data = json.loads(raw) if isinstance(raw, str) else raw
+                if isinstance(raw, str):
+                    data = json.loads(raw)
+                elif isinstance(raw, dict):
+                    data = raw
+                else:
+                    data = json.loads(str(raw))
+
                 if isinstance(data, dict):
                     data.setdefault('users', [])
                     data.setdefault('external_books', [])
@@ -165,7 +146,6 @@ def load_data():
     return default_data
 
 def get_data(force_refresh=False):
-    # القراءة مباشرة من الـ Context للطلب الحالي أو من Redis لتجنب الكاش المحلي بين الحاويات
     if 'data' not in g or force_refresh:
         g.data = load_data()
     return g.data
@@ -603,7 +583,6 @@ def admin():
     if not session.get('logged_in'):
         return render_template('admin_login.html')
 
-    # قراءة البيانات الحديثة دائماً عند فتح الأدمن
     data = get_data(force_refresh=True)
     
     if request.method == 'POST':
