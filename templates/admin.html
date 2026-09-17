@@ -79,6 +79,10 @@
             font-weight: bold; 
             font-size: 14px; 
         }
+
+        .btn-back:hover {
+            opacity: 0.9;
+        }
         
         .theme-toggle-btn { 
             background: none; 
@@ -99,12 +103,19 @@
             color: var(--text-color); 
             box-sizing: border-box; 
             font-size: 14px; 
+            outline: none;
+        }
+
+        input:focus, select:focus {
+            border-color: var(--accent-color);
         }
         
         label { 
             font-size: 14px; 
             font-weight: bold; 
             color: var(--accent-color); 
+            display: inline-block;
+            margin-top: 4px;
         }
 
         .btn-submit { 
@@ -118,6 +129,11 @@
             font-size: 15px; 
             font-weight: bold; 
             cursor: pointer; 
+            transition: opacity 0.2s;
+        }
+
+        .btn-submit:hover {
+            opacity: 0.9;
         }
         
         .btn-delete { 
@@ -128,7 +144,12 @@
             border-radius: 6px; 
             cursor: pointer; 
             font-size: 13px; 
-            float: left; 
+            flex-shrink: 0;
+            transition: opacity 0.2s;
+        }
+
+        .btn-delete:hover {
+            opacity: 0.85;
         }
         
         .item-row { 
@@ -139,8 +160,10 @@
             display: flex; 
             justify-content: space-between; 
             align-items: center; 
+            gap: 10px;
             border: 1px solid var(--border-color); 
             font-size: 14px; 
+            word-break: break-word;
         }
         
         .user-card { 
@@ -224,8 +247,8 @@
     <div class="container">
         <h2><i class="fa-solid fa-circle-play"></i> فيديو تفاصيل وشرح المنصة</h2>
         <form method="POST" action="{{ url_for('admin') }}">
-            <label>رابط فيديو يوتيوب:</label>
-            <input type="url" name="platform_video_url" value="{{ platform_video_url or '' }}" placeholder="https://www.youtube.com/watch?v=...">
+            <label for="platform_video_url">رابط فيديو يوتيوب:</label>
+            <input type="url" id="platform_video_url" name="platform_video_url" value="{{ platform_video_url or '' }}" placeholder="https://www.youtube.com/watch?v=...">
             <button type="submit" class="btn-submit" style="background-color: var(--accent-color); color: #0f172a;">💾 حفظ رابط الفيديو</button>
         </form>
     </div>
@@ -234,15 +257,15 @@
     <div class="container">
         <h2><i class="fa-solid fa-book"></i> فيديو تفاصيل الكتب الخارجية للحل</h2>
         <form method="POST" action="{{ url_for('admin') }}">
-            <label>رابط فيديو يوتيوب تفاصيل الكتب:</label>
-            <input type="url" name="external_books_video_url" value="{{ external_books_video_url or '' }}" placeholder="https://www.youtube.com/watch?v=...">
+            <label for="external_books_video_url">رابط فيديو يوتيوب تفاصيل الكتب:</label>
+            <input type="url" id="external_books_video_url" name="external_books_video_url" value="{{ external_books_video_url or '' }}" placeholder="https://www.youtube.com/watch?v=...">
             <button type="submit" class="btn-submit" style="background-color: var(--accent-color); color: #0f172a;">💾 حفظ رابط فيديو الكتب الخارجية</button>
         </form>
     </div>
 
     <!-- 3. إدارة أسبوعيات كتيب البكالوريا (إضافة وحذف PDFs) -->
     <div class="container">
-        <button class="toggle-btn" onclick="toggleSection('booklet-pdfs-section', 'booklet-pdfs-icon')">
+        <button type="button" class="toggle-btn" onclick="toggleSection('booklet-pdfs-section', 'booklet-pdfs-icon')">
             <span><i class="fa-solid fa-book-bookmark"></i> إدارة الـ PDFs الأسبوعية لكتيب البكالوريا</span>
             <i class="fa-solid fa-chevron-down" id="booklet-pdfs-icon"></i>
         </button>
@@ -250,14 +273,14 @@
         <div id="booklet-pdfs-section" class="collapsible-content">
             <form method="POST" action="{{ url_for('admin') }}" style="margin-bottom: 20px;">
                 <input type="hidden" name="add_weekly_pdf" value="1">
-                <label>عنوان ملف الـ PDF الأسبوعي:</label>
-                <input type="text" name="weekly_title" placeholder="مثال: ملخص الأسبوع الأول - الفيزياء" required>
+                <label for="weekly_title">عنوان ملف الـ PDF الأسبوعي:</label>
+                <input type="text" id="weekly_title" name="weekly_title" placeholder="مثال: ملخص الأسبوع الأول - الفيزياء" required>
 
-                <label>رابط الملف (Google Drive / رابط مباشر):</label>
-                <input type="url" name="weekly_link" placeholder="https://..." required>
+                <label for="weekly_link">رابط الملف (Google Drive / رابط مباشر):</label>
+                <input type="url" id="weekly_link" name="weekly_link" placeholder="https://..." required>
 
-                <label>اسم أو رقم الأسبوع:</label>
-                <input type="text" name="weekly_num" placeholder="مثال: الأسبوع الأول">
+                <label for="weekly_num">اسم أو رقم الأسبوع:</label>
+                <input type="text" id="weekly_num" name="weekly_num" placeholder="مثال: الأسبوع الأول">
 
                 <button type="submit" class="btn-submit" style="background-color: var(--gold-color); color: #0f172a;">➕ إضافة ملف أسبوعي جديد</button>
             </form>
@@ -267,7 +290,7 @@
                 {% for pdf in weekly_pdfs %}
                     <div class="item-row">
                         <span><strong>[{{ pdf.week }}]</strong> {{ pdf.title }}</span>
-                        <form action="{{ url_for('delete_weekly', index=loop.index0) }}" method="POST" style="margin:0;">
+                        <form action="{{ url_for('delete_weekly', index=loop.index0) }}" method="POST" style="margin:0;" onsubmit="return confirm('هل أنت تأكد من حذف هذا الملف؟');">
                             <button type="submit" class="btn-delete">حذف</button>
                         </form>
                     </div>
@@ -280,8 +303,8 @@
 
     <!-- 4. قسم الأعضاء وإدارة اشتراكات كتيب البكالوريا (قابل للطي) -->
     <div class="container">
-        <button class="toggle-btn" onclick="toggleSection('users-section', 'users-icon')">
-            <span><i class="fa-solid fa-users"></i> الاعضاء المسجلين وإدارة الاشتراكات (العدد: {{ total_users }})</span>
+        <button type="button" class="toggle-btn" onclick="toggleSection('users-section', 'users-icon')">
+            <span><i class="fa-solid fa-users"></i> الأعضاء المسجلين وإدارة الاشتراكات (العدد: {{ total_users }})</span>
             <i class="fa-solid fa-chevron-down" id="users-icon"></i>
         </button>
         
@@ -346,8 +369,8 @@
 
             <!-- قائمة المواد الأساسية -->
             <div id="general-subject-container">
-                <label>اختر المادة الأساسية:</label>
-                <select name="general_subject">
+                <label for="general_subject">اختر المادة الأساسية:</label>
+                <select name="general_subject" id="general_subject">
                     {% for sub_id, sub_name in general_subjects.items() %}
                         <option value="{{ sub_id }}">{{ sub_name }}</option>
                     {% endfor %}
@@ -356,8 +379,8 @@
 
             <!-- قائمة المسارات التخصصية -->
             <div id="track-container" style="display: none;">
-                <label>اختر المسار والتخصص:</label>
-                <select name="track">
+                <label for="track">اختر المسار والتخصص:</label>
+                <select name="track" id="track">
                     {% for key, name in tracks.items() %}
                         <option value="{{ key }}">{{ name }}</option>
                     {% endfor %}
@@ -366,15 +389,15 @@
 
             <!-- اسم القسم / العنوان الرئيسي (للشروحات فقط) -->
             <div id="lesson-fields" style="display: none;">
-                <label>اسم القسم / العنوان الرئيسي:</label>
-                <input type="text" name="section" placeholder="مثال: الدرس الأول - التأسيس">
+                <label for="section_input">اسم القسم / العنوان الرئيسي:</label>
+                <input type="text" id="section_input" name="section" placeholder="مثال: الدرس الأول - التأسيس">
             </div>
 
-            <label>عنوان المحتوى / الشرح:</label>
-            <input type="text" name="title" placeholder="مثال: شرح الدرس الأول" required>
+            <label for="title_input">عنوان المحتوى / الشرح:</label>
+            <input type="text" id="title_input" name="title" placeholder="مثال: شرح الدرس الأول" required>
 
-            <label>الرابط المباشر:</label>
-            <input type="url" name="link" placeholder="https://..." required>
+            <label for="link_input">الرابط المباشر:</label>
+            <input type="url" id="link_input" name="link" placeholder="https://..." required>
 
             <button type="submit" class="btn-submit">➕ إضافة المحتوى</button>
         </form>
@@ -384,7 +407,7 @@
 
     <!-- إدارة تلخيص الدروس -->
     <div class="container">
-        <button class="toggle-btn" onclick="toggleSection('del-summaries', 'icon-sum')">
+        <button type="button" class="toggle-btn" onclick="toggleSection('del-summaries', 'icon-sum')">
             <span><i class="fa-solid fa-file-lines"></i> إدارة وحذف تلخيص الدروس</span>
             <i class="fa-solid fa-chevron-down" id="icon-sum"></i>
         </button>
@@ -396,7 +419,7 @@
                     {% for item in items %}
                         <div class="item-row">
                             <span>{{ item.title }}</span>
-                            <form action="{{ url_for('delete_specialized_item', cat_type='summaries', track_id=trk_id, index=loop.index0) }}" method="POST" style="margin:0;">
+                            <form action="{{ url_for('delete_specialized_item', cat_type='summaries', track_id=trk_id, index=loop.index0) }}" method="POST" style="margin:0;" onsubmit="return confirm('تأكيد حذف العنصر؟');">
                                 <button type="submit" class="btn-delete">حذف</button>
                             </form>
                         </div>
@@ -409,7 +432,7 @@
                 {% for sum_item in data.summaries %}
                     <div class="item-row">
                         <span>{{ sum_item.title }}</span>
-                        <form action="{{ url_for('delete_item', cat_type='summaries', index=loop.index0) }}" method="POST" style="margin:0;">
+                        <form action="{{ url_for('delete_item', cat_type='summaries', index=loop.index0) }}" method="POST" style="margin:0;" onsubmit="return confirm('تأكيد حذف العنصر؟');">
                             <button type="submit" class="btn-delete">حذف</button>
                         </form>
                     </div>
@@ -420,7 +443,7 @@
 
     <!-- إدارة التقييمات المدرسية -->
     <div class="container">
-        <button class="toggle-btn" onclick="toggleSection('del-evaluations', 'icon-eval')">
+        <button type="button" class="toggle-btn" onclick="toggleSection('del-evaluations', 'icon-eval')">
             <span><i class="fa-solid fa-chart-line"></i> إدارة وحذف التقييمات المدرسية</span>
             <i class="fa-solid fa-chevron-down" id="icon-eval"></i>
         </button>
@@ -432,7 +455,7 @@
                     {% for item in items %}
                         <div class="item-row">
                             <span>{{ item.title }}</span>
-                            <form action="{{ url_for('delete_general_item', cat_type='evaluations', subject_id=sub_id, index=loop.index0) }}" method="POST" style="margin:0;">
+                            <form action="{{ url_for('delete_general_item', cat_type='evaluations', subject_id=sub_id, index=loop.index0) }}" method="POST" style="margin:0;" onsubmit="return confirm('تأكيد حذف العنصر؟');">
                                 <button type="submit" class="btn-delete">حذف</button>
                             </form>
                         </div>
@@ -447,7 +470,7 @@
                     {% for item in items %}
                         <div class="item-row">
                             <span>{{ item.title }}</span>
-                            <form action="{{ url_for('delete_specialized_item', cat_type='evaluations', track_id=trk_id, index=loop.index0) }}" method="POST" style="margin:0;">
+                            <form action="{{ url_for('delete_specialized_item', cat_type='evaluations', track_id=trk_id, index=loop.index0) }}" method="POST" style="margin:0;" onsubmit="return confirm('تأكيد حذف العنصر؟');">
                                 <button type="submit" class="btn-delete">حذف</button>
                             </form>
                         </div>
@@ -460,7 +483,7 @@
                 {% for eval_item in data.evaluations %}
                     <div class="item-row">
                         <span>{{ eval_item.title }}</span>
-                        <form action="{{ url_for('delete_item', cat_type='evaluations', index=loop.index0) }}" method="POST" style="margin:0;">
+                        <form action="{{ url_for('delete_item', cat_type='evaluations', index=loop.index0) }}" method="POST" style="margin:0;" onsubmit="return confirm('تأكيد حذف العنصر؟');">
                             <button type="submit" class="btn-delete">حذف</button>
                         </form>
                     </div>
@@ -471,7 +494,7 @@
 
     <!-- إدارة المنصات التعليمية -->
     <div class="container">
-        <button class="toggle-btn" onclick="toggleSection('del-platforms', 'icon-plat')">
+        <button type="button" class="toggle-btn" onclick="toggleSection('del-platforms', 'icon-plat')">
             <span><i class="fa-solid fa-globe"></i> إدارة وحذف المنصات التعليمية</span>
             <i class="fa-solid fa-chevron-down" id="icon-plat"></i>
         </button>
@@ -480,7 +503,7 @@
                 {% for plat in data.platforms %}
                     <div class="item-row">
                         <span>{{ plat.title }}</span>
-                        <form action="{{ url_for('delete_item', cat_type='platform', index=loop.index0) }}" method="POST" style="margin:0;">
+                        <form action="{{ url_for('delete_item', cat_type='platform', index=loop.index0) }}" method="POST" style="margin:0;" onsubmit="return confirm('تأكيد حذف العنصر؟');">
                             <button type="submit" class="btn-delete">حذف</button>
                         </form>
                     </div>
@@ -493,7 +516,7 @@
 
     <!-- إدارة الشروحات والدروس -->
     <div class="container">
-        <button class="toggle-btn" onclick="toggleSection('del-lessons', 'icon-less')">
+        <button type="button" class="toggle-btn" onclick="toggleSection('del-lessons', 'icon-less')">
             <span><i class="fa-solid fa-tv"></i> إدارة وحذف الشروحات والمسارات</span>
             <i class="fa-solid fa-chevron-down" id="icon-less"></i>
         </button>
@@ -505,7 +528,7 @@
                     {% for item in items %}
                         <div class="item-row">
                             <span>[{{ item.section }}] {{ item.title }}</span>
-                            <form action="{{ url_for('delete_general_item', cat_type='lessons', subject_id=sub_id, index=loop.index0) }}" method="POST" style="margin:0;">
+                            <form action="{{ url_for('delete_general_item', cat_type='lessons', subject_id=sub_id, index=loop.index0) }}" method="POST" style="margin:0;" onsubmit="return confirm('تأكيد حذف العنصر؟');">
                                 <button type="submit" class="btn-delete">حذف</button>
                             </form>
                         </div>
@@ -520,7 +543,7 @@
                     {% for item in items %}
                         <div class="item-row">
                             <span>[{{ item.section }}] {{ item.title }}</span>
-                            <form action="{{ url_for('delete_specialized_item', cat_type='lessons', track_id=trk_id, index=loop.index0) }}" method="POST" style="margin:0;">
+                            <form action="{{ url_for('delete_specialized_item', cat_type='lessons', track_id=trk_id, index=loop.index0) }}" method="POST" style="margin:0;" onsubmit="return confirm('تأكيد حذف العنصر؟');">
                                 <button type="submit" class="btn-delete">حذف</button>
                             </form>
                         </div>
@@ -567,7 +590,6 @@
                 subjectTypeContainer.style.display = 'none';
                 lessonFields.style.display = 'none';
             } else if (cat === 'summaries') {
-                // تلخيص الدروس متاح للمواد التخصصية فقط
                 subjectTypeContainer.style.display = 'block';
                 optGeneral.style.display = 'none';
                 subjectTypeSelect.value = 'specialized';
@@ -597,8 +619,6 @@
             }
         }
 
-        toggleFormFields();
-
         function toggleTheme() {
             const currentTheme = document.documentElement.getAttribute('data-theme');
             const newTheme = currentTheme === 'light' ? 'dark' : 'light';
@@ -609,12 +629,17 @@
 
         function updateThemeIcon(theme) {
             const icon = document.getElementById('theme-icon');
-            icon.className = theme === 'light' ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
+            if (icon) {
+                icon.className = theme === 'light' ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
+            }
         }
 
-        const savedTheme = localStorage.getItem('theme') || 'dark';
-        document.documentElement.setAttribute('data-theme', savedTheme);
-        updateThemeIcon(savedTheme);
+        document.addEventListener("DOMContentLoaded", function() {
+            toggleFormFields();
+            const savedTheme = localStorage.getItem('theme') || 'dark';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            updateThemeIcon(savedTheme);
+        });
     </script>
 </body>
 </html>
