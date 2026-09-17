@@ -1,874 +1,669 @@
-import os
-import json
-import time
-from datetime import timedelta
-from flask import Flask, render_template, request, redirect, url_for, session, g, Response, jsonify
-from upstash_redis import Redis
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة التحكم - منصة السعيد</title>
+    <!-- أيقونات FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-color: #ffffff;
+            --text-muted: #94a3b8;
+            --border-color: #334155;
+            --accent-color: #38bdf8;
+            --gold-color: #f59e0b;
+            --shadow: rgba(0, 0, 0, 0.4);
+            --input-bg: #0f172a;
+        }
 
-app = Flask(__name__)
-app.secret_key = os.getenv('SECRET_KEY', 'elsaeed_platform_2026_secret_key')
+        [data-theme="light"] {
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-color: #0f172a;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+            --accent-color: #0284c7;
+            --gold-color: #d97706;
+            --shadow: rgba(0, 0, 0, 0.08);
+            --input-bg: #f1f5f9;
+        }
 
-# --- إعدادات الجلسة الدائمة لحل مشكلة تسجيل الدخول المتكرر ---
-app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=365)
-app.config['SESSION_COOKIE_NAME'] = 'elsaeed_session'
-app.config['SESSION_REFRESH_EACH_REQUEST'] = True
-
-# --- أرقام التواصل والروابط الرسمية ---
-DEVELOPER_WA = "201110388238"
-SUPPORT_WA = "201221441631"
-BOOKSTORE_WA = "201022574864"  # رقم واتساب دعم المكتبة
-
-BOOKLET_VIDEO_URL = "https://youtu.be/cqvxq_C7R9Q?si=4bqe5Ti5emcQSPxb"
-BOOKLET_PROMO_PDF = "https://drive.google.com/file/d/1oVLiR8NgPe5YsWANKJruKasEkoynQ8YN/view?usp=drivesdk"
-
-YT_CHANNEL_URL = "https://youtube.com/@mohamed25saeid?si=GCVoRwEzC499fsE5"
-WA_CHANNEL_URL = "https://whatsapp.com/channel/0029VbCdtHG2ER6cBCinCb0x"
-WA_COMMUNITY_URL = "https://chat.whatsapp.com/L102CxYGFfWLUwvVgvurpa"
-
-# --- الاتصال بقاعدة بيانات Upstash Redis ---
-UPSTASH_URL = os.getenv('UPSTASH_REDIS_REST_URL', "https://noted-lemming-132242.upstash.io")
-UPSTASH_TOKEN = os.getenv('UPSTASH_REDIS_REST_TOKEN', "gQAAAAAAAgSSAAIgcDIxNzUxNDk0YzJmN2Y0NDEyOGFhNjEyNmQzNGRiYzMyNQ")
-
-redis = None
-try:
-    redis = Redis(url=UPSTASH_URL, token=UPSTASH_TOKEN)
-    print("Upstash Redis Connected Successfully!")
-except Exception as e:
-    print("Redis connection error:", e)
-
-TRACKS = {
-    'med_math': 'مسار الطب وعلوم الحياة / رياضيات',
-    'med_physics': 'مسار طب وعلوم الحياة / فيزياء',
-    'eng_chem': 'مسار الهندسة وعلوم الحاسب / كيمياء',
-    'eng_prog': 'مسار الهندسة وعلوم الحاسب / برمجة',
-    'biz_acct': 'مسار الأعمال / محاسبة',
-    'biz_mgmt': 'مسار الأعمال / إدارة أعمال',
-    'art_psych': 'مسار الآداب والفنون / علم نفس',
-    'art_lang': 'مسار الآداب والفنون / لغة أجنبية ثانية'
-}
-
-GENERAL_SUBJECTS = {
-    'arabic': 'اللغة العربية',
-    'history': 'التاريخ المصري',
-    'english': 'اللغة الأجنبية الأولى'
-}
-
-SECTION_NAMES = {
-    'external_books': 'الكتب الخارجية للحل',
-    'summaries': 'تلخيص الدروس',
-    'evaluations': 'التقييمات المدرسية',
-    'lessons': 'الشروحات والمسارات',
-    'booklet': 'كتيب البكالوريا',
-    'catalog': 'كتالوج المنصة'
-}
-
-def load_data():
-    default_data = {
-        "users": [],
-        "external_books": [],
-        "books": [],
-        "summaries": [],
-        "evaluations": [],
-        "platforms": [],
-        "platform_video_url": "",
-        "external_books_video_url": "",
-        "booklet_subscribers": [],
-        "weekly_pdfs": [],
-        "lessons": {key: [] for key in TRACKS.keys()},
-        "general_items": {
-            "external_books": {key: [] for key in GENERAL_SUBJECTS.keys()},
-            "books": {key: [] for key in GENERAL_SUBJECTS.keys()},
-            "summaries": {key: [] for key in GENERAL_SUBJECTS.keys()},
-            "evaluations": {key: [] for key in GENERAL_SUBJECTS.keys()},
-            "lessons": {key: [] for key in GENERAL_SUBJECTS.keys()}
-        },
-        "specialized_items": {
-            "external_books": {key: [] for key in TRACKS.keys()},
-            "books": {key: [] for key in TRACKS.keys()},
-            "summaries": {key: [] for key in TRACKS.keys()},
-            "evaluations": {key: [] for key in TRACKS.keys()},
-            "lessons": {key: [] for key in TRACKS.keys()}
-        },
-        "forum": [],
-        "notes": {}
-    }
-    
-    if redis:
-        try:
-            raw = redis.get('site_data')
-            if raw:
-                if isinstance(raw, str):
-                    data = json.loads(raw)
-                elif isinstance(raw, dict):
-                    data = raw
-                else:
-                    data = json.loads(str(raw))
-
-                if isinstance(data, dict):
-                    data.setdefault('users', [])
-                    data.setdefault('external_books', [])
-                    data.setdefault('books', [])
-                    data.setdefault('summaries', [])
-                    data.setdefault('evaluations', [])
-                    data.setdefault('platforms', [])
-                    data.setdefault('platform_video_url', "")
-                    data.setdefault('external_books_video_url', "")
-                    data.setdefault('booklet_subscribers', [])
-                    data.setdefault('weekly_pdfs', [])
-                    data.setdefault('lessons', {key: [] for key in TRACKS.keys()})
-                    
-                    gen = data.setdefault('general_items', {})
-                    if not isinstance(gen, dict):
-                        gen = {}
-                        data['general_items'] = gen
-                    for cat in ['external_books', 'books', 'summaries', 'evaluations', 'lessons']:
-                        if not isinstance(gen.get(cat), dict):
-                            gen[cat] = {}
-                        for sub in GENERAL_SUBJECTS.keys():
-                            gen[cat].setdefault(sub, [])
-
-                    spec = data.setdefault('specialized_items', {})
-                    if not isinstance(spec, dict):
-                        spec = {}
-                        data['specialized_items'] = spec
-                    for cat in ['external_books', 'books', 'summaries', 'evaluations', 'lessons']:
-                        if not isinstance(spec.get(cat), dict):
-                            spec[cat] = {}
-                        for trk in TRACKS.keys():
-                            spec[cat].setdefault(trk, [])
-                            
-                    data.setdefault('forum', [])
-                    data.setdefault('notes', {})
-                    return data
-        except Exception as e:
-            print("Redis load error:", e)
-
-    return default_data
-
-def get_data(force_refresh=False):
-    if 'data' not in g or force_refresh:
-        g.data = load_data()
-    return g.data
-
-def save_data(data):
-    if redis:
-        try:
-            redis.set('site_data', json.dumps(data, ensure_ascii=False))
-        except Exception as e:
-            print("Redis save error:", e)
-    g.data = data
-
-def get_current_user(data):
-    user_identifier = session.get('user_identifier')
-    if user_identifier:
-        for u in data.get('users', []):
-            if str(u.get('identifier')).strip() == str(user_identifier).strip():
-                return u
-                
-    user_name = session.get('user')
-    if user_name:
-        for u in data.get('users', []):
-            if u.get('name') == user_name:
-                return u
-
-    return None
-
-@app.before_request
-def make_session_permanent():
-    session.permanent = True
-
-@app.context_processor
-def inject_globals():
-    data = get_data()
-    user_note = ""
-    current_user = get_current_user(data)
-    is_subscribed = False
-
-    if current_user:
-        user_key = str(current_user.get('identifier') or current_user.get('name', ''))
-        user_note = data.get('notes', {}).get(user_key, "")
+        * { 
+            box-sizing: border-box; 
+            margin: 0; 
+            padding: 0; 
+            font-family: Tahoma, 'Segoe UI', sans-serif; 
+            transition: background-color 0.3s, color 0.3s; 
+        }
         
-        subscribers = [str(s).strip() for s in data.get('booklet_subscribers', [])]
-        u_id = str(current_user.get('identifier', '')).strip()
-        u_name = str(current_user.get('name', '')).strip()
-        is_subscribed = (u_id in subscribers) or (u_name in subscribers)
-
-    return {
-        'developer_wa': DEVELOPER_WA,
-        'developer_wa_link': f"https://wa.me/{DEVELOPER_WA}",
-        'support_wa': SUPPORT_WA,
-        'support_wa_link': f"https://wa.me/{SUPPORT_WA}",
-        'bookstore_wa': BOOKSTORE_WA,
-        'bookstore_wa_link': f"https://wa.me/{BOOKSTORE_WA}",
-        'booklet_video_url': BOOKLET_VIDEO_URL,
-        'booklet_promo_pdf': BOOKLET_PROMO_PDF,
-        'yt_channel_url': YT_CHANNEL_URL,
-        'wa_channel_url': WA_CHANNEL_URL,
-        'wa_community_url': WA_COMMUNITY_URL,
-        'platform_video_url': data.get('platform_video_url', ''),
-        'external_books_video_url': data.get('external_books_video_url', ''),
-        'is_booklet_subscribed': is_subscribed,
-        'user_note': user_note,
-        'current_user': current_user,
-        'SECTION_NAMES': SECTION_NAMES,
-        'GENERAL_SUBJECTS': GENERAL_SUBJECTS,
-        'TRACKS': TRACKS
-    }
-
-# --- مسارات الحسابات والتسجيل والإعدادات ---
-
-@app.route('/register', methods=['GET', 'POST'])
-def register():
-    if 'user' in session:
-        return redirect(url_for('index'))
+        body { 
+            background-color: var(--bg-color); 
+            color: var(--text-color); 
+            padding: 15px; 
+            text-align: center; 
+            min-height: 100vh; 
+        }
         
-    if request.method == 'POST':
-        name = request.form.get('name', '').strip()
-        identifier = request.form.get('identifier', '').strip()
-        password = request.form.get('password', '').strip()
-        track = request.form.get('track', 'eng_prog').strip()
+        .container { 
+            max-width: 650px; 
+            margin: 0 auto 20px auto; 
+            background: var(--card-bg); 
+            padding: 20px; 
+            border-radius: 16px; 
+            text-align: right; 
+            border: 1px solid var(--border-color); 
+            box-shadow: 0 4px 12px var(--shadow); 
+        }
         
-        if identifier and password:
-            data = get_data(force_refresh=True)
-            if 'users' not in data:
-                data['users'] = []
-                
-            for u in data.get('users', []):
-                if str(u.get('identifier')).strip() == identifier:
-                    return "الحساب مسجل بالفعل! <a href='/login'>سجل دخولك من هنا</a>"
-            
-            user_obj = {
-                'name': name or 'مستخدم',
-                'identifier': identifier, 
-                'password': password,
-                'track': track
+        .top-navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 650px;
+            margin: 0 auto 20px auto;
+            padding: 10px 5px;
+        }
+
+        .btn-back { 
+            display: inline-flex; 
+            align-items: center; 
+            gap: 8px; 
+            background: var(--border-color); 
+            color: var(--text-color); 
+            padding: 8px 16px; 
+            border-radius: 8px; 
+            text-decoration: none; 
+            font-weight: bold; 
+            font-size: 14px; 
+        }
+
+        .btn-back:hover {
+            opacity: 0.9;
+        }
+        
+        .theme-toggle-btn { 
+            background: none; 
+            border: 1px solid var(--border-color); 
+            color: var(--text-color); 
+            padding: 8px 12px; 
+            border-radius: 8px; 
+            cursor: pointer; 
+        }
+
+        input, select { 
+            width: 100%; 
+            padding: 12px; 
+            margin: 8px 0 16px 0; 
+            border-radius: 8px; 
+            border: 1px solid var(--border-color); 
+            background: var(--input-bg); 
+            color: var(--text-color); 
+            box-sizing: border-box; 
+            font-size: 14px; 
+            outline: none;
+        }
+
+        input:focus, select:focus {
+            border-color: var(--accent-color);
+        }
+        
+        label { 
+            font-size: 14px; 
+            font-weight: bold; 
+            color: var(--accent-color); 
+            display: inline-block;
+            margin-top: 4px;
+        }
+
+        .btn-submit { 
+            display: block; 
+            width: 100%; 
+            padding: 12px; 
+            background: #16a34a; 
+            color: white; 
+            border: none; 
+            border-radius: 8px; 
+            font-size: 15px; 
+            font-weight: bold; 
+            cursor: pointer; 
+            transition: opacity 0.2s;
+            text-decoration: none;
+            text-align: center;
+        }
+
+        .btn-submit:hover {
+            opacity: 0.9;
+        }
+        
+        .btn-delete { 
+            background: #dc2626; 
+            color: white; 
+            border: none; 
+            padding: 6px 12px; 
+            border-radius: 6px; 
+            cursor: pointer; 
+            font-size: 13px; 
+            flex-shrink: 0;
+            transition: opacity 0.2s;
+        }
+
+        .btn-delete:hover {
+            opacity: 0.85;
+        }
+        
+        .item-row { 
+            background: var(--input-bg); 
+            padding: 12px 15px; 
+            margin: 8px 0; 
+            border-radius: 8px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            gap: 10px;
+            border: 1px solid var(--border-color); 
+            font-size: 14px; 
+            word-break: break-word;
+        }
+        
+        .user-card { 
+            background: var(--input-bg); 
+            padding: 12px 15px; 
+            margin: 8px 0; 
+            border-radius: 8px; 
+            border-right: 4px solid var(--accent-color); 
+            border-top: 1px solid var(--border-color); 
+            border-bottom: 1px solid var(--border-color); 
+            border-left: 1px solid var(--border-color); 
+        }
+
+        .user-card.subscribed {
+            border-right-color: var(--gold-color);
+        }
+
+        .toggle-btn {
+            width: 100%;
+            background: var(--input-bg);
+            color: var(--accent-color);
+            border: 1px solid var(--accent-color);
+            padding: 14px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .collapsible-content {
+            display: none;
+            margin-top: 15px;
+        }
+
+        .search-input {
+            margin-bottom: 12px;
+            border-color: var(--accent-color);
+        }
+
+        .sub-header { 
+            color: var(--accent-color); 
+            font-weight: bold; 
+            margin: 14px 0 6px 0; 
+            font-size: 14px; 
+            border-bottom: 1px dashed var(--border-color); 
+            padding-bottom: 4px; 
+        }
+
+        .status-badge {
+            display: inline-block;
+            font-size: 11px;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-weight: bold;
+        }
+        .status-active { background: rgba(34, 197, 94, 0.2); color: #22c55e; }
+        .status-inactive { background: rgba(148, 163, 184, 0.2); color: var(--text-muted); }
+
+        h2, h3 { 
+            color: var(--accent-color); 
+            border-bottom: 1px solid var(--border-color); 
+            padding-bottom: 8px; 
+            margin-bottom: 15px; 
+            font-size: 18px; 
+        }
+    </style>
+</head>
+<body>
+
+    <div class="top-navbar">
+        <a href="{{ url_for('index') }}" class="btn-back"><i class="fa-solid fa-house"></i> الرئيسية</a>
+        <button class="theme-toggle-btn" onclick="toggleTheme()" aria-label="تبديل الثيم">
+            <i class="fa-solid fa-moon" id="theme-icon"></i>
+        </button>
+    </div>
+
+    <!-- 0. قسم إدارة النسخة الاحتياطية (تنزيل / استعادة) -->
+    <div class="container" style="border: 1px solid var(--gold-color);">
+        <h2><i class="fa-solid fa-database"></i> النسخ الاحتياطي واستعادة البيانات</h2>
+        
+        <div style="margin-bottom: 20px;">
+            <label>1. تحميل نسخة احتياطية من قاعدة البيانات:</label>
+            <a href="{{ url_for('download_backup') }}" class="btn-submit" style="background-color: #2563eb; color: #ffffff; margin-top: 8px;">
+                <i class="fa-solid fa-download"></i> تنزيل ملف النسخة الاحتياطية (JSON)
+            </a>
+        </div>
+
+        <hr style="border-color: var(--border-color); margin: 15px 0;">
+
+        <form action="{{ url_for('restore_backup') }}" method="POST" enctype="multipart/form-data" onsubmit="return confirm('تنبيه: استعادة النسخة الاحتياطية ستستبدل البيانات الحالية بالكامل. هل تريد المتابعة؟');">
+            <label for="backup_file">2. استعادة بيانات من ملف نسخة احتياطية:</label>
+            <input type="file" id="backup_file" name="backup_file" accept=".json" required>
+            <button type="submit" class="btn-submit" style="background-color: var(--gold-color); color: #0f172a;">
+                <i class="fa-solid fa-upload"></i> استعادة البيانات الآن
+            </button>
+        </form>
+    </div>
+
+    <!-- 1. التحكم في فيديو تفاصيل المنصة -->
+    <div class="container">
+        <h2><i class="fa-solid fa-circle-play"></i> فيديو تفاصيل وشرح المنصة</h2>
+        <form method="POST" action="{{ url_for('admin') }}">
+            <label for="platform_video_url">رابط فيديو يوتيوب:</label>
+            <input type="url" id="platform_video_url" name="platform_video_url" value="{{ platform_video_url or '' }}" placeholder="https://www.youtube.com/watch?v=...">
+            <button type="submit" class="btn-submit" style="background-color: var(--accent-color); color: #0f172a;">💾 حفظ رابط الفيديو</button>
+        </form>
+    </div>
+
+    <!-- 2. التحكم في فيديو تفاصيل الكتب الخارجية -->
+    <div class="container">
+        <h2><i class="fa-solid fa-book"></i> فيديو تفاصيل الكتب الخارجية للحل</h2>
+        <form method="POST" action="{{ url_for('admin') }}">
+            <label for="external_books_video_url">رابط فيديو يوتيوب تفاصيل الكتب:</label>
+            <input type="url" id="external_books_video_url" name="external_books_video_url" value="{{ external_books_video_url or '' }}" placeholder="https://www.youtube.com/watch?v=...">
+            <button type="submit" class="btn-submit" style="background-color: var(--accent-color); color: #0f172a;">💾 حفظ رابط فيديو الكتب الخارجية</button>
+        </form>
+    </div>
+
+    <!-- 3. إدارة أسبوعيات كتيب البكالوريا (إضافة وحذف PDFs) -->
+    <div class="container">
+        <button type="button" class="toggle-btn" onclick="toggleSection('booklet-pdfs-section', 'booklet-pdfs-icon')">
+            <span><i class="fa-solid fa-book-bookmark"></i> إدارة الـ PDFs الأسبوعية لكتيب البكالوريا</span>
+            <i class="fa-solid fa-chevron-down" id="booklet-pdfs-icon"></i>
+        </button>
+
+        <div id="booklet-pdfs-section" class="collapsible-content">
+            <form method="POST" action="{{ url_for('admin') }}" style="margin-bottom: 20px;">
+                <input type="hidden" name="add_weekly_pdf" value="1">
+                <label for="weekly_title">عنوان ملف الـ PDF الأسبوعي:</label>
+                <input type="text" id="weekly_title" name="weekly_title" placeholder="مثال: ملخص الأسبوع الأول - الفيزياء" required>
+
+                <label for="weekly_link">رابط الملف (Google Drive / رابط مباشر):</label>
+                <input type="url" id="weekly_link" name="weekly_link" placeholder="https://..." required>
+
+                <label for="weekly_num">اسم أو رقم الأسبوع:</label>
+                <input type="text" id="weekly_num" name="weekly_num" placeholder="مثال: الأسبوع الأول">
+
+                <button type="submit" class="btn-submit" style="background-color: var(--gold-color); color: #0f172a;">➕ إضافة ملف أسبوعي جديد</button>
+            </form>
+
+            <div class="sub-header">📂 الملفات الأسبوعية المضافة حالياً:</div>
+            {% if weekly_pdfs %}
+                {% for pdf in weekly_pdfs %}
+                    <div class="item-row">
+                        <span><strong>[{{ pdf.week }}]</strong> {{ pdf.title }}</span>
+                        <form action="{{ url_for('delete_weekly', index=loop.index0) }}" method="POST" style="margin:0;" onsubmit="return confirm('هل أنت تأكد من حذف هذا الملف؟');">
+                            <button type="submit" class="btn-delete">حذف</button>
+                        </form>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p style="color: var(--text-muted); font-size: 13px; text-align: center; margin-top: 10px;">لا توجد ملفات أسبوعية مضافة حالياً.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- 4. قسم الأعضاء وإدارة اشتراكات كتيب البكالوريا (قابل للطي) -->
+    <div class="container">
+        <button type="button" class="toggle-btn" onclick="toggleSection('users-section', 'users-icon')">
+            <span><i class="fa-solid fa-users"></i> الأعضاء المسجلين وإدارة الاشتراكات (العدد: {{ total_users }})</span>
+            <i class="fa-solid fa-chevron-down" id="users-icon"></i>
+        </button>
+        
+        <div id="users-section" class="collapsible-content">
+            <input type="text" id="search-users" class="search-input" placeholder="🔍 ابحث عن اسم طالب أو رقم حساب..." onkeyup="filterUsers()">
+            <div id="users-list">
+                {% if users %}
+                    {% for u in users %}
+                        {% set user_id_str = u.identifier or u.name %}
+                        {% set is_sub = user_id_str in subscribers or u.identifier in subscribers %}
+                        <div class="user-card searchable-user {% if is_sub %}subscribed{% endif %}">
+                            <div>👤 <strong>الاسم:</strong> <span class="u-name">{{ u.name }}</span></div>
+                            <div style="margin-top: 4px;">📱 <strong>الحساب:</strong> <span class="u-id">{{ u.identifier }}</span></div>
+                            <div style="margin-top: 4px;">🔑 <strong>كلمة السر:</strong> <code style="color: var(--accent-color); background: var(--card-bg); padding: 2px 6px; border-radius: 4px;">{{ u.password }}</code></div>
+                            <div style="margin-top: 6px;">
+                                <strong>حالة الكتيب:</strong> 
+                                {% if is_sub %}
+                                    <span class="status-badge status-active">مشترك 🟢</span>
+                                {% else %}
+                                    <span class="status-badge status-inactive">غير مشترك ⚪</span>
+                                {% endif %}
+                            </div>
+
+                            <form method="POST" action="{{ url_for('admin') }}" style="margin-top: 10px;">
+                                <input type="hidden" name="toggle_subscription" value="1">
+                                <input type="hidden" name="target_user" value="{{ u.identifier }}">
+                                <button type="submit" class="btn-submit" style="background-color: {% if is_sub %}#dc2626{% else %}#16a34a{% endif %}; padding: 6px 10px; font-size: 12px;">
+                                    {% if is_sub %}❌ إلغاء تفعيل كتيب البكالوريا{% else %}✅ تفعيل كتيب البكالوريا{% endif %}
+                                </button>
+                            </form>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <p style="color: var(--text-muted); font-size: 14px; text-align: center;">لا يوجد مستخدمون مسجلون بعد.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- 5. قسم إضافة المحتوى -->
+    <div class="container">
+        <h2 style="text-align: center;"><i class="fa-solid fa-plus-circle"></i> إضافة محتوى جديد</h2>
+        
+        <form method="POST" action="{{ url_for('admin') }}">
+            <!-- اختيار قسم المحتوى -->
+            <label for="category">اختر قسم المحتوى:</label>
+            <select name="category" id="category" onchange="toggleFormFields()">
+                <option value="summaries">📝 تلخيص الدروس</option>
+                <option value="evaluations">📊 التقييمات المدرسية</option>
+                <option value="platform">🌐 منصة تعليمية</option>
+                <option value="lessons">📺 شرح / مراجعة (حسب التخصص أو المادة)</option>
+            </select>
+
+            <!-- نوع المواد (أساسية أم تخصصية) -->
+            <div id="subject-type-container">
+                <label for="subject_type">نوع المواد:</label>
+                <select name="subject_type" id="subject_type" onchange="toggleSubjectTypeFields()">
+                    <option value="general" id="opt-general">📖 المواد الأساسية لجميع المسارات</option>
+                    <option value="specialized" id="opt-specialized">🎓 المواد التخصصية لكل مسار</option>
+                </select>
+            </div>
+
+            <!-- قائمة المواد الأساسية -->
+            <div id="general-subject-container">
+                <label for="general_subject">اختر المادة الأساسية:</label>
+                <select name="general_subject" id="general_subject">
+                    {% for sub_id, sub_name in general_subjects.items() %}
+                        <option value="{{ sub_id }}">{{ sub_name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- قائمة المسارات التخصصية -->
+            <div id="track-container" style="display: none;">
+                <label for="track">اختر المسار والتخصص:</label>
+                <select name="track" id="track">
+                    {% for key, name in tracks.items() %}
+                        <option value="{{ key }}">{{ name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- اسم القسم / العنوان الرئيسي (للشروحات فقط) -->
+            <div id="lesson-fields" style="display: none;">
+                <label for="section_input">اسم القسم / العنوان الرئيسي:</label>
+                <input type="text" id="section_input" name="section" placeholder="مثال: الدرس الأول - التأسيس">
+            </div>
+
+            <label for="title_input">عنوان المحتوى / الشرح:</label>
+            <input type="text" id="title_input" name="title" placeholder="مثال: شرح الدرس الأول" required>
+
+            <label for="link_input">الرابط المباشر:</label>
+            <input type="url" id="link_input" name="link" placeholder="https://..." required>
+
+            <button type="submit" class="btn-submit">➕ إضافة المحتوى</button>
+        </form>
+    </div>
+
+    <!-- ==================== أقسام إدارة وحذف المحتويات (قابلة للطي) ==================== -->
+
+    <!-- إدارة تلخيص الدروس -->
+    <div class="container">
+        <button type="button" class="toggle-btn" onclick="toggleSection('del-summaries', 'icon-sum')">
+            <span><i class="fa-solid fa-file-lines"></i> إدارة وحذف تلخيص الدروس</span>
+            <i class="fa-solid fa-chevron-down" id="icon-sum"></i>
+        </button>
+        <div id="del-summaries" class="collapsible-content">
+            {% for trk_id, trk_name in tracks.items() %}
+                {% set items = data.get('specialized_items', {}).get('summaries', {}).get(trk_id, []) %}
+                {% if items %}
+                    <div class="sub-header">🎓 {{ trk_name }}</div>
+                    {% for item in items %}
+                        <div class="item-row">
+                            <span>{{ item.title }}</span>
+                            <form action="{{ url_for('delete_specialized_item', cat_type='summaries', track_id=trk_id, index=loop.index0) }}" method="POST" style="margin:0;" onsubmit="return confirm('تأكيد حذف العنصر؟');">
+                                <button type="submit" class="btn-delete">حذف</button>
+                            </form>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endfor %}
+
+            {% if data.summaries %}
+                <div class="sub-header">📂 مذكرات عامة</div>
+                {% for sum_item in data.summaries %}
+                    <div class="item-row">
+                        <span>{{ sum_item.title }}</span>
+                        <form action="{{ url_for('delete_item', cat_type='summaries', index=loop.index0) }}" method="POST" style="margin:0;" onsubmit="return confirm('تأكيد حذف العنصر؟');">
+                            <button type="submit" class="btn-delete">حذف</button>
+                        </form>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- إدارة التقييمات المدرسية -->
+    <div class="container">
+        <button type="button" class="toggle-btn" onclick="toggleSection('del-evaluations', 'icon-eval')">
+            <span><i class="fa-solid fa-chart-line"></i> إدارة وحذف التقييمات المدرسية</span>
+            <i class="fa-solid fa-chevron-down" id="icon-eval"></i>
+        </button>
+        <div id="del-evaluations" class="collapsible-content">
+            {% for sub_id, sub_name in general_subjects.items() %}
+                {% set items = data.get('general_items', {}).get('evaluations', {}).get(sub_id, []) %}
+                {% if items %}
+                    <div class="sub-header">📊 {{ sub_name }} (أساسي)</div>
+                    {% for item in items %}
+                        <div class="item-row">
+                            <span>{{ item.title }}</span>
+                            <form action="{{ url_for('delete_general_item', cat_type='evaluations', subject_id=sub_id, index=loop.index0) }}" method="POST" style="margin:0;" onsubmit="return confirm('تأكيد حذف العنصر؟');">
+                                <button type="submit" class="btn-delete">حذف</button>
+                            </form>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endfor %}
+
+            {% for trk_id, trk_name in tracks.items() %}
+                {% set items = data.get('specialized_items', {}).get('evaluations', {}).get(trk_id, []) %}
+                {% if items %}
+                    <div class="sub-header">🎓 {{ trk_name }}</div>
+                    {% for item in items %}
+                        <div class="item-row">
+                            <span>{{ item.title }}</span>
+                            <form action="{{ url_for('delete_specialized_item', cat_type='evaluations', track_id=trk_id, index=loop.index0) }}" method="POST" style="margin:0;" onsubmit="return confirm('تأكيد حذف العنصر؟');">
+                                <button type="submit" class="btn-delete">حذف</button>
+                            </form>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endfor %}
+
+            {% if data.evaluations %}
+                <div class="sub-header">📂 تقييمات عامة</div>
+                {% for eval_item in data.evaluations %}
+                    <div class="item-row">
+                        <span>{{ eval_item.title }}</span>
+                        <form action="{{ url_for('delete_item', cat_type='evaluations', index=loop.index0) }}" method="POST" style="margin:0;" onsubmit="return confirm('تأكيد حذف العنصر؟');">
+                            <button type="submit" class="btn-delete">حذف</button>
+                        </form>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- إدارة المنصات التعليمية -->
+    <div class="container">
+        <button type="button" class="toggle-btn" onclick="toggleSection('del-platforms', 'icon-plat')">
+            <span><i class="fa-solid fa-globe"></i> إدارة وحذف المنصات التعليمية</span>
+            <i class="fa-solid fa-chevron-down" id="icon-plat"></i>
+        </button>
+        <div id="del-platforms" class="collapsible-content">
+            {% if data.platforms %}
+                {% for plat in data.platforms %}
+                    <div class="item-row">
+                        <span>{{ plat.title }}</span>
+                        <form action="{{ url_for('delete_item', cat_type='platform', index=loop.index0) }}" method="POST" style="margin:0;" onsubmit="return confirm('تأكيد حذف العنصر؟');">
+                            <button type="submit" class="btn-delete">حذف</button>
+                        </form>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p style="color: var(--text-muted); font-size: 14px; text-align: center;">لا توجد منصات مضافة حالياً.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- إدارة الشروحات والدروس -->
+    <div class="container">
+        <button type="button" class="toggle-btn" onclick="toggleSection('del-lessons', 'icon-less')">
+            <span><i class="fa-solid fa-tv"></i> إدارة وحذف الشروحات والمسارات</span>
+            <i class="fa-solid fa-chevron-down" id="icon-less"></i>
+        </button>
+        <div id="del-lessons" class="collapsible-content">
+            {% for sub_id, sub_name in general_subjects.items() %}
+                {% set items = data.get('general_items', {}).get('lessons', {}).get(sub_id, []) %}
+                {% if items %}
+                    <div class="sub-header">📺 {{ sub_name }} (أساسي)</div>
+                    {% for item in items %}
+                        <div class="item-row">
+                            <span>[{{ item.section }}] {{ item.title }}</span>
+                            <form action="{{ url_for('delete_general_item', cat_type='lessons', subject_id=sub_id, index=loop.index0) }}" method="POST" style="margin:0;" onsubmit="return confirm('تأكيد حذف العنصر؟');">
+                                <button type="submit" class="btn-delete">حذف</button>
+                            </form>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endfor %}
+
+            {% for trk_id, trk_name in tracks.items() %}
+                {% set items = data.get('specialized_items', {}).get('lessons', {}).get(trk_id, []) %}
+                {% if items %}
+                    <div class="sub-header">🎓 {{ trk_name }}</div>
+                    {% for item in items %}
+                        <div class="item-row">
+                            <span>[{{ item.section }}] {{ item.title }}</span>
+                            <form action="{{ url_for('delete_specialized_item', cat_type='lessons', track_id=trk_id, index=loop.index0) }}" method="POST" style="margin:0;" onsubmit="return confirm('تأكيد حذف العنصر؟');">
+                                <button type="submit" class="btn-delete">حذف</button>
+                            </form>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- JavaScript السكربتات -->
+    <script>
+        function toggleSection(sectionId, iconId) {
+            const sec = document.getElementById(sectionId);
+            const icon = document.getElementById(iconId);
+            const isHidden = window.getComputedStyle(sec).display === "none";
+
+            if (isHidden) {
+                sec.style.display = "block";
+                icon.className = "fa-solid fa-chevron-up";
+            } else {
+                sec.style.display = "none";
+                icon.className = "fa-solid fa-chevron-down";
             }
-            data['users'].append(user_obj)
-            save_data(data)
-            
-            session.permanent = True
-            session['user'] = user_obj['name']
-            session['user_identifier'] = identifier
-            return redirect(url_for('index'))
-            
-    return render_template('register.html', tracks=TRACKS)
+        }
 
-@app.route('/login', methods=['GET', 'POST'])
-def login():
-    if 'user' in session:
-        return redirect(url_for('index'))
-        
-    if request.method == 'POST':
-        identifier = request.form.get('identifier', '').strip()
-        password = request.form.get('password', '').strip()
-        
-        data = get_data(force_refresh=True)
-        for u in data.get('users', []):
-            if str(u.get('identifier')).strip() == identifier and u.get('password') == password:
-                session.permanent = True
-                session['user'] = u.get('name', identifier)
-                session['user_identifier'] = u.get('identifier')
-                return redirect(url_for('index'))
-        
-        return "بيانات الدخول غير صحيحة! <a href='/login'>حاول مرة أخرى</a>"
-        
-    return render_template('login.html')
+        function filterUsers() {
+            const val = document.getElementById('search-users').value.toLowerCase().trim();
+            const cards = document.querySelectorAll('.searchable-user');
+            cards.forEach(card => {
+                const name = card.querySelector('.u-name').innerText.toLowerCase();
+                const id = card.querySelector('.u-id').innerText.toLowerCase();
+                card.style.display = (name.includes(val) || id.includes(val)) ? "block" : "none";
+            });
+        }
 
-@app.route('/settings', methods=['GET', 'POST'])
-def settings():
-    if 'user' not in session:
-        return redirect(url_for('login'))
-        
-    data = get_data(force_refresh=True)
-    current_user = get_current_user(data)
-    user_index = -1
+        function toggleFormFields() {
+            var cat = document.getElementById('category').value;
+            var subjectTypeContainer = document.getElementById('subject-type-container');
+            var lessonFields = document.getElementById('lesson-fields');
+            var optGeneral = document.getElementById('opt-general');
+            var subjectTypeSelect = document.getElementById('subject_type');
 
-    if current_user:
-        for idx, u in enumerate(data.get('users', [])):
-            if u.get('identifier') == current_user.get('identifier'):
-                user_index = idx
-                break
-
-    if request.method == 'POST':
-        name = request.form.get('name', '').strip()
-        track = request.form.get('track', '').strip()
-        password = request.form.get('password', '').strip()
-
-        if current_user and user_index != -1:
-            if name:
-                data['users'][user_index]['name'] = name
-                session['user'] = name
-            if track and track in TRACKS:
-                data['users'][user_index]['track'] = track
-            if password:
-                data['users'][user_index]['password'] = password
-
-            save_data(data)
-            return redirect(url_for('index'))
-
-    return render_template('settings.html', user=current_user, tracks=TRACKS)
-
-@app.route('/logout')
-def logout():
-    session.pop('user', None)
-    session.pop('user_identifier', None)
-    return redirect(url_for('login'))
-
-# --- مسارات المنصة الرئيسية ---
-
-@app.route('/')
-def index():
-    if 'user' not in session:
-        return redirect(url_for('login'))
-    return render_template('index.html')
-
-@app.route('/catalog')
-def catalog():
-    if 'user' not in session:
-        return redirect(url_for('login'))
-    return render_template('catalog.html')
-
-@app.route('/booklet')
-def booklet():
-    if 'user' not in session:
-        return redirect(url_for('login'))
-        
-    data = get_data()
-    current_user = get_current_user(data)
-    
-    subscribers = [str(s).strip() for s in data.get('booklet_subscribers', [])]
-    is_subscribed = False
-    if current_user:
-        u_id = str(current_user.get('identifier', '')).strip()
-        u_name = str(current_user.get('name', '')).strip()
-        is_subscribed = (u_id in subscribers) or (u_name in subscribers)
-    
-    weekly_pdfs = data.get('weekly_pdfs', []) if is_subscribed else []
-    
-    return render_template(
-        'booklet.html',
-        is_subscribed=is_subscribed,
-        weekly_pdfs=weekly_pdfs,
-        support_wa=SUPPORT_WA,
-        booklet_video=BOOKLET_VIDEO_URL,
-        booklet_promo_pdf=BOOKLET_PROMO_PDF
-    )
-
-@app.route('/select_type/<cat_type>')
-def select_type(cat_type):
-    if 'user' not in session:
-        return redirect(url_for('login'))
-        
-    if cat_type == 'external_books':
-        return render_template('external_books.html')
-
-    if cat_type == 'summaries':
-        data = get_data()
-        user = get_current_user(data)
-        user_track = user.get('track', 'eng_prog') if user else 'eng_prog'
-        return redirect(url_for('specialized_items', cat_type='summaries', track_id=user_track))
-
-    if cat_type == 'books':
-        return render_template('select_book_type.html')
-        
-    if cat_type == 'booklet':
-        return redirect(url_for('booklet'))
-
-    if cat_type == 'catalog':
-        return redirect(url_for('catalog'))
-
-    if cat_type not in SECTION_NAMES:
-        return redirect(url_for('index'))
-    
-    data = get_data()
-    user = get_current_user(data)
-    user_track = user.get('track', 'eng_prog') if user else 'eng_prog'
-    track_name = TRACKS.get(user_track, 'المسار التخصصي')
-    cat_title = SECTION_NAMES[cat_type]
-    
-    return render_template('category_subjects.html', 
-                           cat_type=cat_type, 
-                           cat_title=cat_title, 
-                           general_subjects=GENERAL_SUBJECTS,
-                           user_track=user_track,
-                           track_name=track_name)
-
-@app.route('/external_books_info')
-def external_books_info():
-    if 'user' not in session:
-        return redirect(url_for('login'))
-    return render_template('external_books_info.html')
-
-@app.route('/general/<cat_type>')
-def general_subjects(cat_type):
-    return redirect(url_for('select_type', cat_type=cat_type))
-
-@app.route('/general/<cat_type>/<subject_id>')
-def general_items(cat_type, subject_id):
-    if 'user' not in session:
-        return redirect(url_for('login'))
-        
-    data = get_data()
-    subject_title = GENERAL_SUBJECTS.get(subject_id, "المادة الأساسية")
-    cat_title = SECTION_NAMES.get(cat_type, "")
-    
-    items = data.get('general_items', {}).get(cat_type, {}).get(subject_id, [])
-    if not items and cat_type == 'external_books':
-        items = data.get('general_items', {}).get('books', {}).get(subject_id, [])
-    
-    template_map = {
-        'external_books': 'books.html',
-        'books': 'books.html',
-        'summaries': 'summaries.html',
-        'evaluations': 'evaluations.html',
-        'lessons': 'lessons.html'
-    }
-    template_name = template_map.get(cat_type, 'books.html')
-    
-    grouped_lessons = {}
-    if cat_type == 'lessons':
-        for item in items:
-            if isinstance(item, dict):
-                sec = item.get('section', 'شروحات عامة') or 'شروحات عامة'
-                if sec not in grouped_lessons:
-                    grouped_lessons[sec] = []
-                grouped_lessons[sec].append(item)
-
-    context = {
-        'title': f"{cat_title} - {subject_title}",
-        'items': items,
-        'books': items if cat_type in ['external_books', 'books'] else [],
-        'summaries': items if cat_type == 'summaries' else [],
-        'evaluations': items if cat_type == 'evaluations' else [],
-        'grouped_lessons': grouped_lessons,
-        'back_url': url_for('select_type', cat_type=cat_type)
-    }
-    return render_template(template_name, **context)
-
-@app.route('/specialized/<cat_type>')
-def specialized_tracks(cat_type):
-    return redirect(url_for('select_type', cat_type=cat_type))
-
-@app.route('/specialized/<cat_type>/<track_id>')
-def specialized_items(cat_type, track_id):
-    if 'user' not in session:
-        return redirect(url_for('login'))
-        
-    data = get_data()
-    track_title = TRACKS.get(track_id, "المسار التخصصي")
-    cat_title = SECTION_NAMES.get(cat_type, "")
-    
-    if cat_type == 'lessons':
-        items = data.get('specialized_items', {}).get('lessons', {}).get(track_id, [])
-        if not items:
-            items = data.get('lessons', {}).get(track_id, [])
-    else:
-        items = data.get('specialized_items', {}).get(cat_type, {}).get(track_id, [])
-        if not items and cat_type == 'external_books':
-            items = data.get('specialized_items', {}).get('books', {}).get(track_id, [])
-        
-    template_map = {
-        'external_books': 'books.html',
-        'books': 'books.html',
-        'summaries': 'summaries.html',
-        'evaluations': 'evaluations.html',
-        'lessons': 'lessons.html'
-    }
-    template_name = template_map.get(cat_type, 'books.html')
-    
-    grouped_lessons = {}
-    if cat_type == 'lessons':
-        for item in items:
-            if isinstance(item, dict):
-                sec = item.get('section', 'شروحات عامة') or 'شروحات عامة'
-                if sec not in grouped_lessons:
-                    grouped_lessons[sec] = []
-                grouped_lessons[sec].append(item)
-
-    back_url = url_for('index') if cat_type == 'summaries' else url_for('select_type', cat_type=cat_type)
-
-    context = {
-        'title': f"{cat_title} - {track_title}",
-        'items': items,
-        'books': items if cat_type in ['external_books', 'books'] else [],
-        'summaries': items if cat_type == 'summaries' else [],
-        'evaluations': items if cat_type == 'evaluations' else [],
-        'grouped_lessons': grouped_lessons,
-        'back_url': back_url
-    }
-    return render_template(template_name, **context)
-
-@app.route('/books')
-def books():
-    return redirect(url_for('select_type', cat_type='external_books'))
-
-@app.route('/summaries')
-def summaries():
-    return redirect(url_for('select_type', cat_type='summaries'))
-
-@app.route('/evaluations')
-def evaluations():
-    return redirect(url_for('select_type', cat_type='evaluations'))
-
-@app.route('/platforms')
-def platforms():
-    if 'user' not in session:
-        return redirect(url_for('login'))
-    data = get_data()
-    return render_template('platforms.html', platforms=data.get('platforms', []))
-
-@app.route('/tracks')
-def tracks():
-    return redirect(url_for('select_type', cat_type='lessons'))
-
-@app.route('/lessons/<track_id>')
-def lessons(track_id):
-    return redirect(url_for('specialized_items', cat_type='lessons', track_id=track_id))
-
-# --- مسار المنتدى والملاحظات ---
-
-@app.route('/forum', methods=['GET', 'POST'])
-def forum():
-    if 'user' not in session:
-        return redirect(url_for('login'))
-    
-    data = get_data()
-    if 'forum' not in data or not isinstance(data['forum'], list):
-        data['forum'] = []
-
-    if request.method == 'POST':
-        question = request.form.get('question', '').strip()
-        if question:
-            data['forum'].append({
-                'user': session.get('user', 'طالب'),
-                'question': question,
-                'reply': None
-            })
-            save_data(data)
-            return redirect(url_for('forum'))
-
-    return render_template('forum.html', forum=data.get('forum', []))
-
-@app.route('/save_note', methods=['POST'])
-def save_note():
-    if 'user' not in session:
-        return redirect(url_for('login'))
-    
-    note_text = request.form.get('note', '').strip()
-    data = get_data()
-    current_user = get_current_user(data)
-    
-    if current_user:
-        user_key = str(current_user.get('identifier') or current_user.get('name'))
-        data.setdefault('notes', {})
-        data['notes'][user_key] = note_text
-        save_data(data)
-    
-    return redirect(request.referrer or url_for('index'))
-
-# --- لوحة التحكم للأدمن ---
-
-@app.route('/admin', methods=['GET', 'POST'])
-def admin():
-    if request.method == 'POST' and 'auth_password' in request.form:
-        raw_pass = request.form.get('auth_password', '')
-        cleaned_pass = "".join(c for c in raw_pass if c.isalnum()).lower()
-        
-        if cleaned_pass == "medo2026":
-            session.permanent = True
-            session['logged_in'] = True
-        else:
-            return render_template('admin_login.html', error="كلمة السر غير صحيحة!")
-
-    if not session.get('logged_in'):
-        return render_template('admin_login.html')
-
-    data = get_data(force_refresh=True)
-    
-    if request.method == 'POST':
-        if 'platform_video_url' in request.form:
-            data['platform_video_url'] = request.form.get('platform_video_url', '').strip()
-            save_data(data)
-            return redirect(url_for('admin'))
-            
-        if 'external_books_video_url' in request.form:
-            data['external_books_video_url'] = request.form.get('external_books_video_url', '').strip()
-            save_data(data)
-            return redirect(url_for('admin'))
-
-        if 'add_weekly_pdf' in request.form:
-            title = request.form.get('weekly_title', '').strip()
-            link = request.form.get('weekly_link', '').strip()
-            week_num = request.form.get('weekly_num', '').strip()
-            if title and link:
-                data.setdefault('weekly_pdfs', []).append({
-                    'title': title,
-                    'link': link,
-                    'week': week_num or 'الأسبوع الحالي'
-                })
-                save_data(data)
-            return redirect(url_for('admin'))
-
-        if 'toggle_subscription' in request.form:
-            target_user = request.form.get('target_user', '').strip()
-            if target_user:
-                subs = data.setdefault('booklet_subscribers', [])
-                if target_user in subs:
-                    subs.remove(target_user)
-                else:
-                    subs.append(target_user)
-                save_data(data)
-            return redirect(url_for('admin'))
-
-        if 'category' in request.form:
-            category = request.form.get('category')
-            title = request.form.get('title', '').strip()
-            link = request.form.get('link', '').strip()
-            sub_type = request.form.get('subject_type', 'general')
-            gen_sub = request.form.get('general_subject')
-            track = request.form.get('track')
-            section = (request.form.get('section') or request.form.get('main_title') or '').strip() or 'شروحات عامة'
-
-            cat_map = {
-                'external_book': 'external_books',
-                'external_books': 'external_books',
-                'summary': 'summaries',
-                'summaries': 'summaries',
-                'evaluation': 'evaluations',
-                'evaluations': 'evaluations',
-                'lesson': 'lessons',
-                'lessons': 'lessons',
-                'platform': 'platform'
+            if (cat === 'platform') {
+                subjectTypeContainer.style.display = 'none';
+                lessonFields.style.display = 'none';
+            } else if (cat === 'summaries') {
+                subjectTypeContainer.style.display = 'block';
+                optGeneral.style.display = 'none';
+                subjectTypeSelect.value = 'specialized';
+                lessonFields.style.display = 'none';
+            } else {
+                subjectTypeContainer.style.display = 'block';
+                optGeneral.style.display = 'block';
+                lessonFields.style.display = (cat === 'lessons') ? 'block' : 'none';
             }
-            
-            cat_key = cat_map.get(category, category)
+            toggleSubjectTypeFields();
+        }
 
-            if cat_key == 'platform':
-                data.setdefault('platforms', []).append({'title': title, 'link': link})
-            else:
-                item_data = {'title': title, 'link': link}
-                if cat_key == 'lessons':
-                    item_data['section'] = section
-                    
-                if sub_type == 'general' and gen_sub:
-                    data.setdefault('general_items', {}).setdefault(cat_key, {}).setdefault(gen_sub, []).append(item_data)
-                elif sub_type == 'specialized' and track:
-                    data.setdefault('specialized_items', {}).setdefault(cat_key, {}).setdefault(track, []).append(item_data)
-                    if cat_key == 'lessons':
-                        data.setdefault('lessons', {}).setdefault(track, []).append(item_data)
+        function toggleSubjectTypeFields() {
+            var cat = document.getElementById('category').value;
+            if (cat === 'platform') return;
 
-            save_data(data)
-            return redirect(url_for('admin'))
+            var subjectType = document.getElementById('subject_type').value;
+            var generalContainer = document.getElementById('general-subject-container');
+            var trackContainer = document.getElementById('track-container');
 
-    users = data.get('users', [])
-    total_users = len(users)
-
-    return render_template('admin.html', 
-                           tracks=TRACKS, 
-                           general_subjects=GENERAL_SUBJECTS, 
-                           data=data, 
-                           users=users, 
-                           total_users=total_users, 
-                           forum=data.get('forum', []),
-                           weekly_pdfs=data.get('weekly_pdfs', []),
-                           subscribers=data.get('booklet_subscribers', []))
-
-# --- مسارات النسخة الاحتياطية وإدارة البيانات ---
-
-@app.route('/admin/download-backup')
-def download_backup():
-    if not session.get('logged_in'):
-        return "يجب تسجيل الدخول كأدمن أولاً من لوحة التحكم /admin"
-    
-    backup_data = get_data(force_refresh=True)
-    json_str = json.dumps(backup_data, ensure_ascii=False, indent=4)
-    
-    return Response(
-        json_str,
-        mimetype='application/json',
-        headers={'Content-Disposition': 'attachment;filename=site_data_backup.json'}
-    )
-
-@app.route('/admin/restore-backup', methods=['POST'])
-def restore_backup():
-    if not session.get('logged_in'):
-        return "يجب تسجيل الدخول كأدمن أولاً"
-    
-    file = request.files.get('backup_file')
-    if file:
-        try:
-            content = json.load(file)
-            save_data(content)
-            return "<h1 style='color:green;text-align:center;'>تمت استعادة البيانات بنجاح! <a href='/admin'>العودة للوحة الأدمن</a></h1>"
-        except Exception as e:
-            return f"حدث خطأ أثناء قراءة الملف: {e}"
-    return "لم يتم اختيار ملف"
-
-@app.route('/admin/delete_weekly/<int:index>', methods=['POST'])
-def delete_weekly(index):
-    if not session.get('logged_in'):
-        return redirect(url_for('admin'))
-    data = get_data(force_refresh=True)
-    pdfs = data.get('weekly_pdfs', [])
-    if 0 <= index < len(pdfs):
-        pdfs.pop(index)
-        save_data(data)
-    return redirect(url_for('admin'))
-
-@app.route('/admin/reply_forum/<int:index>', methods=['POST'])
-def reply_forum(index):
-    if not session.get('logged_in'):
-        return redirect(url_for('admin'))
-
-    reply_text = request.form.get('reply', '').strip()
-    data = get_data(force_refresh=True)
-    if 'forum' in data and isinstance(data['forum'], list) and len(data['forum']) > index:
-        data['forum'][index]['reply'] = reply_text
-        save_data(data)
-    return redirect(url_for('admin'))
-
-@app.route('/admin/delete/<cat_type>/<int:index>', methods=['POST'])
-def delete_item(cat_type, index):
-    if not session.get('logged_in'):
-        return redirect(url_for('admin'))
-
-    data = get_data(force_refresh=True)
-    mapping = {
-        'external_book': 'external_books',
-        'book': 'books',
-        'summary': 'summaries',
-        'evaluation': 'evaluations',
-        'platform': 'platforms'
-    }
-    
-    if cat_type in mapping:
-        key = mapping[cat_type]
-        if key in data and isinstance(data[key], list) and len(data[key]) > index:
-            data[key].pop(index)
-            save_data(data)
-    elif cat_type.startswith('lesson_'):
-        track_key = cat_type.replace('lesson_', '')
-        if 'lessons' in data and track_key in data['lessons']:
-            if len(data['lessons'][track_key]) > index:
-                removed_item = data['lessons'][track_key].pop(index)
-                spec_lessons = data.get('specialized_items', {}).get('lessons', {}).get(track_key, [])
-                if removed_item in spec_lessons:
-                    spec_lessons.remove(removed_item)
-                save_data(data)
-    elif cat_type == 'forum':
-        if 'forum' in data and isinstance(data['forum'], list) and len(data['forum']) > index:
-            data['forum'].pop(index)
-            save_data(data)
-
-    return redirect(url_for('admin'))
-
-@app.route('/admin/delete_general/<cat_type>/<subject_id>/<int:index>', methods=['POST'])
-def delete_general_item(cat_type, subject_id, index):
-    if not session.get('logged_in'):
-        return redirect(url_for('admin'))
-    
-    data = get_data(force_refresh=True)
-    items = data.get('general_items', {}).get(cat_type, {}).get(subject_id, [])
-    if 0 <= index < len(items):
-        items.pop(index)
-        save_data(data)
-    return redirect(url_for('admin'))
-
-@app.route('/admin/delete_specialized/<cat_type>/<track_id>/<int:index>', methods=['POST'])
-def delete_specialized_item(cat_type, track_id, index):
-    if not session.get('logged_in'):
-        return redirect(url_for('admin'))
-    
-    data = get_data(force_refresh=True)
-    spec_items = data.get('specialized_items', {}).get(cat_type, {}).get(track_id, [])
-    if 0 <= index < len(spec_items):
-        removed_item = spec_items.pop(index)
-        if cat_type == 'lessons' and track_id in data.get('lessons', {}):
-            lessons_list = data['lessons'][track_id]
-            if removed_item in lessons_list:
-                lessons_list.remove(removed_item)
-        save_data(data)
-    return redirect(url_for('admin'))
-
-# --- ملفات PWA للتثبيت والمُزامنة ---
-
-@app.route('/manifest.json')
-def manifest():
-    logo_url = url_for('static', filename='logo.png', _external=True) + '?v=2'
-    manifest_data = {
-        "name": "منصة السعيد التعليمية",
-        "short_name": "منصة السعيد",
-        "start_url": "/",
-        "display": "standalone",
-        "background_color": "#0f172a",
-        "theme_color": "#38bdf8",
-        "icons": [
-            {
-                "src": logo_url,
-                "sizes": "192x192",
-                "type": "image/png",
-                "purpose": "any maskable"
-            },
-            {
-                "src": logo_url,
-                "sizes": "512x512",
-                "type": "image/png",
-                "purpose": "any maskable"
+            if (subjectType === 'general' && cat !== 'summaries') {
+                generalContainer.style.display = 'block';
+                trackContainer.style.display = 'none';
+            } else {
+                generalContainer.style.display = 'none';
+                trackContainer.style.display = 'block';
             }
-        ]
-    }
-    return json.dumps(manifest_data, ensure_ascii=False), 200, {'Content-Type': 'application/json; charset=utf-8'}
+        }
 
-@app.route('/sw.js')
-def service_worker():
-    sw_code = """
-    const CACHE_NAME = 'elsaeed-v2';
-    self.addEventListener('install', (e) => self.skipWaiting());
-    self.addEventListener('activate', (e) => {
-        e.waitUntil(
-            caches.keys().then((keys) => {
-                return Promise.all(keys.map((key) => caches.delete(key)));
-            }).then(() => self.clients.claim())
-        );
-    });
-    self.addEventListener('fetch', (e) => {});
-    """
-    return sw_code, 200, {'Content-Type': 'application/javascript; charset=utf-8'}
+        function toggleTheme() {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            updateThemeIcon(newTheme);
+        }
 
-# --- مسارات الأرشفة ومحركات البحث (SEO) ---
+        function updateThemeIcon(theme) {
+            const icon = document.getElementById('theme-icon');
+            if (icon) {
+                icon.className = theme === 'light' ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
+            }
+        }
 
-@app.route('/robots.txt')
-def robots():
-    robots_content = f"User-agent: *\nAllow: /\nSitemap: {request.url_root}sitemap.xml"
-    return robots_content, 200, {'Content-Type': 'text/plain; charset=utf-8'}
-
-@app.route('/sitemap.xml')
-def sitemap():
-    base_url = request.url_root.rstrip('/')
-    urls = [
-        '/',
-        '/login',
-        '/register',
-        '/settings',
-        '/forum',
-        '/platforms',
-        '/booklet',
-        '/catalog'
-    ]
-    
-    xml_entries = ""
-    for url in urls:
-        xml_entries += f"""  <url>
-    <loc>{base_url}{url}</loc>
-    <changefreq>daily</changefreq>
-    <priority>0.8</priority>
-  </url>\n"""
-
-    sitemap_xml = f'''<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-{xml_entries}</urlset>'''
-
-    return sitemap_xml, 200, {'Content-Type': 'application/xml; charset=utf-8'}
-
-if __name__ == '__main__':
-    app.run(debug=True)
+        document.addEventListener("DOMContentLoaded", function() {
+            toggleFormFields();
+            const savedTheme = localStorage.getItem('theme') || 'dark';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            updateThemeIcon(savedTheme);
+        });
+    </script>
+</body>
+</html>
