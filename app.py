@@ -25,25 +25,41 @@ YT_CHANNEL_URL = "https://youtube.com/@mohamed25saeid?si=GCVoRwEzC499fsE5"
 WA_CHANNEL_URL = "https://whatsapp.com/channel/0029VbCdtHG2ER6cBCinCb0x"
 WA_COMMUNITY_URL = "https://chat.whatsapp.com/L102CxYGFfWLUwcVgvurpa"
 
-# الاتصال بقاعدة بيانات Upstash / Vercel KV تلقائياً بجميع احتمالات الأسماء مع تنظيف النصوص
+# الاتصال بقاعدة بيانات Upstash / Vercel KV تلقائياً مع تنظيف النصوص من الأقواس والمسافات
 raw_url = (
-    os.getenv("UPSTASH_REDIS_REST_URL") or 
     os.getenv("KV_REST_API_URL") or 
+    os.getenv("UPSTASH_REDIS_REST_URL") or 
     os.getenv("REDIS_URL") or 
     ""
 )
 
 raw_token = (
-    os.getenv("UPSTASH_REDIS_REST_TOKEN") or 
     os.getenv("KV_REST_API_TOKEN") or 
+    os.getenv("UPSTASH_REDIS_REST_TOKEN") or 
     os.getenv("KV_REST_API_READ_ONLY_TOKEN") or 
     ""
 )
 
-url = raw_url.strip()
-token = raw_token.strip()
+# تنظيف الرابط والتوكن تلقائياً لو تم نسخ أقواس Markdown مثل [https://...](https://...) أو مسافات
+def sanitize_val(val):
+    if not val:
+        return ""
+    val = val.strip().strip('"').strip("'")
+    if "(" in val and ")" in val:
+        val = val.split("(")[-1].rstrip(")")
+    if "]" in val:
+        val = val.split("]")[-1]
+    return val.strip()
 
-redis = Redis(url=url, token=token) if url and token else None
+url = sanitize_val(raw_url)
+token = sanitize_val(raw_token)
+
+redis = None
+if url and token:
+    try:
+        redis = Redis(url=url, token=token)
+    except Exception as e:
+        print("Redis connection error:", e)
 
 TRACKS = {
     'med_math': 'مسار الطب وعلوم الحياة / رياضيات',
