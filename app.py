@@ -2,7 +2,7 @@ import os
 import json
 import time
 from datetime import timedelta
-from flask import Flask, render_template, request, redirect, url_for, session, g
+from flask import Flask, render_template, request, redirect, url_for, session, g, Response, jsonify
 from upstash_redis import Redis
 
 app = Flask(__name__)
@@ -672,6 +672,37 @@ def admin():
                            forum=data.get('forum', []),
                            weekly_pdfs=data.get('weekly_pdfs', []),
                            subscribers=data.get('booklet_subscribers', []))
+
+# --- مسارات النسخة الاحتياطية وإدارة البيانات ---
+
+@app.route('/admin/download-backup')
+def download_backup():
+    if not session.get('logged_in'):
+        return "يجب تسجيل الدخول كأدمن أولاً من لوحة التحكم /admin"
+    
+    backup_data = get_data(force_refresh=True)
+    json_str = json.dumps(backup_data, ensure_ascii=False, indent=4)
+    
+    return Response(
+        json_str,
+        mimetype='application/json',
+        headers={'Content-Disposition': 'attachment;filename=site_data_backup.json'}
+    )
+
+@app.route('/admin/restore-backup', methods=['POST'])
+def restore_backup():
+    if not session.get('logged_in'):
+        return "يجب تسجيل الدخول كأدمن أولاً"
+    
+    file = request.files.get('backup_file')
+    if file:
+        try:
+            content = json.load(file)
+            save_data(content)
+            return "<h1 style='color:green;text-align:center;'>تمت استعادة البيانات بنجاح! <a href='/admin'>العودة للوحة الأدمن</a></h1>"
+        except Exception as e:
+            return f"حدث خطأ أثناء قراءة الملف: {e}"
+    return "لم يتم اختيار ملف"
 
 @app.route('/admin/delete_weekly/<int:index>', methods=['POST'])
 def delete_weekly(index):
