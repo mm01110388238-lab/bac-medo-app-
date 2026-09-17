@@ -268,46 +268,6 @@
             direction: rtl;
         }
 
-        /* قسم الفيديوهات التوضيحية */
-        .video-section {
-            background: var(--card-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 16px;
-            padding: 16px;
-            margin-bottom: 25px;
-            box-shadow: 0 4px 12px var(--shadow);
-            text-align: right;
-        }
-
-        .video-title {
-            font-size: 15px;
-            font-weight: bold;
-            margin-bottom: 12px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            color: var(--accent-color);
-        }
-
-        .iframe-wrapper {
-            position: relative;
-            width: 100%;
-            padding-bottom: 56.25%; /* أبعاد 16:9 شاشة عريضة */
-            height: 0;
-            border-radius: 12px;
-            overflow: hidden;
-            background: #000;
-        }
-
-        .iframe-wrapper iframe {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            border: 0;
-        }
-
         /* شبكة الأقسام الرئيسية */
         .sections-grid {
             display: grid;
@@ -505,28 +465,6 @@
             <h1 class="hero-title">مَـنـصَّـة السَّـعـيـد 🎓</h1>
             <p class="quran-verse">﴿ وَأَنْ لَيْسَ لِلْإِنسَانِ إِلَّا مَا سَعَى ﴿٣٩﴾ وَأَنَّ سَعْيَهُ سَوْفَ يُرَى ﴾</p>
         </div>
-
-        <!-- 1. فيديو شرح وتفاصيل المنصة -->
-        {% if platform_video_url %}
-        <div class="video-section">
-            <div class="video-title"><i class="fa-solid fa-circle-play"></i> فيديو شرح وتفاصيل المنصة</div>
-            <div class="iframe-wrapper">
-                {% set embed_platform_url = platform_video_url.replace('watch?v=', 'embed/').replace('youtu.be/', 'www.youtube.com/embed/') %}
-                <iframe src="{{ embed_platform_url }}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-            </div>
-        </div>
-        {% endif %}
-
-        <!-- 2. فيديو تفاصيل الكتب الخارجية للحل -->
-        {% if external_books_video_url %}
-        <div class="video-section">
-            <div class="video-title"><i class="fa-solid fa-book-open-reader"></i> فيديو تفاصيل الكتب الخارجية للحل</div>
-            <div class="iframe-wrapper">
-                {% set embed_books_url = external_books_video_url.replace('watch?v=', 'embed/').replace('youtu.be/', 'www.youtube.com/embed/') %}
-                <iframe src="{{ embed_books_url }}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-            </div>
-        </div>
-        {% endif %}
 
         <!-- شبكة الأقسام الرئيسية مصورة -->
         <div class="sections-grid">
