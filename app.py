@@ -23,11 +23,11 @@ BOOKLET_PROMO_PDF = "https://drive.google.com/file/d/1oVLiR8NgPe5YsWANKJruKasEko
 
 YT_CHANNEL_URL = "https://youtube.com/@mohamed25saeid?si=GCVoRwEzC499fsE5"
 WA_CHANNEL_URL = "https://whatsapp.com/channel/0029VbCdtHG2ER6cBCinCb0x"
-WA_COMMUNITY_URL = "https://chat.whatsapp.com/L102CxYGFfWLUwcVgvurpa"
+WA_COMMUNITY_URL = "https://chat.whatsapp.com/L102CxYGFfWLUwvVgvurpa"
 
-# --- الاتصال المباشر بقاعدة بيانات Upstash Redis ---
-UPSTASH_URL = "https://noted-lemming-132242.upstash.io"
-UPSTASH_TOKEN = "gQAAAAAAAgSSAAIgcDIxNzUxNDk0YzJmN2Y0NDEyOGFhNjEyNmQzNGRiYzMyNQ"
+# --- الاتصال بقاعدة بيانات Upstash Redis ---
+UPSTASH_URL = os.getenv('UPSTASH_REDIS_REST_URL', "https://noted-lemming-132242.upstash.io")
+UPSTASH_TOKEN = os.getenv('UPSTASH_REDIS_REST_TOKEN', "gQAAAAAAAgSSAAIgcDIxNzUxNDk0YzJmN2Y0NDEyOGFhNjEyNmQzNGRiYzMyNQ")
 
 redis = None
 try:
