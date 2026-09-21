@@ -59,7 +59,9 @@ SECTION_NAMES = {
     'evaluations': 'التقييمات المدرسية',
     'lessons': 'الشروحات والمسارات',
     'booklet': 'كتيب البكالوريا',
-    'catalog': 'كتالوج المنصة'
+    'catalog': 'كتالوج المنصة',
+    'hasanat': 'قسم حسانات',
+    'entertainment': 'قسم الترفيه'
 }
 
 def load_data():
@@ -354,6 +356,46 @@ def booklet():
         booklet_promo_pdf=BOOKLET_PROMO_PDF
     )
 
+# --- مسارات قسم حسانات والترفيه (الجديدة) ---
+
+@app.route('/hasanat')
+def hasanat():
+    if 'user' not in session:
+        return redirect(url_for('login'))
+    return render_template('hasanat.html')
+
+@app.route('/hasanat/azkar/<category>')
+def azkar_category(category):
+    if 'user' not in session:
+        return redirect(url_for('login'))
+    
+    cat_titles = {
+        'sabah': 'أذكار الصباح',
+        'masea': 'أذكار المساء',
+        'nom': 'أذكار النوم'
+    }
+    title = cat_titles.get(category, 'الأذكار')
+    return render_template('azkar_detail.html', category=category, title=title)
+
+@app.route('/hasanat/quran')
+def quran():
+    if 'user' not in session:
+        return redirect(url_for('login'))
+    return render_template('quran.html')
+
+@app.route('/hasanat/sebha')
+def sebha():
+    if 'user' not in session:
+        return redirect(url_for('login'))
+    return render_template('sebha.html')
+
+@app.route('/entertainment')
+def entertainment():
+    if 'user' not in session:
+        return redirect(url_for('login'))
+    return render_template('entertainment.html')
+
+
 @app.route('/select_type/<cat_type>')
 def select_type(cat_type):
     if 'user' not in session:
@@ -376,6 +418,12 @@ def select_type(cat_type):
 
     if cat_type == 'catalog':
         return redirect(url_for('catalog'))
+
+    if cat_type == 'hasanat':
+        return redirect(url_for('hasanat'))
+
+    if cat_type == 'entertainment':
+        return redirect(url_for('entertainment'))
 
     if cat_type not in SECTION_NAMES:
         return redirect(url_for('index'))
@@ -854,7 +902,9 @@ def sitemap():
         '/forum',
         '/platforms',
         '/booklet',
-        '/catalog'
+        '/catalog',
+        '/hasanat',
+        '/entertainment'
     ]
     
     xml_entries = ""
