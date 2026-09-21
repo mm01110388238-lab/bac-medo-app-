@@ -547,6 +547,28 @@
                 <div class="card-title">كتالوج المنصة</div>
             </a>
 
+            <!-- 8. كارت حسانات (الجديد) -->
+            <a href="{{ url_for('hasanat') }}" class="main-card">
+                <div class="card-img-container">
+                    <img src="{{ url_for('static', filename='hasanat_cover.png') }}?v=99" alt="قسم حسانات" class="card-cover-img" onerror="showFallback(this)">
+                    <div class="card-fallback-icon" style="display: none;">
+                        <i class="fa-solid fa-kaaba"></i>
+                    </div>
+                </div>
+                <div class="card-title">قسم حسانات</div>
+            </a>
+
+            <!-- 9. كارت الترفيه (الجديد) -->
+            <a href="{{ url_for('entertainment') }}" class="main-card">
+                <div class="card-img-container">
+                    <img src="{{ url_for('static', filename='entertainment_cover.png') }}?v=99" alt="قسم الترفيه" class="card-cover-img" onerror="showFallback(this)">
+                    <div class="card-fallback-icon" style="display: none;">
+                        <i class="fa-solid fa-gamepad"></i>
+                    </div>
+                </div>
+                <div class="card-title">قسم الترفيه</div>
+            </a>
+
         </div>
 
         <!-- قسم القنوات والصفحات الرسمية -->
