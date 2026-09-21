@@ -13,300 +13,162 @@
 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#0f172a">
+    <meta name="theme-color" content="#070c18">
     <title>مَـنـصَّـة السَّـعـيـد - الرئيسية</title>
-
-    <!-- استدعاء خط القرآن الكريم (Amiri Quran) من جوجل -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Amiri+Quran&display=swap" rel="stylesheet">
 
     <!-- ملف Web Manifest للتطبيقات PWA -->
     <link rel="manifest" href="{{ url_for('manifest') }}">
-
-    <!-- كود التحقق من جوجل -->
-    <meta name="google-site-verification" content="pLF0j7ZDSt-KKoTGk3WC2sbJUlyAKsXxPbiZ0QEwPMg" />
 
     <!-- أيقونة الموقع (Favicon) واللوجو -->
     <link rel="icon" type="image/png" href="{{ url_for('static', filename='logo.png') }}?v=99">
     <link rel="apple-touch-icon" href="{{ url_for('static', filename='logo.png') }}?v=99">
 
-    <!-- وسوم الـ SEO لمحركات البحث -->
-    <meta name="description" content="منصة السعيد التعليمية - منصتك الشاملة للتلخيصات، الشروحات، التقييمات، وكتيب البكالوريا.">
-    <meta name="keywords" content="منصة السعيد, كتيب البكالوريا, كتب خارجية, تلخيص الدروس, تقييمات">
-    <meta name="author" content="منصة السعيد">
-
-    <!-- وسوم المعاينة والتواصل الاجتماعي -->
-    <meta property="og:type" content="website">
-    <meta property="og:title" content="مَـنـصَّـة السَّـعـيـد - الرئيسية">
-    <meta property="og:description" content="منصة السعيد التعليمية للطلاب">
-    <meta property="og:image" content="{{ url_for('static', filename='logo.png', _external=True) }}?v=99">
-
     <!-- أيقونات FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <style>
         :root {
-            --bg-color: #0f172a;
-            --card-bg: #1e293b;
+            --bg-color: #080d1a;
+            --card-bg: #111827;
             --text-color: #ffffff;
             --text-muted: #94a3b8;
-            --border-color: #334155;
-            --accent-color: #38bdf8;
-            --gold-color: #f59e0b;
-            --shadow: rgba(0, 0, 0, 0.4);
+            --border-color: #1e293b;
+            --accent-color: #00d2ff;
+            --neon-blue: #00f0ff;
+            --shadow: rgba(0, 0, 0, 0.6);
         }
 
-        [data-theme="light"] {
-            --bg-color: #f8fafc;
-            --card-bg: #ffffff;
-            --text-color: #0f172a;
-            --text-muted: #64748b;
-            --border-color: #e2e8f0;
-            --accent-color: #0284c7;
-            --gold-color: #d97706;
-            --shadow: rgba(0, 0, 0, 0.08);
+        * { 
+            box-sizing: border-box; 
+            margin: 0; 
+            padding: 0; 
+            font-family: 'Segoe UI', Tahoma, sans-serif; 
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: Tahoma, 'Segoe UI', sans-serif; transition: background-color 0.3s, color 0.3s; }
-        body { background-color: var(--bg-color); color: var(--text-color); padding: 15px; min-height: 100vh; position: relative; }
-        .container { max-width: 800px; margin: 0 auto; padding-top: 75px; padding-bottom: 40px; }
+        body { 
+            background-color: var(--bg-color); 
+            color: var(--text-color); 
+            padding: 12px; 
+            padding-top: 80px;
+            padding-bottom: 20px;
+            min-height: 100vh; 
+        }
 
-        /* الهيدر العلوي */
-        .top-navbar {
+        .container { 
+            max-width: 500px; 
+            margin: 0 auto; 
+        }
+
+        /* شريط التنقل النيون العلوي/المثبت */
+        .neon-navbar {
             position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 65px;
-            background-color: var(--card-bg);
-            border-bottom: 1px solid var(--border-color);
+            top: 12px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: calc(100% - 24px);
+            max-width: 480px;
+            height: 62px;
+            background: rgba(10, 18, 38, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1.5px solid #1a3862;
+            box-shadow: 0 0 15px rgba(0, 162, 255, 0.25), inset 0 0 10px rgba(0, 162, 255, 0.1);
+            border-radius: 35px;
             display: flex;
             align-items: center;
-            justify-content: space-between;
-            padding: 0 15px;
+            justify-content: space-around;
             z-index: 1000;
-            box-shadow: 0 2px 10px var(--shadow);
+            padding: 0 10px;
         }
 
-        .user-welcome {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-weight: bold;
-            font-size: 14px;
-            color: var(--accent-color);
-            overflow: hidden;
-            max-width: 60%;
-        }
-
-        .user-info-text {
+        .nav-item {
             display: flex;
             flex-direction: column;
-            overflow: hidden;
-        }
-
-        .user-name {
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .user-track-badge {
-            font-size: 10px;
-            color: var(--text-muted);
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            font-weight: normal;
-        }
-
-        .header-actions {
-            display: flex;
             align-items: center;
-            gap: 6px;
+            justify-content: center;
+            text-decoration: none;
+            color: #7dd3fc;
+            font-size: 11px;
+            font-weight: bold;
+            gap: 3px;
+            flex: 1;
+            transition: all 0.3s ease;
         }
 
-        .btn-header-icon {
-            background: var(--bg-color);
-            border: 1px solid var(--border-color);
-            color: var(--text-color);
-            padding: 7px 10px;
-            border-radius: 8px;
-            text-decoration: none;
-            font-size: 13px;
+        .nav-item i {
+            font-size: 20px;
+            filter: drop-shadow(0 0 6px rgba(0, 210, 255, 0.6));
+        }
+
+        /* الزر الأوسط (الرئيسية) */
+        .nav-item.active {
+            position: relative;
+            color: #ffffff;
+        }
+
+        .home-icon-wrapper {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #00c6ff, #0072ff);
             display: flex;
             align-items: center;
             justify-content: center;
-            cursor: pointer;
-            transition: 0.2s ease;
+            box-shadow: 0 0 15px #00d2ff, inset 0 0 8px #ffffff;
+            margin-top: -12px;
+            border: 2px solid #ffffff;
         }
 
-        .btn-header-icon:hover {
-            border-color: var(--accent-color);
-            color: var(--accent-color);
+        .home-icon-wrapper i {
+            font-size: 22px;
+            color: #ffffff;
+            filter: none;
         }
 
-        .btn-user-profile {
-            color: var(--accent-color);
-            border-color: var(--border-color);
+        .active-indicator {
+            width: 25px;
+            height: 3px;
+            background: linear-gradient(90deg, #ff007f, #00d2ff);
+            border-radius: 2px;
+            margin-top: 2px;
+            box-shadow: 0 0 8px #00d2ff;
         }
 
-        .btn-logout {
-            background: #ef4444;
-            color: #fff;
-            padding: 7px 10px;
-            border-radius: 8px;
-            text-decoration: none;
-            font-size: 12px;
-            font-weight: bold;
-            white-space: nowrap;
-            border: none;
-        }
-
-        /* شريط إشعار تثبيت التطبيق العلوي */
-        .install-banner {
-            display: none;
-            position: fixed;
-            top: 72px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 92%;
-            max-width: 770px;
-            background: var(--card-bg);
-            border: 2px solid var(--accent-color);
-            border-radius: 14px;
-            padding: 10px 15px;
-            z-index: 999;
-            box-shadow: 0 8px 25px var(--shadow);
-            align-items: center;
-            justify-content: space-between;
-            gap: 10px;
-            animation: slideDown 0.3s ease-out;
-        }
-
-        @keyframes slideDown {
-            from { opacity: 0; transform: translate(-50%, -15px); }
-            to { opacity: 1; transform: translate(-50%, 0); }
-        }
-
-        .install-banner-info {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .install-banner-img {
-            width: 45px;
-            height: 45px;
-            border-radius: 10px;
-            object-fit: cover;
-            border: 1px solid var(--accent-color);
-        }
-
-        .install-banner-text h4 {
-            font-size: 13px;
-            color: var(--text-color);
-            margin-bottom: 2px;
-            font-weight: bold;
-        }
-
-        .install-banner-text p {
-            font-size: 11px;
-            color: var(--text-muted);
-            margin: 0;
-        }
-
-        .install-banner-actions {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .btn-install {
-            background: var(--accent-color);
-            color: #0f172a;
-            border: none;
-            padding: 7px 12px;
-            border-radius: 8px;
-            font-weight: bold;
-            font-size: 12px;
-            cursor: pointer;
-            white-space: nowrap;
-        }
-
-        .btn-dismiss {
-            background: transparent;
-            color: var(--text-muted);
-            border: none;
-            font-size: 16px;
-            cursor: pointer;
-            padding: 4px;
-        }
-
-        /* الترحيب والآية القرآنية */
-        .hero-section {
-            text-align: center;
-            margin-bottom: 25px;
-        }
-        .hero-title {
-            font-size: 28px;
-            font-weight: bold;
-            margin-bottom: 6px;
-            color: var(--accent-color);
-            letter-spacing: 0.5px;
-        }
-
-        .quran-verse {
-            font-family: 'Amiri Quran', serif;
-            font-size: clamp(12px, 3.8vw, 18px);
-            color: var(--gold-color);
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            line-height: 2;
-            margin-top: 4px;
-            direction: rtl;
-        }
-
-        /* شبكة الأقسام الرئيسية */
+        /* شبكة الكروت الرئيسية */
         .sections-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-            gap: 15px;
-            margin-bottom: 25px;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 20px;
         }
 
         .main-card {
-            background: var(--card-bg);
-            border: 1px solid var(--border-color);
+            background: #111a2e;
+            border: 1px solid #1e2d4a;
             border-radius: 16px;
-            padding: 0;
+            overflow: hidden;
             text-decoration: none;
             color: var(--text-color);
             display: flex;
             flex-direction: column;
             align-items: center;
-            text-align: center;
-            box-shadow: 0 4px 12px var(--shadow);
             transition: transform 0.2s ease, border-color 0.2s ease;
             position: relative;
-            overflow: hidden;
         }
 
-        .main-card:hover {
-            transform: translateY(-4px);
-            border-color: var(--accent-color);
+        .main-card:active {
+            transform: scale(0.98);
         }
 
-        /* حاوية صوّر الكروت */
+        /* كارت الكتيب العريض */
+        .booklet-card {
+            grid-column: 1 / -1;
+        }
+
         .card-img-container {
             width: 100%;
             aspect-ratio: 16 / 9;
-            overflow: hidden;
-            background: rgba(15, 23, 42, 0.6);
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            background: #0d1424;
+            position: relative;
         }
 
         .card-cover-img {
@@ -314,340 +176,159 @@
             height: 100%;
             object-fit: cover;
             display: block;
-            transition: transform 0.3s ease;
-        }
-
-        .main-card:hover .card-cover-img {
-            transform: scale(1.06);
-        }
-
-        /* أيقونة بديلة في حالة عدم رفع الصورة بعد */
-        .card-fallback-icon {
-            width: 52px;
-            height: 52px;
-            background: rgba(56, 189, 248, 0.15);
-            color: var(--accent-color);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 22px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
         }
 
         .card-title {
-            font-size: 14px;
+            font-size: 13px;
             font-weight: bold;
-            padding: 12px 8px;
+            padding: 10px 5px;
+            text-align: center;
             width: 100%;
-            background: var(--card-bg);
+            color: #e2e8f0;
+            background: #111a2e;
         }
 
-        /* كارت كتيب البكالوريا المميز */
-        .booklet-card {
-            grid-column: 1 / -1;
-            border: 2px solid var(--gold-color);
-            width: 100%;
-        }
-
-        .booklet-card:hover {
-            border-color: #fbbf24;
-        }
-
-        .badge-featured {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            background: var(--gold-color);
-            color: #0f172a;
-            font-size: 11px;
-            font-weight: bold;
-            padding: 4px 10px;
-            border-radius: 12px;
-            z-index: 2;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-        }
-
-        /* قسم القنوات الرسمية */
+        /* قسم المجتمعات الرسمية */
         .social-section {
-            background: var(--card-bg);
-            border: 1px solid var(--border-color);
+            background: #111a2e;
+            border: 1px solid #1e2d4a;
             border-radius: 16px;
-            padding: 18px;
-            margin-bottom: 25px;
-            box-shadow: 0 4px 12px var(--shadow);
+            padding: 14px;
+            text-align: center;
         }
 
         .social-title {
-            font-size: 15px;
+            font-size: 13px;
             font-weight: bold;
+            color: #38bdf8;
             margin-bottom: 12px;
             display: flex;
             align-items: center;
-            gap: 8px;
-            color: var(--accent-color);
+            justify-content: center;
+            gap: 6px;
         }
 
         .social-links {
             display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 12px;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
         }
 
         .btn-social {
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
-            padding: 12px;
+            gap: 6px;
+            padding: 10px;
             border-radius: 10px;
             text-decoration: none;
-            font-size: 13px;
+            font-size: 12px;
             font-weight: bold;
             color: #fff;
-            transition: opacity 0.2s;
         }
 
-        .btn-social:hover { opacity: 0.9; }
-        .yt-btn { background: #ff0000; }
-        .wa-channel-btn { background: #25d366; }
+        .wa-btn { background: #10b981; }
+        .yt-btn { background: #ef4444; }
     </style>
 </head>
 <body>
 
-    <!-- الهيدر العلوي: الاسم والمسار والإعدادات والخروج -->
-    <header class="top-navbar">
-        <div class="user-welcome">
-            <div class="user-info-text">
-                <span class="user-name">أهلاً، {{ current_user.name if current_user else session.get('user', 'طالب') }}</span>
-                {% if current_user and current_user.track and TRACKS.get(current_user.track) %}
-                    <span class="user-track-badge">{{ TRACKS.get(current_user.track) }}</span>
-                {% endif %}
-            </div>
-        </div>
-        
-        <div class="header-actions">
-            <a href="{{ url_for('settings') }}" class="btn-header-icon btn-user-profile" title="إعدادات الحساب والمسار">
-                <i class="fa-solid fa-circle-user fa-lg"></i>
-            </a>
-            <button class="btn-header-icon" onclick="toggleTheme()" title="تغيير المظهر">
-                <i class="fa-solid fa-moon" id="theme-icon"></i>
-            </button>
-            <a href="{{ url_for('logout') }}" class="btn-logout" title="تسجيل الخروج">
-                <i class="fa-solid fa-right-from-bracket"></i>
-            </a>
-        </div>
-    </header>
+    <!-- شريط النيون العلوي للتنقل بين الأقسام (ترفيه - الرئيسية - حسنات) -->
+    <nav class="neon-navbar">
+        <a href="{{ url_for('entertainment') }}" class="nav-item">
+            <i class="fa-solid fa-play"></i>
+            <span>ترفيه</span>
+        </a>
 
-    <!-- شريط تثبيت التطبيق العلوي مع اللوجو -->
-    <div id="install-banner" class="install-banner">
-        <div class="install-banner-info">
-            <img src="{{ url_for('static', filename='logo.png') }}?v=99" alt="لوجو المنصة" class="install-banner-img">
-            <div class="install-banner-text">
-                <h4>تثبيت مَـنـصَّـة السَّـعـيـد 🎓</h4>
-                <p>ثبّت التطبيق على هاتفك للوصول السريع</p>
+        <a href="{{ url_for('index') }}" class="nav-item active">
+            <div class="home-icon-wrapper">
+                <i class="fa-solid fa-house"></i>
             </div>
-        </div>
-        <div class="install-banner-actions">
-            <button id="btn-install-app" class="btn-install">
-                <i class="fa-solid fa-download"></i> تثبيت
-            </button>
-            <button id="btn-close-install" class="btn-dismiss" title="إغلاق">
-                <i class="fa-solid fa-xmark"></i>
-            </button>
-        </div>
-    </div>
+            <div class="active-indicator"></div>
+        </a>
 
-    <!-- المحتوى الرئيسي -->
+        <a href="{{ url_for('hasanat') }}" class="nav-item">
+            <i class="fa-solid fa-hand-holding-heart"></i>
+            <span>حسنات</span>
+        </a>
+    </nav>
+
     <div class="container">
-        
-        <div class="hero-section">
-            <h1 class="hero-title">مَـنـصَّـة السَّـعـيـد 🎓</h1>
-            <p class="quran-verse">﴿ وَأَنْ لَيْسَ لِلْإِنسَانِ إِلَّا مَا سَعَى ﴿٣٩﴾ وَأَنَّ سَعْيَهُ سَوْفَ يُرَى ﴾</p>
-        </div>
 
-        <!-- شبكة الأقسام الرئيسية مصورة -->
+        <!-- شبكة الأقسام الرئيسية -->
         <div class="sections-grid">
             
             <!-- 1. كارت كتيب البكالوريا المميز -->
             <a href="{{ url_for('booklet') }}" class="main-card booklet-card">
-                <span class="badge-featured">حصري 🔥</span>
                 <div class="card-img-container">
-                    <img src="{{ url_for('static', filename='booklet_cover.png') }}?v=99" alt="كتيب البكالوريا" class="card-cover-img" onerror="showFallback(this)">
-                    <div class="card-fallback-icon" style="display: none;">
-                        <i class="fa-solid fa-book-bookmark"></i>
-                    </div>
+                    <img src="{{ url_for('static', filename='booklet_cover.png') }}?v=99" alt="كتيب البكالوريا" class="card-cover-img">
                 </div>
             </a>
 
-            <!-- 2. كارت الكتب الخارجية للحل -->
+            <!-- 2. الكتب الخارجية للحل -->
             <a href="{{ url_for('select_type', cat_type='external_books') }}" class="main-card">
-                <span class="badge-featured">حصري 🔥</span>
                 <div class="card-img-container">
-                    <img src="{{ url_for('static', filename='external_books_cover.png') }}?v=99" alt="الكتب الخارجية للحل" class="card-cover-img" onerror="showFallback(this)">
-                    <div class="card-fallback-icon" style="display: none;">
-                        <i class="fa-solid fa-book-open"></i>
-                    </div>
+                    <img src="{{ url_for('static', filename='external_books_cover.png') }}?v=99" alt="الكتب الخارجية للحل" class="card-cover-img">
                 </div>
                 <div class="card-title">الكتب الخارجية للحل</div>
             </a>
 
-            <!-- 3. كارت تلخيص الدروس -->
+            <!-- 3. تلخيص الدروس -->
             <a href="{{ url_for('select_type', cat_type='summaries') }}" class="main-card">
                 <div class="card-img-container">
-                    <img src="{{ url_for('static', filename='summaries_cover.png') }}?v=99" alt="تلخيص الدروس" class="card-cover-img" onerror="showFallback(this)">
-                    <div class="card-fallback-icon" style="display: none;">
-                        <i class="fa-solid fa-file-lines"></i>
-                    </div>
+                    <img src="{{ url_for('static', filename='summaries_cover.png') }}?v=99" alt="تلخيص الدروس" class="card-cover-img">
                 </div>
                 <div class="card-title">تلخيص الدروس</div>
             </a>
 
-            <!-- 4. كارت التقييمات المدرسية -->
+            <!-- 4. التقييمات المدرسية -->
             <a href="{{ url_for('select_type', cat_type='evaluations') }}" class="main-card">
                 <div class="card-img-container">
-                    <img src="{{ url_for('static', filename='evaluations_cover.png') }}?v=99" alt="التقييمات المدرسية" class="card-cover-img" onerror="showFallback(this)">
-                    <div class="card-fallback-icon" style="display: none;">
-                        <i class="fa-solid fa-pen-to-square"></i>
-                    </div>
+                    <img src="{{ url_for('static', filename='evaluations_cover.png') }}?v=99" alt="التقييمات المدرسية" class="card-cover-img">
                 </div>
                 <div class="card-title">التقييمات المدرسية</div>
             </a>
 
-            <!-- 5. كارت الشروحات والمسارات -->
+            <!-- 5. الشروحات والمسارات -->
             <a href="{{ url_for('select_type', cat_type='lessons') }}" class="main-card">
                 <div class="card-img-container">
-                    <img src="{{ url_for('static', filename='lessons_cover.png') }}?v=99" alt="الشروحات والمسارات" class="card-cover-img" onerror="showFallback(this)">
-                    <div class="card-fallback-icon" style="display: none;">
-                        <i class="fa-solid fa-graduation-cap"></i>
-                    </div>
+                    <img src="{{ url_for('static', filename='lessons_cover.png') }}?v=99" alt="الشروحات والمسارات" class="card-cover-img">
                 </div>
-                <div class="card-title">الشروحات والمسارات</div>
+                <div class="card-title">الشروحات والمقاليات</div>
             </a>
 
-            <!-- 6. كارت المنصات التعليمية -->
+            <!-- 6. المنصات التعليمية -->
             <a href="{{ url_for('platforms') }}" class="main-card">
                 <div class="card-img-container">
-                    <img src="{{ url_for('static', filename='platforms_cover.png') }}?v=99" alt="المنصات التعليمية" class="card-cover-img" onerror="showFallback(this)">
-                    <div class="card-fallback-icon" style="display: none;">
-                        <i class="fa-solid fa-globe"></i>
-                    </div>
+                    <img src="{{ url_for('static', filename='platforms_cover.png') }}?v=99" alt="المنصات التعليمية" class="card-cover-img">
                 </div>
                 <div class="card-title">المنصات التعليمية</div>
             </a>
 
-            <!-- 7. كارت كتالوج المنصة -->
+            <!-- 7. كتالوج المنصة -->
             <a href="{{ url_for('catalog') }}" class="main-card">
                 <div class="card-img-container">
-                    <img src="{{ url_for('static', filename='catalog_cover.png') }}?v=99" alt="كتالوج المنصة" class="card-cover-img" onerror="showFallback(this)">
-                    <div class="card-fallback-icon" style="display: none;">
-                        <i class="fa-solid fa-book-journal-whills"></i>
-                    </div>
+                    <img src="{{ url_for('static', filename='catalog_cover.png') }}?v=99" alt="كتالوج المنصة" class="card-cover-img">
                 </div>
                 <div class="card-title">كتالوج المنصة</div>
-            </a>
-
-            <!-- 8. كارت حسانات (الجديد) -->
-            <a href="{{ url_for('hasanat') }}" class="main-card">
-                <div class="card-img-container">
-                    <img src="{{ url_for('static', filename='hasanat_cover.png') }}?v=99" alt="قسم حسانات" class="card-cover-img" onerror="showFallback(this)">
-                    <div class="card-fallback-icon" style="display: none;">
-                        <i class="fa-solid fa-kaaba"></i>
-                    </div>
-                </div>
-                <div class="card-title">قسم حسانات</div>
-            </a>
-
-            <!-- 9. كارت الترفيه (الجديد) -->
-            <a href="{{ url_for('entertainment') }}" class="main-card">
-                <div class="card-img-container">
-                    <img src="{{ url_for('static', filename='entertainment_cover.png') }}?v=99" alt="قسم الترفيه" class="card-cover-img" onerror="showFallback(this)">
-                    <div class="card-fallback-icon" style="display: none;">
-                        <i class="fa-solid fa-gamepad"></i>
-                    </div>
-                </div>
-                <div class="card-title">قسم الترفيه</div>
             </a>
 
         </div>
 
         <!-- قسم القنوات والصفحات الرسمية -->
         <div class="social-section">
-            <div class="social-title"><i class="fa-solid fa-bullhorn"></i> قنواتنا ومجتمعاتنا الرسمية</div>
+            <div class="social-title"><i class="fa-solid fa-bullhorn"></i> قنواتنا بمجتمعنا الرسمية</div>
             <div class="social-links">
+                <a href="{{ wa_channel_url }}" target="_blank" class="btn-social wa-btn">
+                    <i class="fa-brands fa-whatsapp"></i> قناة الواتساب
+                </a>
                 <a href="{{ yt_channel_url }}" target="_blank" class="btn-social yt-btn">
                     <i class="fa-brands fa-youtube"></i> قناة اليوتيوب
-                </a>
-                <a href="{{ wa_channel_url }}" target="_blank" class="btn-social wa-channel-btn">
-                    <i class="fa-brands fa-whatsapp"></i> قناة الواتساب
                 </a>
             </div>
         </div>
 
     </div>
 
-    <script>
-        // إظهار الأيقونة الاحترافية البديلة في حالة عدم توفر الصورة
-        function showFallback(img) {
-            img.style.display = 'none';
-            const fallback = img.nextElementSibling;
-            if (fallback) {
-                fallback.style.display = 'flex';
-            }
-        }
-
-        let deferredPrompt;
-        const installBanner = document.getElementById('install-banner');
-        const installBtn = document.getElementById('btn-install-app');
-        const closeBtn = document.getElementById('btn-close-install');
-
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault();
-            deferredPrompt = e;
-            if (installBanner) {
-                installBanner.style.display = 'flex';
-            }
-        });
-
-        if (installBtn) {
-            installBtn.addEventListener('click', async () => {
-                if (deferredPrompt) {
-                    deferredPrompt.prompt();
-                    const { outcome } = await deferredPrompt.userChoice;
-                    deferredPrompt = null;
-                    installBanner.style.display = 'none';
-                }
-            });
-        }
-
-        if (closeBtn) {
-            closeBtn.addEventListener('click', () => {
-                if (installBanner) {
-                    installBanner.style.display = 'none';
-                }
-            });
-        }
-
-        function toggleTheme() {
-            const currentTheme = document.body.getAttribute('data-theme');
-            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
-            document.body.setAttribute('data-theme', newTheme);
-            localStorage.setItem('theme', newTheme);
-            updateThemeUI(newTheme);
-        }
-
-        function updateThemeUI(theme) {
-            const icon = document.getElementById('theme-icon');
-            if (theme === 'light') {
-                icon.className = 'fa-solid fa-sun';
-            } else {
-                icon.className = 'fa-solid fa-moon';
-            }
-        }
-
-        const savedTheme = localStorage.getItem('theme') || 'dark';
-        document.body.setAttribute('data-theme', savedTheme);
-        updateThemeUI(savedTheme);
-    </script>
 </body>
 </html>
