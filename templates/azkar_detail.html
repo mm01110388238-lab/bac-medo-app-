@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }}</title>
+    <style>
+        body { font-family: system-ui, -apple-system, sans-serif; background-color: #0f172a; color: #fff; margin: 0; padding: 20px; text-align: center; }
+        .back-btn { display: inline-block; margin-bottom: 20px; color: #38bdf8; text-decoration: none; font-weight: bold; }
+        .card { background: #1e293b; border-radius: 12px; padding: 20px; margin: 15px auto; max-width: 600px; border-right: 4px solid #38bdf8; text-align: right; line-height: 1.8; border: 1px solid #334155; }
+        .counter-btn { background: #38bdf8; color: #0f172a; border: none; padding: 8px 16px; border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        .counter-btn:active { transform: scale(0.95); }
+    </style>
+</head>
+<body>
+    <a href="/hasanat/azkar_hadith" class="back-btn">← العودة لقائمة الأذكار</a>
+    <h1>{{ title }}</h1>
+
+    <div id="content-container">
+        <p>جاري تحميل المحتوى...</p>
+    </div>
+
+    <script>
+        const category = "{{ category }}";
+        const container = document.getElementById('content-container');
+
+        const dataStore = {
+            'sabah': [
+                { text: "أَصْبَحْنَا وَأَصْبَحَ المُلْكُ لِلَّهِ، وَالحَمْدُ لِلَّهِ لاَ إِلَهَ إِلاَّ اللَّهُ وَحْدَهُ لاَ شَرِيكَ لَهُ.", count: 1 },
+                { text: "اللَّهُمَّ بِكَ أَصْبَحْنَا، وَبِكَ أَمْسَيْنَا، وَبِكَ نَحْيَا، وَبِكَ نَمُوتُ وَإِلَيْكَ النُّشُورُ.", count: 1 },
+                { text: "آيَةُ الكُرْسِيِّ: (اللَّهُ لاَ إِلَهَ إِلاَّ هُوَ الحَيُّ القَيُّومُ...)", count: 1 },
+                { text: "سُبْحَانَ اللَّهِ وَبِحَمْدِهِ: عَدَدَ خَلْقِهِ، وَرِضَا نَفْسِهِ، وَزِنَةَ عَرْشِهِ، وَمِدَادَ كَلِمَاتِهِ.", count: 3 }
+            ],
+            'masea': [
+                { text: "أَمْسَيْنَا وَأَمْسَى المُلْكُ لِلَّهِ، وَالحَمْدُ لِلَّهِ لاَ إِلَهَ إِلاَّ اللَّهُ وَحْدَهُ لاَ شَرِيكَ لَهُ.", count: 1 },
+                { text: "اللَّهُمَّ بِكَ أَمْسَيْنَا، وَبِكَ أَصْبَحْنَا، وَبِكَ نَحْيَا، وَبِكَ نَمُوتُ وَإِلَيْكَ المَصِيرُ.", count: 1 },
+                { text: "أَعُوذُ بِكَلِمَاتِ اللَّهِ التَّامَّاتِ مِنْ شَرِّ مَا خَلَقَ.", count: 3 }
+            ],
+            'nom': [
+                { text: "بِاسْمِكَ رَبِّي وَضَعْتُ جَنْبِي، وَبِكَ أَرْفَعُهُ، فَإِنْ أَمْسَكْتَ نَفْسِي فَارْحَمْهَا، وَإِنْ أَرْسَلْتَهَا فَاحْفَظْهَا بِمَا تَحْفَظُ بِهِ عِبَادَكَ الصَّالِحِينَ.", count: 1 },
+                { text: "اللَّهُمَّ قِنِي عَذَابَكَ يَوْمَ تَبْعَثُ عِبَادَكَ.", count: 3 }
+            ],
+            'hadith': [
+                { text: "الحديث الأول: عَنْ أَمِيرِ المُؤْمِنِينَ أَبِي حَفْصٍ عُمَرَ بْنِ الخَطَّابِ رَضِيَ اللَّهُ عَنْهُ قَالَ: سَمِعْتُ رَسُولَ اللَّهِ صَلَّى اللَّهُ عَلَيْهِ وَسَلَّمَ يَقُولُ: (إِنَّمَا الأَعْمَالُ بِالنِّيَّاتِ، وَإِنَّمَا لِكُلِّ امْرِئٍ مَا نَوَى...).", count: 1 },
+                { text: "الحديث الثاني: عَنْ عُمَرَ رَضِيَ اللَّهُ عَنْهُ أَيْضًا قَالَ: بَيْنَمَا نَحْنُ جُلُوسٌ عِنْدَ رَسُولِ اللَّهِ صَلَّى اللَّهُ عَلَيْهِ وَسَلَّمَ ذَاتَ يَوْمٍ إِذْ طَلَعَ عَلَيْنَا رَجُلٌ شَدِيدُ بَيَاضِ الثِّيَابِ شَدِيدُ سَوَادِ الشَّعَرِ... (حديث جبريل عليه السلام في بيان الإسلام والإيمان والإحسان).", count: 1 }
+            ]
+        };
+
+        const items = dataStore[category] || [];
+
+        if (items.length === 0) {
+            container.innerHTML = '<p>لا يوجد محتوى متاح حالياً لهذا القسم.</p>';
+        } else {
+            container.innerHTML = '';
+            items.forEach((item, index) => {
+                const div = document.createElement('div');
+                div.className = 'card';
+                div.innerHTML = `
+                    <p style="font-size: 1.1em;">${item.text}</p>
+                    <button class="counter-btn" onclick="decrement(this, ${item.count})">التكرار المطلوب: <span class="num">${item.count}</span></button>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function decrement(btn, initial) {
+            const span = btn.querySelector('.num');
+            let val = parseInt(span.innerText);
+            if (val > 1) {
+                span.innerText = val - 1;
+            } else {
+                btn.style.background = '#22c55e';
+                btn.style.color = '#fff';
+                span.innerText = 'تم ✔';
+                btn.disabled = true;
+            }
+        }
+    </script>
+</body>
+</html>
