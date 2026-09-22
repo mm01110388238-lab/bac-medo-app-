@@ -356,43 +356,58 @@ def booklet():
         booklet_promo_pdf=BOOKLET_PROMO_PDF
     )
 
-# --- مسارات قسم حسانات والترفيه (المحدثة والمضبوطة بالكامل) ---
+# --- مسارات قسم حسانات والترفيه (مع حماية الحاويات لمنع 500 Server Error) ---
 
 @app.route('/hasanat')
 def hasanat():
     if 'user' not in session:
         return redirect(url_for('login'))
-    return render_template('hasanat.html')
+    try:
+        return render_template('hasanat.html')
+    except Exception as e:
+        return f"<div style='direction:rtl;text-align:center;padding:50px;font-family:sans-serif;'><h2>خطأ: ملف hasanat.html غير موجود داخل مجلد templates!</h2><p>التفاصيل: {e}</p></div>"
 
 # 1. القرآن الكريم بالسور
 @app.route('/hasanat/quran_surahs')
 def quran_surahs():
     if 'user' not in session:
         return redirect(url_for('login'))
-    return render_template('quran_surahs.html')
+    try:
+        return render_template('quran_surahs.html')
+    except Exception as e:
+        return f"<div style='direction:rtl;text-align:center;padding:50px;font-family:sans-serif;'><h2>خطأ: ملف quran_surahs.html غير موجود داخل مجلد templates!</h2><p>التفاصيل: {e}</p></div>"
 
 # 2. القرآن الكريم بالأجزاء
 @app.route('/hasanat/quran_juz')
 def quran_juz():
     if 'user' not in session:
         return redirect(url_for('login'))
-    return render_template('quran_juz.html')
+    try:
+        return render_template('quran_juz.html')
+    except Exception as e:
+        return f"<div style='direction:rtl;text-align:center;padding:50px;font-family:sans-serif;'><h2>خطأ: ملف quran_juz.html غير موجود داخل مجلد templates!</h2><p>التفاصيل: {e}</p></div>"
 
 # 3. أدعية هامة
 @app.route('/hasanat/ad3yah')
 def ad3yah():
     if 'user' not in session:
         return redirect(url_for('login'))
-    return render_template('ad3yah.html')
+    try:
+        return render_template('ad3yah.html')
+    except Exception as e:
+        return f"<div style='direction:rtl;text-align:center;padding:50px;font-family:sans-serif;'><h2>خطأ: ملف ad3yah.html غير موجود داخل مجلد templates!</h2><p>التفاصيل: {e}</p></div>"
 
 # 4. الأذكار والأحاديث (قائمة الاختيار)
 @app.route('/hasanat/azkar_hadith')
 def azkar_hadith_menu():
     if 'user' not in session:
         return redirect(url_for('login'))
-    return render_template('azkar_hadith_menu.html')
+    try:
+        return render_template('azkar_hadith_menu.html')
+    except Exception as e:
+        return f"<div style='direction:rtl;text-align:center;padding:50px;font-family:sans-serif;'><h2>خطأ: ملف azkar_hadith_menu.html غير موجود داخل مجلد templates!</h2><p>التفاصيل: {e}</p></div>"
 
-# الأذكار التفصيلية والأربعين النووية
+# 5. الأذكار التفصيلية والأربعين النووية
 @app.route('/hasanat/azkar/<category>')
 def azkar_category(category):
     if 'user' not in session:
@@ -405,19 +420,30 @@ def azkar_category(category):
         'hadith': 'الأربعين النووية'
     }
     title = cat_titles.get(category, 'الأذكار')
-    return render_template('azkar_detail.html', category=category, title=title)
+    try:
+        return render_template('azkar_detail.html', category=category, title=title)
+    except Exception as e:
+        return f"<div style='direction:rtl;text-align:center;padding:50px;font-family:sans-serif;'><h2>خطأ: ملف azkar_detail.html غير موجود داخل مجلد templates!</h2><p>التفاصيل: {e}</p></div>"
 
+# 6. السبحة الإلكترونية
 @app.route('/hasanat/sebha')
 def sebha():
     if 'user' not in session:
         return redirect(url_for('login'))
-    return render_template('sebha.html')
+    try:
+        return render_template('sebha.html')
+    except Exception as e:
+        return f"<div style='direction:rtl;text-align:center;padding:50px;font-family:sans-serif;'><h2>خطأ: ملف sebha.html غير موجود داخل مجلد templates!</h2><p>التفاصيل: {e}</p></div>"
 
+# 7. قسم الترفيه
 @app.route('/entertainment')
 def entertainment():
     if 'user' not in session:
         return redirect(url_for('login'))
-    return render_template('entertainment.html')
+    try:
+        return render_template('entertainment.html')
+    except Exception as e:
+        return f"<div style='direction:rtl;text-align:center;padding:50px;font-family:sans-serif;'><h2>خطأ: ملف entertainment.html غير موجود داخل مجلد templates!</h2><p>التفاصيل: {e}</p></div>"
 
 
 @app.route('/select_type/<cat_type>')
