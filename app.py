@@ -356,43 +356,13 @@ def booklet():
         booklet_promo_pdf=BOOKLET_PROMO_PDF
     )
 
-# --- مسارات قسم حسانات الشاملة ---
+# --- مسارات قسم حسانات والترفيه ---
 
 @app.route('/hasanat')
 def hasanat():
     if 'user' not in session:
         return redirect(url_for('login'))
     return render_template('hasanat.html')
-
-@app.route('/hasanat/quran_surah')
-def quran_surah():
-    if 'user' not in session:
-        return redirect(url_for('login'))
-    return render_template('quran_surah.html')
-
-@app.route('/hasanat/quran_juz')
-def quran_juz():
-    if 'user' not in session:
-        return redirect(url_for('login'))
-    return render_template('quran_juz.html')
-
-@app.route('/hasanat/quran/read/<type_id>/<int:item_id>')
-def quran_read(type_id, item_id):
-    if 'user' not in session:
-        return redirect(url_for('login'))
-    return render_template('quran_read.html', type_id=type_id, item_id=item_id)
-
-@app.route('/hasanat/duaa')
-def duaa():
-    if 'user' not in session:
-        return redirect(url_for('login'))
-    return render_template('duaa.html')
-
-@app.route('/hasanat/azkar_index')
-def azkar_index():
-    if 'user' not in session:
-        return redirect(url_for('login'))
-    return render_template('azkar_index.html')
 
 @app.route('/hasanat/azkar/<category>')
 def azkar_category(category):
@@ -403,11 +373,34 @@ def azkar_category(category):
         'sabah': 'أذكار الصباح',
         'masea': 'أذكار المساء',
         'nom': 'أذكار النوم',
-        'istiqadh': 'أذكار الاستيقاظ',
-        'hadith': 'أحاديث نبوية شريفة'
+        'hadith': 'الأربعين النووية'
     }
-    title = cat_titles.get(category, 'الأذكار الأحاديث')
+    title = cat_titles.get(category, 'الأذكار')
     return render_template('azkar_detail.html', category=category, title=title)
+
+@app.route('/hasanat/quran')
+def quran():
+    if 'user' not in session:
+        return redirect(url_for('login'))
+    return render_template('quran.html')
+
+@app.route('/hasanat/quran_surah')
+def quran_surah():
+    if 'user' not in session:
+        return redirect(url_for('login'))
+    return render_template('quran_surah.html')
+
+@app.route('/hasanat/nawawi')
+def nawawi():
+    if 'user' not in session:
+        return redirect(url_for('login'))
+    return render_template('azkar_detail.html', category='hadith', title='الأربعين النووية')
+
+@app.route('/hasanat/prayer_times')
+def prayer_times():
+    if 'user' not in session:
+        return redirect(url_for('login'))
+    return render_template('hasanat.html')
 
 @app.route('/hasanat/sebha')
 def sebha():
