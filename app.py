@@ -72,6 +72,7 @@ def load_data():
         "summaries": [],
         "evaluations": [],
         "platforms": [],
+        "entertainment_videos": [],
         "platform_video_url": "",
         "external_books_video_url": "",
         "booklet_subscribers": [],
@@ -113,6 +114,7 @@ def load_data():
                     data.setdefault('summaries', [])
                     data.setdefault('evaluations', [])
                     data.setdefault('platforms', [])
+                    data.setdefault('entertainment_videos', [])
                     data.setdefault('platform_video_url', "")
                     data.setdefault('external_books_video_url', "")
                     data.setdefault('booklet_subscribers', [])
@@ -174,6 +176,18 @@ def get_current_user(data):
                 return u
 
     return None
+
+def extract_youtube_code(url):
+    """دالة مساعدة لاستخراج كود الفيديو من أي رابط يوتيوب"""
+    if not url:
+        return ""
+    if 'v=' in url:
+        return url.split('v=')[1].split('&')[0]
+    elif 'youtu.be/' in url:
+        return url.split('youtu.be/')[1].split('?')[0]
+    elif 'embed/' in url:
+        return url.split('embed/')[1].split('?')[0]
+    return ""
 
 @app.before_request
 def make_session_permanent():
@@ -356,7 +370,7 @@ def booklet():
         booklet_promo_pdf=BOOKLET_PROMO_PDF
     )
 
-# --- مسارات قسم حسانات والترفيه (مع حماية الحاويات لمنع 500 Server Error) ---
+# --- مسارات قسم حسانات والترفيه ---
 
 @app.route('/hasanat')
 def hasanat():
@@ -435,13 +449,27 @@ def sebha():
     except Exception as e:
         return f"<div style='direction:rtl;text-align:center;padding:50px;font-family:sans-serif;'><h2>خطأ: ملف sebha.html غير موجود داخل مجلد templates!</h2><p>التفاصيل: {e}</p></div>"
 
-# 7. قسم الترفيه
+# 7. قسم الترفيه المعدل ليعرض الفيديوهات المضافة من قاعدة البيانات
 @app.route('/entertainment')
 def entertainment():
     if 'user' not in session:
         return redirect(url_for('login'))
     try:
-        return render_template('entertainment.html')
+        data = get_data()
+        videos = data.get('entertainment_videos', [])
+        
+        # تجهيز كود يوتيوب لكل فيديو
+        processed_videos = []
+        for v in videos:
+            code = extract_youtube_code(v.get('link', ''))
+            processed_videos.append({
+                'title': v.get('title', ''),
+                'description': v.get('description', ''),
+                'link': v.get('link', ''),
+                'video_code': code
+            })
+            
+        return render_template('entertainment.html', videos=processed_videos)
     except Exception as e:
         return f"<div style='direction:rtl;text-align:center;padding:50px;font-family:sans-serif;'><h2>خطأ: ملف entertainment.html غير موجود داخل مجلد templates!</h2><p>التفاصيل: {e}</p></div>"
 
@@ -684,6 +712,20 @@ def admin():
     data = get_data(force_refresh=True)
     
     if request.method == 'POST':
+        # إضافة فيديو ترفيهي جديد
+        if 'add_entertainment_video' in request.form:
+            title = request.form.get('title', '').strip()
+            link = request.form.get('link', '').strip()
+            description = request.form.get('description', '').strip()
+            if title and link:
+                data.setdefault('entertainment_videos', []).append({
+                    'title': title,
+                    'link': link,
+                    'description': description
+                })
+                save_data(data)
+            return redirect(url_for('admin'))
+
         if 'platform_video_url' in request.form:
             data['platform_video_url'] = request.form.get('platform_video_url', '').strip()
             save_data(data)
@@ -769,9 +811,21 @@ def admin():
                            total_users=total_users, 
                            forum=data.get('forum', []),
                            weekly_pdfs=data.get('weekly_pdfs', []),
+                           entertainment_videos=data.get('entertainment_videos', []),
                            subscribers=data.get('booklet_subscribers', []))
 
-# --- مسارات النسخة الاحتياطية وإدارة البيانات ---
+# --- مسارات حذف الفيديوهات والبيانات للأدمن ---
+
+@app.route('/admin/delete_entertainment/<int:index>', methods=['POST'])
+def delete_entertainment(index):
+    if not session.get('logged_in'):
+        return redirect(url_for('admin'))
+    data = get_data(force_refresh=True)
+    videos = data.get('entertainment_videos', [])
+    if 0 <= index < len(videos):
+        videos.pop(index)
+        save_data(data)
+    return redirect(url_for('admin'))
 
 @app.route('/download_backup')
 def download_backup():
