@@ -122,7 +122,7 @@
             gap: 14px;
             text-decoration: none;
             color: #fff;
-            transition: transform 0.2s;
+            transition: transform 0.2s, border-color 0.2s;
         }
 
         .card-item:active { transform: scale(0.98); }
@@ -192,6 +192,22 @@
                 <div class="card-info">
                     <h3>القرآن الكريم</h3>
                     <p>تلاوة واستماع</p>
+                </div>
+            </a>
+
+            <a href="{{ url_for('nawawi') }}" class="card-item">
+                <div class="card-icon"><i class="fa-solid fa-scroll"></i></div>
+                <div class="card-info">
+                    <h3>الأربعين النووية</h3>
+                    <p>أحاديث سَيِّدِ المُرْسَلِينَ ومعانيها</p>
+                </div>
+            </a>
+
+            <a href="{{ url_for('prayer_times') }}" class="card-item">
+                <div class="card-icon"><i class="fa-solid fa-clock"></i></div>
+                <div class="card-info">
+                    <h3>مواقيت الصلاة</h3>
+                    <p>مواعيد الأذان حسب موقعك</p>
                 </div>
             </a>
 
