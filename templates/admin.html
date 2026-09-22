@@ -93,7 +93,7 @@
             cursor: pointer; 
         }
 
-        input, select { 
+        input, select, textarea { 
             width: 100%; 
             padding: 12px; 
             margin: 8px 0 16px 0; 
@@ -106,7 +106,7 @@
             outline: none;
         }
 
-        input:focus, select:focus {
+        input:focus, select:focus, textarea:focus {
             border-color: var(--accent-color);
         }
         
@@ -553,6 +553,18 @@
         </div>
     </div>
 
+    <!-- قسم استعادة النسخة الاحتياطية -->
+    <div class="container">
+        <h2><i class="fa-solid fa-rotate-left"></i> استعادة النسخة الاحتياطية (Restore Backup)</h2>
+        <form method="POST" action="{{ url_for('restore_backup') }}" enctype="multipart/form-data" onsubmit="return confirm('تنبيه: سيتم استبدال البيانات الحالية بالبيانات الموجودة في الملف، هل أنت متأكد؟');">
+            <label for="backup_file">اختر ملف النسخة الاحتياطية (site_data_backup.json):</label>
+            <input type="file" id="backup_file" name="backup_file" accept=".json" required>
+            <button type="submit" class="btn-submit" style="background-color: var(--gold-color); color: #0f172a;">
+                🚀 رفع / استعادة البيانات (Restore)
+            </button>
+        </form>
+    </div>
+
     <!-- JavaScript السكربتات -->
     <script>
         function toggleSection(sectionId, iconId) {
@@ -643,14 +655,3 @@
     </script>
 </body>
 </html>
-<!-- قسم استعادة النسخة الاحتياطية -->
-<div class="container">
-    <h2><i class="fa-solid fa-rotate-left"></i> استعادة النسخة الاحتياطية (Restore Backup)</h2>
-    <form method="POST" action="{{ url_for('restore_backup') }}" enctype="multipart/form-data">
-        <label for="backup_file">اختر ملف النسخة الاحتياطية (site_data_backup.json):</label>
-        <input type="file" id="backup_file" name="backup_file" accept=".json" required>
-        <button type="submit" class="btn-submit" style="background-color: var(--gold-color); color: #0f172a;">
-            🚀 رفع / استعادة البيانات (Restore)
-        </button>
-    </form>
-</div>
