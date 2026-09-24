@@ -49,7 +49,7 @@
             background-color: var(--bg-color); 
             color: var(--text-color); 
             padding: 12px; 
-            padding-top: 80px;
+            padding-top: 135px; /* زيادة الهامش العلوي ليستوعب شريط الترحيب وشريط النيون */
             padding-bottom: 20px;
             min-height: 100vh; 
         }
@@ -59,15 +59,78 @@
             margin: 0 auto; 
         }
 
-        /* شريط التنقل النيون العلوي/المثبت */
+        /* ------------------ شريط الترحيب العلوي ------------------ */
+        .user-top-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 55px;
+            background: rgba(8, 13, 26, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(0, 210, 255, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 16px;
+            z-index: 1001;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+        }
+
+        .user-welcome {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            font-weight: bold;
+            color: #ffffff;
+        }
+
+        .user-welcome span {
+            color: var(--accent-color);
+        }
+
+        .user-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .action-btn {
+            background: rgba(30, 41, 59, 0.8);
+            border: 1px solid #334155;
+            color: #e2e8f0;
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+
+        .action-btn:hover {
+            border-color: var(--accent-color);
+            color: var(--accent-color);
+            transform: translateY(-2px);
+        }
+
+        .logout-btn:hover {
+            border-color: #ef4444;
+            color: #ef4444;
+        }
+
+        /* ------------------ شريط التنقل النيون العلوي ------------------ */
         .neon-navbar {
             position: fixed;
-            top: 12px;
+            top: 65px; /* تم تعديله ليكون تحت شريط الترحيب مباشرة */
             left: 50%;
             transform: translateX(-50%);
             width: calc(100% - 24px);
             max-width: 480px;
-            height: 62px;
+            height: 58px;
             background: rgba(10, 18, 38, 0.85);
             backdrop-filter: blur(12px);
             border: 1.5px solid #1a3862;
@@ -99,27 +162,26 @@
             filter: drop-shadow(0 0 6px rgba(0, 210, 255, 0.6));
         }
 
-        /* الزر الأوسط (الرئيسية) */
         .nav-item.active {
             position: relative;
             color: #ffffff;
         }
 
         .home-icon-wrapper {
-            width: 48px;
-            height: 48px;
+            width: 46px;
+            height: 46px;
             border-radius: 50%;
             background: linear-gradient(135deg, #00c6ff, #0072ff);
             display: flex;
             align-items: center;
             justify-content: center;
             box-shadow: 0 0 15px #00d2ff, inset 0 0 8px #ffffff;
-            margin-top: -12px;
+            margin-top: -10px;
             border: 2px solid #ffffff;
         }
 
         .home-icon-wrapper i {
-            font-size: 22px;
+            font-size: 20px;
             color: #ffffff;
             filter: none;
         }
@@ -133,7 +195,7 @@
             box-shadow: 0 0 8px #00d2ff;
         }
 
-        /* شبكة الكروت الرئيسية */
+        /* ------------------ شبكة الكروت الرئيسية ------------------ */
         .sections-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -159,7 +221,6 @@
             transform: scale(0.98);
         }
 
-        /* كارت الكتيب العريض */
         .booklet-card {
             grid-column: 1 / -1;
         }
@@ -188,7 +249,7 @@
             background: #111a2e;
         }
 
-        /* قسم المجتمعات الرسمية */
+        /* ------------------ قسم المجتمعات الرسمية ------------------ */
         .social-section {
             background: #111a2e;
             border: 1px solid #1e2d4a;
@@ -229,11 +290,146 @@
 
         .wa-btn { background: #10b981; }
         .yt-btn { background: #ef4444; }
+
+        /* ------------------ النافذة المنبثقة لحساب الطالب (Modal) ------------------ */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(5px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            padding: 15px;
+        }
+
+        .modal-card {
+            background: #111827;
+            border: 1px solid #1e293b;
+            border-radius: 20px;
+            width: 100%;
+            max-width: 420px;
+            padding: 20px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.8), 0 0 15px rgba(0, 210, 255, 0.15);
+            position: relative;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #1e293b;
+            padding-bottom: 12px;
+            margin-bottom: 15px;
+        }
+
+        .modal-header h3 {
+            color: var(--accent-color);
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            color: #94a3b8;
+            font-size: 18px;
+            cursor: pointer;
+        }
+
+        .profile-info {
+            background: #0f172a;
+            border-radius: 12px;
+            padding: 12px;
+            margin-bottom: 15px;
+            border: 1px solid #1e2d4a;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 13px;
+        }
+
+        .info-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .info-label { color: #94a3b8; }
+        .info-value { color: #ffffff; font-weight: bold; }
+
+        .form-group {
+            margin-bottom: 14px;
+            text-align: right;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 12px;
+            color: #38bdf8;
+            margin-bottom: 6px;
+            font-weight: bold;
+        }
+
+        .form-group select, .form-group input {
+            width: 100%;
+            padding: 10px;
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 13px;
+            outline: none;
+        }
+
+        .form-group select:focus, .form-group input:focus {
+            border-color: var(--accent-color);
+        }
+
+        .btn-save {
+            width: 100%;
+            padding: 11px;
+            background: linear-gradient(135deg, #0284c7, #0369a1);
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            font-weight: bold;
+            font-size: 14px;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        .btn-save:hover {
+            opacity: 0.9;
+        }
     </style>
 </head>
 <body>
 
-    <!-- شريط النيون العلوي للتنقل بين الأقسام (ترفيه - الرئيسية - حسنات) -->
+    <!-- 1. شريط الترحيب والأيقونات العلوية -->
+    <header class="user-top-bar">
+        <div class="user-welcome">
+            <i class="fa-solid fa-hand-wave" style="color: #f59e0b;"></i>
+            أهلاً، <span>{{ user.name if user else 'زائر' }}</span>
+        </div>
+        <div class="user-actions">
+            <button class="action-btn" onclick="openProfileModal()" title="معلومات الحساب والتخصص">
+                <i class="fa-solid fa-user-gear"></i>
+            </button>
+            <a href="{{ url_for('logout') }}" class="action-btn logout-btn" title="تسجيل الخروج">
+                <i class="fa-solid fa-right-from-bracket"></i>
+            </a>
+        </div>
+    </header>
+
+    <!-- 2. شريط النيون العلوي للتنقل بين الأقسام (ترفيه - الرئيسية - حسنات) -->
     <nav class="neon-navbar">
         <a href="{{ url_for('entertainment') }}" class="nav-item">
             <i class="fa-solid fa-play"></i>
@@ -329,6 +525,75 @@
         </div>
 
     </div>
+
+    <!-- 3. نافذة معلومات وتعديل حساب الطالب (Profile Modal) -->
+    <div id="profileModal" class="modal-overlay">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3><i class="fa-solid fa-id-card"></i> حسابي والمسار الدراسي</h3>
+                <button class="close-btn" onclick="closeProfileModal()"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <div class="profile-info">
+                <div class="info-row">
+                    <span class="info-label">اسم الطالب:</span>
+                    <span class="info-value">{{ user.name if user else 'غير معروف' }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">رقم الحساب / الهاتف:</span>
+                    <span class="info-value">{{ user.identifier if user else '-' }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">المسار الحالي:</span>
+                    <span class="info-value" style="color: var(--accent-color);">
+                        {% if user and user.track %}
+                            {{ tracks.get(user.track, user.track) }}
+                        {% else %}
+                            لم يحدد بعد
+                        {% endif %}
+                    </span>
+                </div>
+            </div>
+
+            <!-- نموذج تغيير المسار -->
+            <form action="{{ url_for('update_profile') }}" method="POST">
+                <div class="form-group">
+                    <label for="track_select"><i class="fa-solid fa-graduation-cap"></i> تغيير المسار والتخصص:</label>
+                    <select name="track" id="track_select" required>
+                        {% if tracks %}
+                            {% for track_id, track_name in tracks.items() %}
+                                <option value="{{ track_id }}" {% if user and user.track == track_id %}selected{% endif %}>
+                                    {{ track_name }}
+                                </option>
+                            {% endfor %}
+                        {% else %}
+                            <option value="general">المسار العام</option>
+                        {% endif %}
+                    </select>
+                </div>
+
+                <button type="submit" class="btn-save">💾 حفظ التغييرات</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function openProfileModal() {
+            document.getElementById('profileModal').style.display = 'flex';
+        }
+
+        function closeProfileModal() {
+            document.getElementById('profileModal').style.display = 'none';
+        }
+
+        // إغلاق النافذة عند الضغط خارجها
+        window.onclick = function(event) {
+            const modal = document.getElementById('profileModal');
+            if (event.target === modal) {
+                closeProfileModal();
+            }
+        }
+    </script>
 
 </body>
 </html>
