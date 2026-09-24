@@ -93,7 +93,14 @@ def load_data():
             "lessons": {key: [] for key in TRACKS.keys()}
         },
         "forum": [],
-        "notes": {}
+        "notes": {},
+        "ad3yah": [],
+        "azkar": {
+            "sabah": [],
+            "masea": [],
+            "nom": [],
+            "hadith": []
+        }
     }
     
     if redis:
@@ -143,6 +150,14 @@ def load_data():
                             
                     data.setdefault('forum', [])
                     data.setdefault('notes', {})
+                    data.setdefault('ad3yah', [])
+                    azk = data.setdefault('azkar', {})
+                    if not isinstance(azk, dict):
+                        azk = {}
+                        data['azkar'] = azk
+                    for k in ['sabah', 'masea', 'nom', 'hadith']:
+                        azk.setdefault(k, [])
+
                     return data
         except Exception as e:
             print("Redis load error:", e)
@@ -429,7 +444,9 @@ def ad3yah():
     if 'user' not in session:
         return redirect(url_for('login'))
     try:
-        return render_template('ad3yah.html')
+        data = get_data()
+        ad3yah_list = data.get('ad3yah', [])
+        return render_template('ad3yah.html', ad3yah=ad3yah_list)
     except Exception as e:
         return f"<div style='direction:rtl;text-align:center;padding:50px;font-family:sans-serif;'><h2>خطأ: ملف ad3yah.html غير موجود داخل مجلد templates!</h2><p>التفاصيل: {e}</p></div>"
 
@@ -456,8 +473,10 @@ def azkar_category(category):
         'hadith': 'الأربعين النووية'
     }
     title = cat_titles.get(category, 'الأذكار')
+    data = get_data()
+    azkar_list = data.get('azkar', {}).get(category, [])
     try:
-        return render_template('azkar_detail.html', category=category, title=title)
+        return render_template('azkar_detail.html', category=category, title=title, azkar=azkar_list)
     except Exception as e:
         return f"<div style='direction:rtl;text-align:center;padding:50px;font-family:sans-serif;'><h2>خطأ: ملف azkar_detail.html غير موجود داخل مجلد templates!</h2><p>التفاصيل: {e}</p></div>"
 
@@ -834,7 +853,80 @@ def admin():
                            forum=data.get('forum', []),
                            weekly_pdfs=data.get('weekly_pdfs', []),
                            entertainment_videos=data.get('entertainment_videos', []),
+                           ad3yah=data.get('ad3yah', []),
+                           azkar=data.get('azkar', {}),
                            subscribers=data.get('booklet_subscribers', []))
+
+# --- مسارات إدارة قسم حسانات للأدمن ---
+
+@app.route('/admin/add_dua', methods=['POST'])
+def add_dua():
+    if not session.get('logged_in'):
+        return redirect(url_for('admin'))
+    
+    title = request.form.get('dua_title', '').strip()
+    content = request.form.get('dua_content', '').strip()
+    
+    if title and content:
+        data = get_data(force_refresh=True)
+        data.setdefault('ad3yah', []).append({
+            'title': title,
+            'content': content
+        })
+        save_data(data)
+    
+    return redirect(url_for('admin'))
+
+@app.route('/admin/delete_dua/<int:index>', methods=['POST'])
+def delete_dua(index):
+    if not session.get('logged_in'):
+        return redirect(url_for('admin'))
+    
+    data = get_data(force_refresh=True)
+    ad3yah_list = data.get('ad3yah', [])
+    if 0 <= index < len(ad3yah_list):
+        ad3yah_list.pop(index)
+        save_data(data)
+    
+    return redirect(url_for('admin'))
+
+@app.route('/admin/add_zekr', methods=['POST'])
+def add_zekr():
+    if not session.get('logged_in'):
+        return redirect(url_for('admin'))
+    
+    category = request.form.get('category', '').strip()
+    content = request.form.get('zekr_content', '').strip()
+    count = request.form.get('zekr_count', '1').strip()
+    
+    try:
+        count_int = int(count)
+    except ValueError:
+        count_int = 1
+
+    if category in ['sabah', 'masea', 'nom', 'hadith'] and content:
+        data = get_data(force_refresh=True)
+        azkar_dict = data.setdefault('azkar', {})
+        azkar_dict.setdefault(category, []).append({
+            'content': content,
+            'count': count_int
+        })
+        save_data(data)
+    
+    return redirect(url_for('admin'))
+
+@app.route('/admin/delete_zekr/<category>/<int:index>', methods=['POST'])
+def delete_zekr(category, index):
+    if not session.get('logged_in'):
+        return redirect(url_for('admin'))
+    
+    data = get_data(force_refresh=True)
+    azkar_list = data.get('azkar', {}).get(category, [])
+    if 0 <= index < len(azkar_list):
+        azkar_list.pop(index)
+        save_data(data)
+    
+    return redirect(url_for('admin'))
 
 # --- مسارات حذف الفيديوهات والبيانات للأدمن ---
 
