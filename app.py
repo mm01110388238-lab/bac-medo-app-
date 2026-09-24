@@ -226,6 +226,7 @@ def inject_globals():
         'is_booklet_subscribed': is_subscribed,
         'user_note': user_note,
         'current_user': current_user,
+        'user': current_user,
         'SECTION_NAMES': SECTION_NAMES,
         'GENERAL_SUBJECTS': GENERAL_SUBJECTS,
         'TRACKS': TRACKS
@@ -324,6 +325,24 @@ def settings():
 
     return render_template('settings.html', user=current_user, tracks=TRACKS)
 
+@app.route('/update_profile', methods=['POST'])
+def update_profile():
+    if 'user' not in session:
+        return redirect(url_for('login'))
+        
+    data = get_data(force_refresh=True)
+    current_user = get_current_user(data)
+    track = request.form.get('track', '').strip()
+
+    if current_user and track in TRACKS:
+        for idx, u in enumerate(data.get('users', [])):
+            if str(u.get('identifier')).strip() == str(current_user.get('identifier')).strip():
+                data['users'][idx]['track'] = track
+                save_data(data)
+                break
+
+    return redirect(request.referrer or url_for('index'))
+
 @app.route('/logout')
 def logout():
     session.pop('user', None)
@@ -336,7 +355,10 @@ def logout():
 def index():
     if 'user' not in session:
         return redirect(url_for('login'))
-    return render_template('index.html')
+    
+    data = get_data()
+    current_user = get_current_user(data)
+    return render_template('index.html', user=current_user, tracks=TRACKS)
 
 @app.route('/catalog')
 def catalog():
