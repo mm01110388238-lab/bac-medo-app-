@@ -263,7 +263,93 @@
         </form>
     </div>
 
-    <!-- 3. إدارة أسبوعيات كتيب البكالوريا (إضافة وحذف PDFs) -->
+    <!-- 3. إدارة قسم حسانات: أدعية هامة -->
+    <div class="container">
+        <button type="button" class="toggle-btn" onclick="toggleSection('ad3yah-section', 'ad3yah-icon')">
+            <span><i class="fa-solid fa-hands-praying"></i> إدارة الأدعية الهامة (قسم حسانات)</span>
+            <i class="fa-solid fa-chevron-down" id="ad3yah-icon"></i>
+        </button>
+
+        <div id="ad3yah-section" class="collapsible-content">
+            <form method="POST" action="{{ url_for('add_dua') }}" style="margin-bottom: 20px;">
+                <label for="dua_title">عنوان الدعاء:</label>
+                <input type="text" id="dua_title" name="dua_title" placeholder="مثال: دعاء طلب العلم والفهم" required>
+
+                <label for="dua_content">نص الدعاء:</label>
+                <textarea id="dua_content" name="dua_content" rows="3" placeholder='مثال: "اللَّهُمَّ إنِّي أسْأَلُكَ عِلْمًا نَافِعًا..."' required></textarea>
+
+                <button type="submit" class="btn-submit" style="background-color: #8b5cf6;">➕ إضافة دعاء جديد</button>
+            </form>
+
+            <div class="sub-header">🤲 الأدعية المضافة حالياً:</div>
+            {% if ad3yah %}
+                {% for dua in ad3yah %}
+                    <div class="item-row">
+                        <div style="text-align: right;">
+                            <strong>{{ dua.title }}</strong><br>
+                            <small style="color: var(--text-muted);">{{ dua.content }}</small>
+                        </div>
+                        <form action="{{ url_for('delete_dua', index=loop.index0) }}" method="POST" style="margin:0;" onsubmit="return confirm('هل أنت متأكد من حذف هذا الدعاء؟');">
+                            <button type="submit" class="btn-delete">حذف</button>
+                        </form>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p style="color: var(--text-muted); font-size: 13px; text-align: center; margin-top: 10px;">لا توجد أدعية مضافة حالياً.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- 4. إدارة قسم حسانات: الأذكار والأحاديث والتكرار -->
+    <div class="container">
+        <button type="button" class="toggle-btn" onclick="toggleSection('azkar-section', 'azkar-icon')">
+            <span><i class="fa-solid fa-moon"></i> إدارة الأذكار والأحاديث (مع التكرار)</span>
+            <i class="fa-solid fa-chevron-down" id="azkar-icon"></i>
+        </button>
+
+        <div id="azkar-section" class="collapsible-content">
+            <form method="POST" action="{{ url_for('add_zekr') }}" style="margin-bottom: 20px;">
+                <label for="azkar_category">اختر قسم الذكر / الحديث:</label>
+                <select name="category" id="azkar_category" required>
+                    <option value="sabah">☀️ أذكار الصباح</option>
+                    <option value="masea">🌙 أذكار المساء</option>
+                    <option value="nom">🛏️ أذكار النوم</option>
+                    <option value="hadith">📖 الأربعين النووية</option>
+                </select>
+
+                <label for="zekr_content">نص الذكر / الحديث:</label>
+                <textarea id="zekr_content" name="zekr_content" rows="3" placeholder="أدخل نص الذكر أو الحديث هنا..." required></textarea>
+
+                <label for="zekr_count">عدد التكرار المطلوب:</label>
+                <input type="number" id="zekr_count" name="zekr_count" min="1" value="1" required>
+
+                <button type="submit" class="btn-submit" style="background-color: #3b82f6;">➕ إضافة الذكر / الحديث</button>
+            </form>
+
+            <div class="sub-header">📿 الأذكار والأحاديث المضافة:</div>
+            
+            {% set categories = [('sabah', 'أذكار الصباح'), ('masea', 'أذكار المساء'), ('nom', 'أذكار النوم'), ('hadith', 'الأربعين النووية')] %}
+            {% for cat_key, cat_name in categories %}
+                {% set items = azkar.get(cat_key, []) %}
+                {% if items %}
+                    <div style="font-size: 13px; color: var(--gold-color); font-weight: bold; margin-top: 10px;">{{ cat_name }}:</div>
+                    {% for item in items %}
+                        <div class="item-row">
+                            <div style="text-align: right;">
+                                <span>{{ item.content }}</span><br>
+                                <small style="color: var(--accent-color);">التكرار المطلوب: {{ item.count }}</small>
+                            </div>
+                            <form action="{{ url_for('delete_zekr', category=cat_key, index=loop.index0) }}" method="POST" style="margin:0;" onsubmit="return confirm('هل أنت متأكد من حذف هذا الذكر؟');">
+                                <button type="submit" class="btn-delete">حذف</button>
+                            </form>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- 5. إدارة أسبوعيات كتيب البكالوريا (إضافة وحذف PDFs) -->
     <div class="container">
         <button type="button" class="toggle-btn" onclick="toggleSection('booklet-pdfs-section', 'booklet-pdfs-icon')">
             <span><i class="fa-solid fa-book-bookmark"></i> إدارة الـ PDFs الأسبوعية لكتيب البكالوريا</span>
@@ -301,7 +387,7 @@
         </div>
     </div>
 
-    <!-- 4. قسم الأعضاء وإدارة اشتراكات كتيب البكالوريا (قابل للطي) -->
+    <!-- 6. قسم الأعضاء وإدارة اشتراكات كتيب البكالوريا (قابل للطي) -->
     <div class="container">
         <button type="button" class="toggle-btn" onclick="toggleSection('users-section', 'users-icon')">
             <span><i class="fa-solid fa-users"></i> الأعضاء المسجلين وإدارة الاشتراكات (العدد: {{ total_users }})</span>
@@ -344,7 +430,7 @@
         </div>
     </div>
 
-    <!-- 5. قسم إضافة المحتوى -->
+    <!-- 7. قسم إضافة المحتوى الرئيسي -->
     <div class="container">
         <h2 style="text-align: center;"><i class="fa-solid fa-plus-circle"></i> إضافة محتوى جديد</h2>
         
