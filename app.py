@@ -1136,7 +1136,7 @@ def delete_specialized_item(cat_type, track_id, index):
         save_data(data)
     return redirect(url_for('admin'))
 
-# --- ملفات PWA والمزامنة والإشعارات المتوافقة مع متجر جوجل بلاي ---
+# --- ملفات PWA والمزامنة والإشعارات المتوافقة تماماً مع متجر جوجل بلاي ---
 
 @app.route('/manifest.json')
 def manifest():
@@ -1160,13 +1160,25 @@ def manifest():
                 "src": logo_url,
                 "sizes": "192x192",
                 "type": "image/png",
-                "purpose": "any maskable"
+                "purpose": "any"
+            },
+            {
+                "src": logo_url,
+                "sizes": "192x192",
+                "type": "image/png",
+                "purpose": "maskable"
             },
             {
                 "src": logo_url,
                 "sizes": "512x512",
                 "type": "image/png",
-                "purpose": "any maskable"
+                "purpose": "any"
+            },
+            {
+                "src": logo_url,
+                "sizes": "512x512",
+                "type": "image/png",
+                "purpose": "maskable"
             }
         ]
     }
@@ -1190,7 +1202,7 @@ def service_worker():
     });
 
     self.addEventListener('fetch', (e) => {
-        // يسمح بتمرير جميع الطلبات بنجاح
+        // تمرير جميع الطلبات بنجاح
     });
 
     self.addEventListener('push', (event) => {
