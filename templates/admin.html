@@ -243,6 +243,33 @@
         </button>
     </div>
 
+    <!-- 0. قسم إرسال إشعار فوري لجميع الطلاب (جديد) -->
+    <div class="container" style="border: 1.5px solid #00d2ff; box-shadow: 0 0 15px rgba(0, 210, 255, 0.2);">
+        <button type="button" class="toggle-btn" style="color: #00f0ff; border-color: #00d2ff;" onclick="toggleSection('broadcast-section', 'broadcast-icon')">
+            <span><i class="fa-solid fa-bullhorn"></i> إرسال إشعار فوري لجميع الطلاب 🔔</span>
+            <i class="fa-solid fa-chevron-down" id="broadcast-icon"></i>
+        </button>
+
+        <div id="broadcast-section" class="collapsible-content">
+            <form method="POST" action="{{ url_for('admin') }}">
+                <input type="hidden" name="send_broadcast" value="1">
+
+                <label for="notif_title">عنوان الإشعار:</label>
+                <input type="text" id="notif_title" name="notif_title" placeholder="مثال: تنبيه هام لجميع طلاب البكالوريا 📢" required>
+
+                <label for="notif_body">نص الرسالة / الإشعار:</label>
+                <textarea id="notif_body" name="notif_body" rows="3" placeholder="مثال: تم الآن إضافة تلخيص الأسبوع الجديد، تفقدوه سريعاً!" required></textarea>
+
+                <label for="notif_url">رابط فتح الصفحة عند ضغط الإشعار (اختياري):</label>
+                <input type="text" id="notif_url" name="notif_url" placeholder="/booklet أو رابط أي قسم" value="/">
+
+                <button type="submit" class="btn-submit" style="background: linear-gradient(135deg, #0284c7, #00d2ff); color: #080d1a;">
+                    🚀 إرسال الإشعار لجميع الأجهزة الآن
+                </button>
+            </form>
+        </div>
+    </div>
+
     <!-- 1. التحكم في فيديو تفاصيل المنصة -->
     <div class="container">
         <h2><i class="fa-solid fa-circle-play"></i> فيديو تفاصيل وشرح المنصة</h2>
