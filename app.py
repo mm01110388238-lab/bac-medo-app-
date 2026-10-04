@@ -54,7 +54,7 @@ GENERAL_SUBJECTS = {
 }
 
 SECTION_NAMES = {
-    'external_books': 'الكتب الخارجية للحل',
+    'external_books': 'المنتجات الدراسية',
     'summaries': 'تلخيص الدروس',
     'evaluations': 'التقييمات المدرسية',
     'lessons': 'الشروحات والمسارات',
@@ -207,7 +207,6 @@ def extract_youtube_code(url):
     return ""
 
 def notify_all(title, body, target_url="/"):
-    """دالة مساعدة لحفظ وتفعيل تنبيهات الإشعارات لجميع الطلاب"""
     try:
         data = get_data()
         data.setdefault('pending_notifications', []).append({
@@ -1137,18 +1136,25 @@ def delete_specialized_item(cat_type, track_id, index):
         save_data(data)
     return redirect(url_for('admin'))
 
-# --- ملفات PWA والمزامنة والإشعارات ---
+# --- ملفات PWA والمزامنة والإشعارات المتوافقة مع متجر جوجل بلاي ---
 
 @app.route('/manifest.json')
 def manifest():
-    logo_url = url_for('static', filename='logo.png', _external=True) + '?v=2'
+    logo_url = url_for('static', filename='logo.png', _external=True)
     manifest_data = {
+        "id": "/",
         "name": "منصة السعيد التعليمية",
         "short_name": "منصة السعيد",
+        "description": "منصة تعليمية متكاملة لطلاب البكالوريا والثانوية العامة",
         "start_url": "/",
+        "scope": "/",
         "display": "standalone",
-        "background_color": "#0f172a",
-        "theme_color": "#38bdf8",
+        "orientation": "portrait",
+        "dir": "rtl",
+        "lang": "ar",
+        "background_color": "#080d1a",
+        "theme_color": "#00d2ff",
+        "categories": ["education", "books"],
         "icons": [
             {
                 "src": logo_url,
@@ -1164,12 +1170,16 @@ def manifest():
             }
         ]
     }
-    return json.dumps(manifest_data, ensure_ascii=False), 200, {'Content-Type': 'application/json; charset=utf-8'}
+    return Response(
+        json.dumps(manifest_data, ensure_ascii=False),
+        mimetype='application/manifest+json',
+        headers={'Access-Control-Allow-Origin': '*'}
+    )
 
 @app.route('/sw.js')
 def service_worker():
     sw_code = """
-    const CACHE_NAME = 'elsaeed-v3';
+    const CACHE_NAME = 'elsaeed-v4';
     self.addEventListener('install', (e) => self.skipWaiting());
     self.addEventListener('activate', (e) => {
         e.waitUntil(
@@ -1179,16 +1189,24 @@ def service_worker():
         );
     });
 
+    self.addEventListener('fetch', (e) => {
+        // يسمح بتمرير جميع الطلبات بنجاح
+    });
+
     self.addEventListener('push', (event) => {
         let data = {};
         if (event.data) {
-            data = event.data.json();
+            try {
+                data = event.data.json();
+            } catch(e) {
+                data = { title: 'منصة السعيد التعليمية', body: event.data.text() };
+            }
         }
         const title = data.title || 'منصة السعيد التعليمية';
         const options = {
             body: data.body || 'يوجد تحديث ومحتوى جديد متاح في المنصة!',
-            icon: '/static/logo.png?v=99',
-            badge: '/static/logo.png?v=99',
+            icon: '/static/logo.png',
+            badge: '/static/logo.png',
             vibrate: [100, 50, 100],
             data: {
                 url: data.url || '/'
@@ -1201,7 +1219,7 @@ def service_worker():
         event.notification.close();
         const targetUrl = event.notification.data ? event.notification.data.url : '/';
         event.waitUntil(
-            clients.matchAll({ type: 'window' }).then((clientList) => {
+            clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
                 for (const client of clientList) {
                     if (client.url === targetUrl && 'focus' in client) {
                         return client.focus();
@@ -1214,14 +1232,21 @@ def service_worker():
         );
     });
     """
-    return sw_code, 200, {'Content-Type': 'application/javascript; charset=utf-8'}
+    return Response(
+        sw_code,
+        mimetype='application/javascript',
+        headers={
+            'Content-Type': 'application/javascript; charset=utf-8',
+            'Service-Worker-Allowed': '/'
+        }
+    )
 
 # --- مسارات الأرشفة ومحركات البحث (SEO) ---
 
 @app.route('/robots.txt')
 def robots():
     robots_content = f"User-agent: *\nAllow: /\nSitemap: {request.url_root}sitemap.xml"
-    return robots_content, 200, {'Content-Type': 'text/plain; charset=utf-8'}
+    return Response(robots_content, mimetype='text/plain')
 
 @app.route('/sitemap.xml')
 def sitemap():
@@ -1251,7 +1276,7 @@ def sitemap():
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 {xml_entries}</urlset>'''
 
-    return sitemap_xml, 200, {'Content-Type': 'application/xml; charset=utf-8'}
+    return Response(sitemap_xml, mimetype='application/xml')
 
 if __name__ == '__main__':
     app.run(debug=True)
