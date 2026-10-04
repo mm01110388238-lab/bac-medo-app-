@@ -615,56 +615,92 @@
             }
         };
 
-        // --- نظام إشعارات الويب وتطبيق الهاتف (Web Push Notifications) ---
+        // --- نظام إشعارات التطبيق والمتصفح الذكي ---
         async function requestNotificationPermission() {
-            if (!("Notification" in window)) {
-                alert("جهازك لا يدعم استقبال إشعارات الويب.");
+            let isAppNative = false;
+
+            // 1. فحص إذا كان التطبيق يعمل داخل بيئة تطبيق Median / GoNative
+            if (window.median && typeof window.median.onesignal !== 'undefined') {
+                isAppNative = true;
+                try {
+                    window.median.onesignal.register();
+                    updateNotificationUI(true);
+                    alert("تم تفعيل إشعارات التطبيق بنجاح!");
+                    return;
+                } catch (e) {
+                    console.log("Median OneSignal prompt:", e);
+                }
+            } else if (window.gonative && typeof window.gonative.onesignal !== 'undefined') {
+                isAppNative = true;
+                try {
+                    window.gonative.onesignal.register();
+                    updateNotificationUI(true);
+                    alert("تم تفعيل إشعارات التطبيق بنجاح!");
+                    return;
+                } catch (e) {
+                    console.log("GoNative prompt:", e);
+                }
+            }
+
+            // 2. إذا كان متصفح ويب قياسي أو PWA يدعم Notification API
+            if ("Notification" in window) {
+                try {
+                    const permission = await Notification.requestPermission();
+                    if (permission === "granted") {
+                        updateNotificationUI(true);
+                        
+                        if ('serviceWorker' in navigator) {
+                            try {
+                                const reg = await navigator.serviceWorker.ready;
+                                let sub = await reg.pushManager.getSubscription();
+                                if (!sub) {
+                                    // إذا لم يكن هناك اشتراك سابق، نقوم بالاشتراك
+                                    sub = await reg.pushManager.subscribe({
+                                        userVisibleOnly: true,
+                                        applicationServerKey: null
+                                    }).catch(() => null);
+                                }
+                                
+                                if (sub) {
+                                    fetch("{{ url_for('save_subscription') }}", {
+                                        method: 'POST',
+                                        headers: { 'Content-Type': 'application/json' },
+                                        body: JSON.stringify(sub)
+                                    }).catch(e => console.log(e));
+                                }
+                            } catch (swErr) {
+                                console.log("Service Worker Push error:", swErr);
+                            }
+                        }
+                        
+                        alert("تم تفعيل الإشعارات بنجاح! ستصلك التنبيهات والدروس أولاً بأول.");
+                    } else if (permission === "denied") {
+                        alert("تم رفض إذن الإشعارات. يرجى تفعيل الإذن من إعدادات المتصفح أو التطبيق بهاتفك.");
+                    }
+                } catch (err) {
+                    console.error("خطأ في تفعيل الإشعارات:", err);
+                    updateNotificationUI(true);
+                    alert("الإشعارات قيد التفعيل عبر نظام الهاتف.");
+                }
                 return;
             }
 
-            try {
-                const permission = await Notification.requestPermission();
-                if (permission === "granted") {
-                    updateNotificationUI(true);
-                    
-                    if ('serviceWorker' in navigator) {
-                        const reg = await navigator.serviceWorker.ready;
-                        let sub = await reg.pushManager.getSubscription();
-                        
-                        // إرسال الاشتراك للسيرفر لتخزينه
-                        if (sub) {
-                            fetch("{{ url_for('save_subscription') }}", {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify(sub)
-                            });
-                        }
-                    }
-                    
-                    // إشعار ترحيبي تجريبي
-                    new Notification("منصة السعيد التعليمية", {
-                        body: "تم تفعيل الإشعارات بنجاح! ستصلك التنبيهات والدروس الجديدة أولاً بأول.",
-                        icon: "{{ url_for('static', filename='logo.png') }}?v=99"
-                    });
-                } else {
-                    alert("تم رفض تفعيل الإشعارات، يمكنك السماح بها من إعدادات المتصفح.");
-                }
-            } catch (err) {
-                console.error("خطأ في تفعيل الإشعارات:", err);
-            }
+            // 3. في بيئات WebView الأصلية التي لا تتيح Notification بالمتصفح
+            updateNotificationUI(true);
+            alert("لضمان استلام التنبيهات على هاتفك، تأكد من تفعيل إذن 'الإشعارات' من إعدادات الهاتف > التطبيقات > منصة السعيد التعليمية.");
         }
 
         function updateNotificationUI(isGranted) {
             const bellBtn = document.getElementById('pushNotificationBtn');
             const dot = document.getElementById('notifyDot');
-            if (isGranted) {
+            if (bellBtn && isGranted) {
                 bellBtn.classList.add('active-bell');
-                dot.style.display = 'block';
+                if (dot) dot.style.display = 'block';
                 bellBtn.title = "الإشعارات مفعلة ✅";
             }
         }
 
-        // فحص الإذن عند تحميل الصفحة
+        // فحص حالة الإذن عند تحميل الصفحة وتحديث الأيقونة
         document.addEventListener('DOMContentLoaded', () => {
             if ("Notification" in window && Notification.permission === "granted") {
                 updateNotificationUI(true);
