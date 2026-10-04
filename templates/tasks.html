@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#070c18">
+    <title>مهامك الدراسية - مَـنـصَّـة السَّـعـيـد</title>
+
+    <!-- ملف Web Manifest للتطبيقات PWA -->
+    <link rel="manifest" href="{{ url_for('manifest') }}">
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='logo.png') }}?v=99">
+
+    <!-- أيقونات FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            --bg-color: #080d1a;
+            --card-bg: #111827;
+            --text-color: #ffffff;
+            --text-muted: #94a3b8;
+            --border-color: #1e293b;
+            --accent-color: #00d2ff;
+            --neon-blue: #00f0ff;
+            --priority-high: #ef4444;
+            --priority-med: #f59e0b;
+            --priority-low: #10b981;
+            --shadow: rgba(0, 0, 0, 0.6);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            padding: 15px;
+            padding-bottom: 30px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 520px;
+            margin: 0 auto;
+        }
+
+        /* شريط التنقل العلوي */
+        .top-navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 10px 0;
+        }
+
+        .btn-back {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(30, 41, 59, 0.8);
+            border: 1px solid var(--border-color);
+            color: #7dd3fc;
+            padding: 8px 16px;
+            border-radius: 12px;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 13px;
+            transition: all 0.2s ease;
+        }
+
+        .btn-back:hover {
+            border-color: var(--accent-color);
+            color: #ffffff;
+        }
+
+        /* لوحة نسبة الإنجاز */
+        .progress-card {
+            background: linear-gradient(135deg, #111a2e, #0d1424);
+            border: 1px solid #1a3862;
+            border-radius: 20px;
+            padding: 18px;
+            margin-bottom: 20px;
+            box-shadow: 0 0 15px rgba(0, 162, 255, 0.15);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .progress-text h2 {
+            font-size: 18px;
+            color: #ffffff;
+            margin-bottom: 4px;
+        }
+
+        .progress-text p {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        .progress-badge {
+            background: rgba(0, 210, 255, 0.1);
+            border: 1.5px solid var(--accent-color);
+            color: var(--accent-color);
+            padding: 8px 14px;
+            border-radius: 14px;
+            font-weight: bold;
+            font-size: 16px;
+            text-shadow: 0 0 8px rgba(0, 210, 255, 0.5);
+        }
+
+        /* كارت إضافة مهمة جديدة */
+        .add-task-card {
+            background: #111827;
+            border: 1px solid var(--border-color);
+            border-radius: 18px;
+            padding: 16px;
+            margin-bottom: 22px;
+        }
+
+        .add-task-form {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .task-input {
+            width: 100%;
+            padding: 12px 14px;
+            background: #090e1c;
+            border: 1px solid #1e293b;
+            border-radius: 12px;
+            color: #fff;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .task-input:focus {
+            border-color: var(--accent-color);
+        }
+
+        .form-row {
+            display: flex;
+            gap: 10px;
+        }
+
+        .priority-select {
+            flex: 1;
+            padding: 10px;
+            background: #090e1c;
+            border: 1px solid #1e293b;
+            border-radius: 12px;
+            color: var(--text-muted);
+            font-size: 13px;
+            outline: none;
+        }
+
+        .priority-select:focus {
+            border-color: var(--accent-color);
+            color: #fff;
+        }
+
+        .btn-add {
+            flex: 1.2;
+            background: linear-gradient(135deg, #0284c7, #00d2ff);
+            color: #070c18;
+            font-weight: bold;
+            border: none;
+            border-radius: 12px;
+            padding: 11px;
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            transition: opacity 0.2s;
+        }
+
+        .btn-add:hover {
+            opacity: 0.9;
+        }
+
+        /* قائمة المهام */
+        .tasks-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .task-item {
+            background: #111a2e;
+            border: 1px solid #1e2d4a;
+            border-radius: 16px;
+            padding: 14px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .task-item.priority-high { border-right: 4px solid var(--priority-high); }
+        .task-item.priority-medium { border-right: 4px solid var(--priority-med); }
+        .task-item.priority-low { border-right: 4px solid var(--priority-low); }
+
+        .task-item.completed {
+            background: rgba(17, 26, 46, 0.45);
+            border-color: #1e293b;
+            opacity: 0.7;
+        }
+
+        .task-item.completed .task-text {
+            text-decoration: line-through;
+            color: var(--text-muted);
+        }
+
+        .task-content {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex: 1;
+            cursor: pointer;
+        }
+
+        .btn-check {
+            background: none;
+            border: none;
+            font-size: 20px;
+            color: var(--accent-color);
+            cursor: pointer;
+            padding: 0;
+            display: flex;
+            align-items: center;
+        }
+
+        .task-item.completed .btn-check {
+            color: #10b981;
+        }
+
+        .task-details {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .task-text {
+            font-size: 14px;
+            font-weight: 600;
+            color: #ffffff;
+            word-break: break-word;
+        }
+
+        .task-date {
+            font-size: 11px;
+            color: #64748b;
+        }
+
+        .btn-delete-task {
+            background: none;
+            border: none;
+            color: #64748b;
+            cursor: pointer;
+            padding: 6px;
+            font-size: 15px;
+            transition: color 0.2s;
+        }
+
+        .btn-delete-task:hover {
+            color: #ef4444;
+        }
+
+        .empty-tasks {
+            text-align: center;
+            padding: 40px 20px;
+            background: #111a2e;
+            border: 1px dashed #1e2d4a;
+            border-radius: 18px;
+            color: var(--text-muted);
+        }
+
+        .empty-tasks i {
+            font-size: 38px;
+            color: var(--accent-color);
+            margin-bottom: 12px;
+            opacity: 0.6;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- شريط التنقل العلوي -->
+        <header class="top-navbar">
+            <a href="{{ url_for('index') }}" class="btn-back">
+                <i class="fa-solid fa-arrow-right"></i> العودة للرئيسية
+            </a>
+            <span style="font-size: 13px; font-weight: bold; color: var(--accent-color);">
+                <i class="fa-solid fa-clipboard-list"></i> منظم مهام الطالب
+            </span>
+        </header>
+
+        <!-- كارت الإنجاز والتحفيز -->
+        {% set total_tasks = tasks|length %}
+        {% set completed_tasks = tasks|selectattr('completed', 'equalto', true)|list|length %}
+        <div class="progress-card">
+            <div class="progress-text">
+                <h2>جدول مهامك المدرسية</h2>
+                <p>
+                    {% if total_tasks == 0 %}
+                        أضف مهامك لليوم لتنظيم وقتك أولاً بأول ✨
+                    {% elif completed_tasks == total_tasks %}
+                        عاش يا بطل! أتممت جميع مهامك اليوم بنجاح 🏆
+                    {% else %}
+                        أنجزت {{ completed_tasks }} من إجمالي {{ total_tasks }} مهام
+                    {% endif %}
+                </p>
+            </div>
+            <div class="progress-badge">
+                {{ completed_tasks }}/{{ total_tasks }}
+            </div>
+        </div>
+
+        <!-- كارت إضافة مهمة جديدة -->
+        <div class="add-task-card">
+            <form action="{{ url_for('add_task') }}" method="POST" class="add-task-form">
+                <input type="text" name="task_text" class="task-input" placeholder="اكتب المهمة (مثال: حل واجب الفيزياء، حفظ كلمات الإنجليزي...)" required>
+                
+                <div class="form-row">
+                    <select name="priority" class="priority-select">
+                        <option value="high">🔴 أولوية قصوى (مهم وعاجل)</option>
+                        <option value="medium" selected>🟡 أولوية متوسطة (عادي)</option>
+                        <option value="low">🟢 أولوية منخفضة (لاحقاً)</option>
+                    </select>
+                    <button type="submit" class="btn-add">
+                        <i class="fa-solid fa-plus"></i> إضافة مهمة
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- قائمة المهام المضافة -->
+        <div class="tasks-list">
+            {% if tasks %}
+                {% for t in tasks %}
+                    <div class="task-item priority-{{ t.priority|default('medium') }} {% if t.completed %}completed{% endif %}">
+                        <div class="task-content">
+                            <!-- زر تغيير حالة الإنجاز -->
+                            <form action="{{ url_for('toggle_task', index=loop.index0) }}" method="POST" style="margin: 0;">
+                                <button type="submit" class="btn-check" title="تبديل حالة الإنجاز">
+                                    {% if t.completed %}
+                                        <i class="fa-solid fa-circle-check"></i>
+                                    {% else %}
+                                        <i class="fa-regular fa-circle"></i>
+                                    {% endif %}
+                                </button>
+                            </form>
+                            
+                            <div class="task-details">
+                                <span class="task-text">{{ t.text }}</span>
+                                <span class="task-date"><i class="fa-regular fa-clock"></i> {{ t.created_at|default('اليوم') }}</span>
+                            </div>
+                        </div>
+
+                        <!-- زر حذف المهمة -->
+                        <form action="{{ url_for('delete_task', index=loop.index0) }}" method="POST" style="margin: 0;" onsubmit="return confirm('هل تريد حذف هذه المهمة؟');">
+                            <button type="submit" class="btn-delete-task" title="حذف المهمة">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </button>
+                        </form>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <div class="empty-tasks">
+                    <i class="fa-solid fa-list-check"></i>
+                    <p style="font-size: 15px; font-weight: bold; margin-bottom: 4px;">لا توجد مهام مسجلة حالياً</p>
+                    <p style="font-size: 12px;">سجّل دروسك وواجباتك اليومية لتبدأ في إنجازها!</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+</body>
+</html>
