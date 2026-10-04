@@ -2,7 +2,7 @@ import os
 import json
 import time
 from datetime import timedelta
-from flask import Flask, render_template, request, redirect, url_for, session, g, Response, jsonify
+from flask import Flask, render_template, request, redirect, url_for, session, g, Response, jsonify, send_from_directory
 from upstash_redis import Redis
 
 app = Flask(__name__)
@@ -1136,11 +1136,22 @@ def delete_specialized_item(cat_type, track_id, index):
         save_data(data)
     return redirect(url_for('admin'))
 
-# --- ملفات PWA والمزامنة والإشعارات المتوافقة تماماً مع متجر جوجل بلاي ---
+# --- مسارات الأيقونة وملفات الـ PWA لضمان الامتثال التام مع PWABuilder ---
+
+@app.route('/app-icon.png')
+def serve_app_icon():
+    static_dir = os.path.join(app.root_path, 'static')
+    resp = send_from_directory(static_dir, 'logo.png', mimetype='image/png')
+    resp.headers['Access-Control-Allow-Origin'] = '*'
+    resp.headers['Cache-Control'] = 'public, max-age=86400'
+    return resp
 
 @app.route('/manifest.json')
 def manifest():
-    logo_url = url_for('static', filename='logo.png', _external=True)
+    # رابط مباشر ومستقل للأيقونة برأس نوع محتوى مؤكد image/png
+    base_url = request.url_root.rstrip('/')
+    icon_url = f"{base_url}/app-icon.png"
+
     manifest_data = {
         "id": "/",
         "name": "منصة السعيد التعليمية",
@@ -1157,25 +1168,25 @@ def manifest():
         "categories": ["education", "books"],
         "icons": [
             {
-                "src": logo_url,
+                "src": icon_url,
                 "sizes": "192x192",
                 "type": "image/png",
                 "purpose": "any"
             },
             {
-                "src": logo_url,
+                "src": icon_url,
                 "sizes": "192x192",
                 "type": "image/png",
                 "purpose": "maskable"
             },
             {
-                "src": logo_url,
+                "src": icon_url,
                 "sizes": "512x512",
                 "type": "image/png",
                 "purpose": "any"
             },
             {
-                "src": logo_url,
+                "src": icon_url,
                 "sizes": "512x512",
                 "type": "image/png",
                 "purpose": "maskable"
@@ -1185,7 +1196,10 @@ def manifest():
     return Response(
         json.dumps(manifest_data, ensure_ascii=False),
         mimetype='application/manifest+json',
-        headers={'Access-Control-Allow-Origin': '*'}
+        headers={
+            'Access-Control-Allow-Origin': '*',
+            'Content-Type': 'application/manifest+json; charset=utf-8'
+        }
     )
 
 @app.route('/sw.js')
@@ -1217,8 +1231,8 @@ def service_worker():
         const title = data.title || 'منصة السعيد التعليمية';
         const options = {
             body: data.body || 'يوجد تحديث ومحتوى جديد متاح في المنصة!',
-            icon: '/static/logo.png',
-            badge: '/static/logo.png',
+            icon: '/app-icon.png',
+            badge: '/app-icon.png',
             vibrate: [100, 50, 100],
             data: {
                 url: data.url || '/'
