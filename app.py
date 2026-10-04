@@ -16,7 +16,7 @@ app.config['SESSION_REFRESH_EACH_REQUEST'] = True
 # --- أرقام التواصل والروابط الرسمية ---
 DEVELOPER_WA = "201110388238"
 SUPPORT_WA = "201221441631"
-BOOKSTORE_WA = "201022574864"  # رقم واتساب دعم المكتبة
+BOOKSTORE_WA = "201202062265"  # رقم واتساب دعم المكتبة
 
 BOOKLET_VIDEO_URL = "https://youtu.be/cqvxq_C7R9Q?si=4bqe5Ti5emcQSPxb"
 BOOKLET_PROMO_PDF = "https://drive.google.com/file/d/1oVLiR8NgPe5YsWANKJruKasEkoynQ8YN/view?usp=drivesdk"
