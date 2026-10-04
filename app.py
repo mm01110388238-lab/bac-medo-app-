@@ -61,7 +61,7 @@ SECTION_NAMES = {
     'booklet': 'كتيب البكالوريا',
     'catalog': 'كتالوج المنصة',
     'hasanat': 'قسم حسانات',
-    'entertainment': 'قسم الترفيه'
+    'tasks': 'قسم مهامك'
 }
 
 def load_data():
@@ -72,7 +72,6 @@ def load_data():
         "summaries": [],
         "evaluations": [],
         "platforms": [],
-        "entertainment_videos": [],
         "platform_video_url": "",
         "external_books_video_url": "",
         "booklet_subscribers": [],
@@ -100,7 +99,9 @@ def load_data():
             "masea": [],
             "nom": [],
             "hadith": []
-        }
+        },
+        "tasks": {},
+        "push_subscriptions": []
     }
     
     if redis:
@@ -121,7 +122,6 @@ def load_data():
                     data.setdefault('summaries', [])
                     data.setdefault('evaluations', [])
                     data.setdefault('platforms', [])
-                    data.setdefault('entertainment_videos', [])
                     data.setdefault('platform_video_url', "")
                     data.setdefault('external_books_video_url', "")
                     data.setdefault('booklet_subscribers', [])
@@ -151,6 +151,7 @@ def load_data():
                     data.setdefault('forum', [])
                     data.setdefault('notes', {})
                     data.setdefault('ad3yah', [])
+                    
                     azk = data.setdefault('azkar', {})
                     if not isinstance(azk, dict):
                         azk = {}
@@ -158,6 +159,8 @@ def load_data():
                     for k in ['sabah', 'masea', 'nom', 'hadith']:
                         azk.setdefault(k, [])
 
+                    data.setdefault('tasks', {})
+                    data.setdefault('push_subscriptions', [])
                     return data
         except Exception as e:
             print("Redis load error:", e)
@@ -193,7 +196,6 @@ def get_current_user(data):
     return None
 
 def extract_youtube_code(url):
-    """دالة مساعدة لاستخراج كود الفيديو من أي رابط يوتيوب"""
     if not url:
         return ""
     if 'v=' in url:
@@ -203,6 +205,20 @@ def extract_youtube_code(url):
     elif 'embed/' in url:
         return url.split('embed/')[1].split('?')[0]
     return ""
+
+def notify_all(title, body, target_url="/"):
+    """دالة مساعدة لحفظ وتفعيل تنبيهات الإشعارات لجميع الطلاب"""
+    try:
+        data = get_data()
+        data.setdefault('pending_notifications', []).append({
+            'title': title,
+            'body': body,
+            'url': target_url,
+            'timestamp': time.time()
+        })
+        save_data(data)
+    except Exception as e:
+        print("Notification save error:", e)
 
 @app.before_request
 def make_session_permanent():
@@ -407,7 +423,79 @@ def booklet():
         booklet_promo_pdf=BOOKLET_PROMO_PDF
     )
 
-# --- مسارات قسم حسانات والترفيه ---
+# --- مسار قسم مهامك (To-Do List) ---
+
+@app.route('/tasks')
+def tasks():
+    if 'user' not in session:
+        return redirect(url_for('login'))
+        
+    data = get_data()
+    current_user = get_current_user(data)
+    user_key = str(current_user.get('identifier') or current_user.get('name', 'guest')) if current_user else 'guest'
+    
+    user_tasks = data.get('tasks', {}).get(user_key, [])
+    return render_template('tasks.html', tasks=user_tasks)
+
+@app.route('/tasks/add', methods=['POST'])
+def add_task():
+    if 'user' not in session:
+        return redirect(url_for('login'))
+        
+    text = request.form.get('task_text', '').strip()
+    priority = request.form.get('priority', 'medium').strip()
+    
+    if text:
+        data = get_data(force_refresh=True)
+        current_user = get_current_user(data)
+        user_key = str(current_user.get('identifier') or current_user.get('name', 'guest'))
+        
+        all_tasks = data.setdefault('tasks', {})
+        user_task_list = all_tasks.setdefault(user_key, [])
+        
+        user_task_list.append({
+            'text': text,
+            'priority': priority,
+            'completed': False,
+            'created_at': time.strftime("%Y-%m-%d %H:%M")
+        })
+        save_data(data)
+        
+    return redirect(url_for('tasks'))
+
+@app.route('/tasks/toggle/<int:index>', methods=['POST'])
+def toggle_task(index):
+    if 'user' not in session:
+        return redirect(url_for('login'))
+        
+    data = get_data(force_refresh=True)
+    current_user = get_current_user(data)
+    user_key = str(current_user.get('identifier') or current_user.get('name', 'guest'))
+    
+    user_task_list = data.get('tasks', {}).get(user_key, [])
+    if 0 <= index < len(user_task_list):
+        user_task_list[index]['completed'] = not user_task_list[index].get('completed', False)
+        save_data(data)
+        
+    return redirect(url_for('tasks'))
+
+@app.route('/tasks/delete/<int:index>', methods=['POST'])
+def delete_task(index):
+    if 'user' not in session:
+        return redirect(url_for('login'))
+        
+    data = get_data(force_refresh=True)
+    current_user = get_current_user(data)
+    user_key = str(current_user.get('identifier') or current_user.get('name', 'guest'))
+    
+    user_task_list = data.get('tasks', {}).get(user_key, [])
+    if 0 <= index < len(user_task_list):
+        user_task_list.pop(index)
+        save_data(data)
+        
+    return redirect(url_for('tasks'))
+
+# --- مسارات قسم حسانات ---
 
 @app.route('/hasanat')
 def hasanat():
@@ -490,30 +578,10 @@ def sebha():
     except Exception as e:
         return f"<div style='direction:rtl;text-align:center;padding:50px;font-family:sans-serif;'><h2>خطأ: ملف sebha.html غير موجود داخل مجلد templates!</h2><p>التفاصيل: {e}</p></div>"
 
-# 7. قسم الترفيه المعدل ليعرض الفيديوهات المضافة من قاعدة البيانات
+# تحويل المسار القديم للترفيه إلى صفحة المهام
 @app.route('/entertainment')
 def entertainment():
-    if 'user' not in session:
-        return redirect(url_for('login'))
-    try:
-        data = get_data()
-        videos = data.get('entertainment_videos', [])
-        
-        # تجهيز كود يوتيوب لكل فيديو
-        processed_videos = []
-        for v in videos:
-            code = extract_youtube_code(v.get('link', ''))
-            processed_videos.append({
-                'title': v.get('title', ''),
-                'description': v.get('description', ''),
-                'link': v.get('link', ''),
-                'video_code': code
-            })
-            
-        return render_template('entertainment.html', videos=processed_videos)
-    except Exception as e:
-        return f"<div style='direction:rtl;text-align:center;padding:50px;font-family:sans-serif;'><h2>خطأ: ملف entertainment.html غير موجود داخل مجلد templates!</h2><p>التفاصيل: {e}</p></div>"
-
+    return redirect(url_for('tasks'))
 
 @app.route('/select_type/<cat_type>')
 def select_type(cat_type):
@@ -541,8 +609,8 @@ def select_type(cat_type):
     if cat_type == 'hasanat':
         return redirect(url_for('hasanat'))
 
-    if cat_type == 'entertainment':
-        return redirect(url_for('entertainment'))
+    if cat_type in ['entertainment', 'tasks']:
+        return redirect(url_for('tasks'))
 
     if cat_type not in SECTION_NAMES:
         return redirect(url_for('index'))
@@ -733,6 +801,25 @@ def save_note():
     
     return redirect(request.referrer or url_for('index'))
 
+# --- إدارة وحفظ اشتراكات الإشعارات (Push Notifications) ---
+
+@app.route('/api/save_subscription', methods=['POST'])
+def save_subscription():
+    sub = request.get_json(silent=True)
+    if sub:
+        data = get_data(force_refresh=True)
+        subs = data.setdefault('push_subscriptions', [])
+        sub_str = json.dumps(sub, sort_keys=True)
+        
+        # حفظ الاشتراك إذا لم يكن موجوداً من قبل
+        exists = any(json.dumps(s, sort_keys=True) == sub_str for s in subs)
+        if not exists:
+            subs.append(sub)
+            save_data(data)
+            
+        return jsonify({'status': 'success', 'message': 'تم تفعيل الإشعارات بنجاح!'})
+    return jsonify({'status': 'error', 'message': 'بيانات غير صحيحة'}), 400
+
 # --- لوحة التحكم للأدمن ---
 
 @app.route('/admin', methods=['GET', 'POST'])
@@ -753,18 +840,13 @@ def admin():
     data = get_data(force_refresh=True)
     
     if request.method == 'POST':
-        # إضافة فيديو ترفيهي جديد
-        if 'add_entertainment_video' in request.form:
-            title = request.form.get('title', '').strip()
-            link = request.form.get('link', '').strip()
-            description = request.form.get('description', '').strip()
-            if title and link:
-                data.setdefault('entertainment_videos', []).append({
-                    'title': title,
-                    'link': link,
-                    'description': description
-                })
-                save_data(data)
+        # إرسال إشعار فوري لجميع الطلاب من الأدمن
+        if 'send_broadcast' in request.form:
+            n_title = request.form.get('notif_title', '').strip()
+            n_body = request.form.get('notif_body', '').strip()
+            n_url = request.form.get('notif_url', '/').strip() or '/'
+            if n_title and n_body:
+                notify_all(n_title, n_body, n_url)
             return redirect(url_for('admin'))
 
         if 'platform_video_url' in request.form:
@@ -788,6 +870,7 @@ def admin():
                     'week': week_num or 'الأسبوع الحالي'
                 })
                 save_data(data)
+                notify_all("ملف أسبوعي جديد لكتيب البكالوريا 📚", f"تمت إضافة: {title}", "/booklet")
             return redirect(url_for('admin'))
 
         if 'toggle_subscription' in request.form:
@@ -826,6 +909,7 @@ def admin():
 
             if cat_key == 'platform':
                 data.setdefault('platforms', []).append({'title': title, 'link': link})
+                notify_all("منصة تعليمية جديدة 🌐", f"تمت إضافة المنصة: {title}", "/platforms")
             else:
                 item_data = {'title': title, 'link': link}
                 if cat_key == 'lessons':
@@ -833,10 +917,16 @@ def admin():
                     
                 if sub_type == 'general' and gen_sub:
                     data.setdefault('general_items', {}).setdefault(cat_key, {}).setdefault(gen_sub, []).append(item_data)
+                    sub_name = GENERAL_SUBJECTS.get(gen_sub, "المادة")
+                    cat_ar = SECTION_NAMES.get(cat_key, "المحتوى")
+                    notify_all(f"جديد في {cat_ar} 🔔", f"تمت إضافة: {title} في مادة {sub_name}", f"/general/{cat_key}/{gen_sub}")
                 elif sub_type == 'specialized' and track:
                     data.setdefault('specialized_items', {}).setdefault(cat_key, {}).setdefault(track, []).append(item_data)
                     if cat_key == 'lessons':
                         data.setdefault('lessons', {}).setdefault(track, []).append(item_data)
+                    trk_name = TRACKS.get(track, "المسار")
+                    cat_ar = SECTION_NAMES.get(cat_key, "المحتوى")
+                    notify_all(f"جديد في {cat_ar} 🎓", f"تمت إضافة: {title} لـ {trk_name}", f"/specialized/{cat_key}/{track}")
 
             save_data(data)
             return redirect(url_for('admin'))
@@ -852,7 +942,6 @@ def admin():
                            total_users=total_users, 
                            forum=data.get('forum', []),
                            weekly_pdfs=data.get('weekly_pdfs', []),
-                           entertainment_videos=data.get('entertainment_videos', []),
                            ad3yah=data.get('ad3yah', []),
                            azkar=data.get('azkar', {}),
                            subscribers=data.get('booklet_subscribers', []))
@@ -874,6 +963,7 @@ def add_dua():
             'content': content
         })
         save_data(data)
+        notify_all("دعاء جديد في قسم حسانات 🤲", title, "/hasanat/ad3yah")
     
     return redirect(url_for('admin'))
 
@@ -912,6 +1002,7 @@ def add_zekr():
             'count': count_int
         })
         save_data(data)
+        notify_all("ذكر جديد في قسم حسانات 📿", "تمت إضافة ذكر جديد، تفقده الآن!", f"/hasanat/azkar/{category}")
     
     return redirect(url_for('admin'))
 
@@ -928,18 +1019,7 @@ def delete_zekr(category, index):
     
     return redirect(url_for('admin'))
 
-# --- مسارات حذف الفيديوهات والبيانات للأدمن ---
-
-@app.route('/admin/delete_entertainment/<int:index>', methods=['POST'])
-def delete_entertainment(index):
-    if not session.get('logged_in'):
-        return redirect(url_for('admin'))
-    data = get_data(force_refresh=True)
-    videos = data.get('entertainment_videos', [])
-    if 0 <= index < len(videos):
-        videos.pop(index)
-        save_data(data)
-    return redirect(url_for('admin'))
+# --- مسارات النسخ الاحتياطي وحذف المحتويات للأدمن ---
 
 @app.route('/download_backup')
 def download_backup():
@@ -1057,7 +1137,7 @@ def delete_specialized_item(cat_type, track_id, index):
         save_data(data)
     return redirect(url_for('admin'))
 
-# --- ملفات PWA للتثبيت والمُزامنة ---
+# --- ملفات PWA والمزامنة والإشعارات ---
 
 @app.route('/manifest.json')
 def manifest():
@@ -1089,7 +1169,7 @@ def manifest():
 @app.route('/sw.js')
 def service_worker():
     sw_code = """
-    const CACHE_NAME = 'elsaeed-v2';
+    const CACHE_NAME = 'elsaeed-v3';
     self.addEventListener('install', (e) => self.skipWaiting());
     self.addEventListener('activate', (e) => {
         e.waitUntil(
@@ -1098,7 +1178,41 @@ def service_worker():
             }).then(() => self.clients.claim())
         );
     });
-    self.addEventListener('fetch', (e) => {});
+
+    self.addEventListener('push', (event) => {
+        let data = {};
+        if (event.data) {
+            data = event.data.json();
+        }
+        const title = data.title || 'منصة السعيد التعليمية';
+        const options = {
+            body: data.body || 'يوجد تحديث ومحتوى جديد متاح في المنصة!',
+            icon: '/static/logo.png?v=99',
+            badge: '/static/logo.png?v=99',
+            vibrate: [100, 50, 100],
+            data: {
+                url: data.url || '/'
+            }
+        };
+        event.waitUntil(self.registration.showNotification(title, options));
+    });
+
+    self.addEventListener('notificationclick', (event) => {
+        event.notification.close();
+        const targetUrl = event.notification.data ? event.notification.data.url : '/';
+        event.waitUntil(
+            clients.matchAll({ type: 'window' }).then((clientList) => {
+                for (const client of clientList) {
+                    if (client.url === targetUrl && 'focus' in client) {
+                        return client.focus();
+                    }
+                }
+                if (clients.openWindow) {
+                    return clients.openWindow(targetUrl);
+                }
+            })
+        );
+    });
     """
     return sw_code, 200, {'Content-Type': 'application/javascript; charset=utf-8'}
 
@@ -1122,7 +1236,7 @@ def sitemap():
         '/booklet',
         '/catalog',
         '/hasanat',
-        '/entertainment'
+        '/tasks'
     ]
     
     xml_entries = ""
