@@ -282,9 +282,9 @@
 
     <!-- 2. التحكم في فيديو تفاصيل الكتب الخارجية -->
     <div class="container">
-        <h2><i class="fa-solid fa-book"></i> فيديو تفاصيل الكتب الخارجية للحل</h2>
+        <h2><i class="fa-solid fa-book"></i> موقع زمزم</h2>
         <form method="POST" action="{{ url_for('admin') }}">
-            <label for="external_books_video_url">رابط فيديو يوتيوب تفاصيل الكتب:</label>
+            <label for="external_books_video_url">رابط موقع زمزم:</label>
             <input type="url" id="external_books_video_url" name="external_books_video_url" value="{{ external_books_video_url or '' }}" placeholder="https://www.youtube.com/watch?v=...">
             <button type="submit" class="btn-submit" style="background-color: var(--accent-color); color: #0f172a;">💾 حفظ رابط فيديو الكتب الخارجية</button>
         </form>
