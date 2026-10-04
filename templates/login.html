@@ -13,13 +13,19 @@
 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#080d1a">
+    <meta name="description" content="منصة تعليمية متكاملة لطلاب البكالوريا والثانوية العامة">
     <title>تسجيل الدخول - منصة السعيد</title>
     
     <!-- كود التحقق من جوجل -->
     <meta name="google-site-verification" content="pLF0j7ZDSt-KKoTGk3WC2sbJUlyAKsXxPbiZ0QEwPMg" />
 
-    <!-- أيقونة الموقع (Favicon) -->
-    <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}">
+    <!-- ملف Web Manifest للتطبيقات PWA -->
+    <link rel="manifest" href="{{ url_for('manifest') }}">
+
+    <!-- أيقونة الموقع (Favicon) واللوجو -->
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='logo.png') }}?v=99">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='logo.png') }}?v=99">
 
     <!-- أيقونات FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -136,5 +142,16 @@
 
         <p class="link-text">ليس لديك حساب؟ <a href="{{ url_for('register') }}">أنشئ حساب جديد</a></p>
     </div>
+
+    <!-- تسجيل الـ Service Worker لمتطلبات تطبيقات الويب PWA -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register("{{ url_for('service_worker') }}")
+                    .then(reg => console.log('ServiceWorker registered:', reg))
+                    .catch(err => console.log('ServiceWorker failed:', err));
+            });
+        }
+    </script>
 </body>
 </html>
