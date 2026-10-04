@@ -49,7 +49,7 @@
             background-color: var(--bg-color); 
             color: var(--text-color); 
             padding: 12px; 
-            padding-top: 135px; /* زيادة الهامش العلوي ليستوعب شريط الترحيب وشريط النيون */
+            padding-top: 135px;
             padding-bottom: 20px;
             min-height: 100vh; 
         }
@@ -93,7 +93,7 @@
         .user-actions {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 10px;
         }
 
         .action-btn {
@@ -109,12 +109,29 @@
             cursor: pointer;
             text-decoration: none;
             transition: all 0.2s ease;
+            position: relative;
         }
 
         .action-btn:hover {
             border-color: var(--accent-color);
             color: var(--accent-color);
             transform: translateY(-2px);
+        }
+
+        .notify-btn.active-bell {
+            color: #f59e0b;
+            border-color: rgba(245, 158, 11, 0.5);
+        }
+
+        .notify-dot {
+            position: absolute;
+            top: 6px;
+            right: 6px;
+            width: 8px;
+            height: 8px;
+            background: #22c55e;
+            border-radius: 50%;
+            display: none;
         }
 
         .logout-btn:hover {
@@ -125,7 +142,7 @@
         /* ------------------ شريط التنقل النيون العلوي ------------------ */
         .neon-navbar {
             position: fixed;
-            top: 65px; /* تم تعديله ليكون تحت شريط الترحيب مباشرة */
+            top: 65px;
             left: 50%;
             transform: translateX(-50%);
             width: calc(100% - 24px);
@@ -158,7 +175,7 @@
         }
 
         .nav-item i {
-            font-size: 20px;
+            font-size: 19px;
             filter: drop-shadow(0 0 6px rgba(0, 210, 255, 0.6));
         }
 
@@ -420,6 +437,11 @@
             أهلاً، <span>{{ user.name if user else 'زائر' }}</span>
         </div>
         <div class="user-actions">
+            <!-- زر تفعيل واستقبال الإشعارات -->
+            <button class="action-btn notify-btn" id="pushNotificationBtn" onclick="requestNotificationPermission()" title="تفعيل الإشعارات والتنبيهات">
+                <i class="fa-solid fa-bell"></i>
+                <span class="notify-dot" id="notifyDot"></span>
+            </button>
             <button class="action-btn" onclick="openProfileModal()" title="معلومات الحساب والتخصص">
                 <i class="fa-solid fa-user-gear"></i>
             </button>
@@ -429,11 +451,11 @@
         </div>
     </header>
 
-    <!-- 2. شريط النيون العلوي للتنقل بين الأقسام (ترفيه - الرئيسية - حسنات) -->
+    <!-- 2. شريط النيون العلوي للتنقل بين الأقسام (مهامك - الرئيسية - حسنات) -->
     <nav class="neon-navbar">
-        <a href="{{ url_for('entertainment') }}" class="nav-item">
-            <i class="fa-solid fa-play"></i>
-            <span>ترفيه</span>
+        <a href="{{ url_for('tasks') }}" class="nav-item">
+            <i class="fa-solid fa-list-check"></i>
+            <span>مهامك</span>
         </a>
 
         <a href="{{ url_for('index') }}" class="nav-item active">
@@ -586,13 +608,68 @@
             document.getElementById('profileModal').style.display = 'none';
         }
 
-        // إغلاق النافذة عند الضغط خارجها
         window.onclick = function(event) {
             const modal = document.getElementById('profileModal');
             if (event.target === modal) {
                 closeProfileModal();
             }
+        };
+
+        // --- نظام إشعارات الويب وتطبيق الهاتف (Web Push Notifications) ---
+        async function requestNotificationPermission() {
+            if (!("Notification" in window)) {
+                alert("جهازك لا يدعم استقبال إشعارات الويب.");
+                return;
+            }
+
+            try {
+                const permission = await Notification.requestPermission();
+                if (permission === "granted") {
+                    updateNotificationUI(true);
+                    
+                    if ('serviceWorker' in navigator) {
+                        const reg = await navigator.serviceWorker.ready;
+                        let sub = await reg.pushManager.getSubscription();
+                        
+                        // إرسال الاشتراك للسيرفر لتخزينه
+                        if (sub) {
+                            fetch("{{ url_for('save_subscription') }}", {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify(sub)
+                            });
+                        }
+                    }
+                    
+                    // إشعار ترحيبي تجريبي
+                    new Notification("منصة السعيد التعليمية", {
+                        body: "تم تفعيل الإشعارات بنجاح! ستصلك التنبيهات والدروس الجديدة أولاً بأول.",
+                        icon: "{{ url_for('static', filename='logo.png') }}?v=99"
+                    });
+                } else {
+                    alert("تم رفض تفعيل الإشعارات، يمكنك السماح بها من إعدادات المتصفح.");
+                }
+            } catch (err) {
+                console.error("خطأ في تفعيل الإشعارات:", err);
+            }
         }
+
+        function updateNotificationUI(isGranted) {
+            const bellBtn = document.getElementById('pushNotificationBtn');
+            const dot = document.getElementById('notifyDot');
+            if (isGranted) {
+                bellBtn.classList.add('active-bell');
+                dot.style.display = 'block';
+                bellBtn.title = "الإشعارات مفعلة ✅";
+            }
+        }
+
+        // فحص الإذن عند تحميل الصفحة
+        document.addEventListener('DOMContentLoaded', () => {
+            if ("Notification" in window && Notification.permission === "granted") {
+                updateNotificationUI(true);
+            }
+        });
     </script>
 
 </body>
