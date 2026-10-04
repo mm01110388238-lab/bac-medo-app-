@@ -228,34 +228,38 @@ def notify_all(title, body, target_url="/"):
     except Exception as e:
         print("Notification save error:", e)
 
-    # الإرسال الفعلي عبر OneSignal لجميع الأجهزة والتطبيق
+    # الإرسال الفعلي عبر OneSignal لجميع المشتركين
     if ONESIGNAL_APP_ID and ONESIGNAL_REST_API_KEY:
         try:
             api_url = "https://onesignal.com/api/v1/notifications"
+            api_key = str(ONESIGNAL_REST_API_KEY).strip()
+            
+            # مفاتيح v2 الخاصة بـ OneSignal تقبل التوثيق بصيغة Key
+            auth_value = f"Key {api_key}" if api_key.startswith("os_v2_") else f"Basic {api_key}"
+            
             headers = {
                 "Content-Type": "application/json; charset=utf-8",
-                "Authorization": f"Basic {ONESIGNAL_REST_API_KEY}"
+                "Authorization": auth_value
             }
-            
-            # بناء الرابط الكامل للفتح عند النقر
+
             final_url = target_url
-            if target_url and target_url.startswith('/'):
-                try:
+            try:
+                if target_url and target_url.startswith('/'):
                     final_url = request.url_root.rstrip('/') + target_url
-                except Exception:
-                    final_url = target_url
+            except Exception:
+                final_url = target_url
 
             payload = {
-                "app_id": ONESIGNAL_APP_ID,
-                "included_segments": ["Total Subscriptions", "All"],
+                "app_id": str(ONESIGNAL_APP_ID).strip(),
+                "included_segments": ["Total Subscriptions"],
                 "headings": {"en": title, "ar": title},
                 "contents": {"en": body, "ar": body},
                 "url": final_url,
                 "chrome_web_icon": "/app-icon.png",
                 "small_icon": "ic_stat_onesignal_default"
             }
-            
-            res = requests.post(api_url, headers=headers, json=payload, timeout=8)
+
+            res = requests.post(api_url, headers=headers, json=payload, timeout=6)
             print(f"OneSignal Response [{res.status_code}]: {res.text}")
         except Exception as e:
             print("OneSignal send error:", e)
