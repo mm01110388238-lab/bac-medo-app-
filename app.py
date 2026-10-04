@@ -2,6 +2,7 @@ import os
 import json
 import time
 from datetime import timedelta
+import requests
 from flask import Flask, render_template, request, redirect, url_for, session, g, Response, jsonify, send_from_directory
 from upstash_redis import Redis
 
@@ -24,6 +25,10 @@ BOOKLET_PROMO_PDF = "https://drive.google.com/file/d/1oVLiR8NgPe5YsWANKJruKasEko
 YT_CHANNEL_URL = "https://youtube.com/@mohamed25saeid?si=GCVoRwEzC499fsE5"
 WA_CHANNEL_URL = "https://whatsapp.com/channel/0029VbCdtHG2ER6cBCinCb0x"
 WA_COMMUNITY_URL = "https://chat.whatsapp.com/L102CxYGFfWLUwvVgvurpa"
+
+# --- إعدادات OneSignal للإشعارات الفورية ---
+ONESIGNAL_APP_ID = os.getenv('ONESIGNAL_APP_ID', 'b48cbe80-3cb4-4dfb-bb5c-915a44ff3654')
+ONESIGNAL_REST_API_KEY = os.getenv('ONESIGNAL_REST_API_KEY', 'os_v2_app_wsgl5ab4wrg7xo24sfnej7zwksnlfq7djgoupi5yhoa4jpgb3qcrg66oktwyj5wf35jojjdp74h3usjnv6cb3zupo6lz3u4bpq5mday')
 
 # --- الاتصال بقاعدة بيانات Upstash Redis ---
 UPSTASH_URL = os.getenv('UPSTASH_REDIS_REST_URL', "https://noted-lemming-132242.upstash.io")
@@ -207,6 +212,10 @@ def extract_youtube_code(url):
     return ""
 
 def notify_all(title, body, target_url="/"):
+    """
+    إرسال إشعار فوري لجميع الطلاب عبر OneSignal
+    بالإضافة إلى حفظه محلياً في قائمة الإشعارات
+    """
     try:
         data = get_data()
         data.setdefault('pending_notifications', []).append({
@@ -218,6 +227,38 @@ def notify_all(title, body, target_url="/"):
         save_data(data)
     except Exception as e:
         print("Notification save error:", e)
+
+    # الإرسال الفعلي عبر OneSignal لجميع الأجهزة والتطبيق
+    if ONESIGNAL_APP_ID and ONESIGNAL_REST_API_KEY:
+        try:
+            api_url = "https://onesignal.com/api/v1/notifications"
+            headers = {
+                "Content-Type": "application/json; charset=utf-8",
+                "Authorization": f"Basic {ONESIGNAL_REST_API_KEY}"
+            }
+            
+            # بناء الرابط الكامل للفتح عند النقر
+            final_url = target_url
+            if target_url and target_url.startswith('/'):
+                try:
+                    final_url = request.url_root.rstrip('/') + target_url
+                except Exception:
+                    final_url = target_url
+
+            payload = {
+                "app_id": ONESIGNAL_APP_ID,
+                "included_segments": ["Total Subscriptions", "All"],
+                "headings": {"en": title, "ar": title},
+                "contents": {"en": body, "ar": body},
+                "url": final_url,
+                "chrome_web_icon": "/app-icon.png",
+                "small_icon": "ic_stat_onesignal_default"
+            }
+            
+            res = requests.post(api_url, headers=headers, json=payload, timeout=8)
+            print(f"OneSignal Response [{res.status_code}]: {res.text}")
+        except Exception as e:
+            print("OneSignal send error:", e)
 
 @app.before_request
 def make_session_permanent():
@@ -839,7 +880,7 @@ def admin():
     data = get_data(force_refresh=True)
     
     if request.method == 'POST':
-        # إرسال إشعار فوري لجميع الطلاب من الأدمن
+        # إرسال إشعار فوري لجميع الطلاب من الأدمن عبر OneSignal
         if 'send_broadcast' in request.form:
             n_title = request.form.get('notif_title', '').strip()
             n_body = request.form.get('notif_body', '').strip()
@@ -1148,7 +1189,6 @@ def serve_app_icon():
 
 @app.route('/manifest.json')
 def manifest():
-    # رابط مباشر ومستقل للأيقونة برأس نوع محتوى مؤكد image/png
     base_url = request.url_root.rstrip('/')
     icon_url = f"{base_url}/app-icon.png"
 
