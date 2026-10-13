@@ -30,9 +30,9 @@ WA_COMMUNITY_URL = "https://chat.whatsapp.com/L102CxYGFfWLUwvVgvurpa"
 ONESIGNAL_APP_ID = os.getenv('ONESIGNAL_APP_ID', 'b48cbe80-3cb4-4dfb-bb5c-915a44ff3654')
 ONESIGNAL_REST_API_KEY = os.getenv('ONESIGNAL_REST_API_KEY', 'os_v2_app_wsgl5ab4wrg7xo24sfnej7zwksnlfq7djgoupi5yhoa4jpgb3qcrg66oktwyj5wf35jojjdp74h3usjnv6cb3zupo6lz3u4bpq5mday')
 
-# --- الاتصال بقاعدة بيانات Upstash Redis ---
-UPSTASH_URL = os.getenv('UPSTASH_REDIS_REST_URL', "https://noted-lemming-132242.upstash.io")
-UPSTASH_TOKEN = os.getenv('UPSTASH_REDIS_REST_TOKEN', "gQAAAAAAAgSSAAIgcDIxNzUxNDk0YzJmN2Y0NDEyOGFhNjEyNmQzNGRiYzMyNQ")
+# --- الاتصال بقاعدة بيانات Upstash Redis الجديدة ---
+UPSTASH_URL = os.getenv('UPSTASH_REDIS_REST_URL', "https://massive-ostrich-230941.upstash.io")
+UPSTASH_TOKEN = os.getenv('UPSTASH_REDIS_REST_TOKEN', "gQAAAAAAA4YdAAIgcDE0MTk2N2YyZjY5OGU0MTk4ODMzNGM0MjM1MjY5MTMzOA")
 
 redis = None
 try:
@@ -212,10 +212,6 @@ def extract_youtube_code(url):
     return ""
 
 def notify_all(title, body, target_url="/"):
-    """
-    إرسال إشعار فوري لجميع الطلاب عبر OneSignal
-    بالإضافة إلى حفظه محلياً في قائمة الإشعارات
-    """
     try:
         data = get_data()
         data.setdefault('pending_notifications', []).append({
@@ -228,13 +224,10 @@ def notify_all(title, body, target_url="/"):
     except Exception as e:
         print("Notification save error:", e)
 
-    # الإرسال الفعلي عبر OneSignal لجميع المشتركين
     if ONESIGNAL_APP_ID and ONESIGNAL_REST_API_KEY:
         try:
             api_url = "https://onesignal.com/api/v1/notifications"
             api_key = str(ONESIGNAL_REST_API_KEY).strip()
-            
-            # مفاتيح v2 الخاصة بـ OneSignal تقبل التوثيق بصيغة Key
             auth_value = f"Key {api_key}" if api_key.startswith("os_v2_") else f"Basic {api_key}"
             
             headers = {
@@ -855,7 +848,6 @@ def save_subscription():
         subs = data.setdefault('push_subscriptions', [])
         sub_str = json.dumps(sub, sort_keys=True)
         
-        # حفظ الاشتراك إذا لم يكن موجوداً من قبل
         exists = any(json.dumps(s, sort_keys=True) == sub_str for s in subs)
         if not exists:
             subs.append(sub)
@@ -884,7 +876,6 @@ def admin():
     data = get_data(force_refresh=True)
     
     if request.method == 'POST':
-        # إرسال إشعار فوري لجميع الطلاب من الأدمن عبر OneSignal
         if 'send_broadcast' in request.form:
             n_title = request.form.get('notif_title', '').strip()
             n_body = request.form.get('notif_body', '').strip()
